@@ -39,4 +39,9 @@ jobs:
               --name ecommerce \
               -p 8080:8080 \
               -e SPRING_PROFILES_ACTIVE=prod \
+              -e DB_HOST=localhost \
+              -e DB_NAME=ecommerce \
+              -e DB_USERNAME=admin \
+              -e DB_PASSWORD=admin1234 \
+              --network host \
               jiwoodd/ecommerce:latest
