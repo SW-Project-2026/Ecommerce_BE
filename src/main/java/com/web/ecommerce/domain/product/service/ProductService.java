@@ -90,7 +90,8 @@ public class ProductService {
         Product product = Product.builder()
                 .name(request.getName())
                 .description(request.getDescription())
-                .price(request.getPrice())
+                .minPrice(request.getMinPrice())
+                .maxPrice(request.getMaxPrice())
                 .stockQuantity(request.getStockQuantity())
                 .productCategory(request.getProductCategory())
                 .imageUrl(request.getImageUrl())
@@ -108,7 +109,8 @@ public class ProductService {
         product.update(
                 request.getName(),
                 request.getDescription(),
-                request.getPrice(),
+                request.getMinPrice(),
+                request.getMaxPrice(),
                 request.getStockQuantity(),
                 request.getProductCategory(),
                 request.getIsActive(),

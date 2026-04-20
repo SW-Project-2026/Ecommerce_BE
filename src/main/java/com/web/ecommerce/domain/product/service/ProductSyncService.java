@@ -91,17 +91,23 @@ public class ProductSyncService {
             String title = item.getTitle().replaceAll("<[^>]*>", "");
             String description = buildDescription(item);
 
-            int price = 0;
+            int minPrice = 0;
+            int maxPrice = 0;
             try {
                 if (item.getLprice() != null && !item.getLprice().isBlank()) {
-                    price = Integer.parseInt(item.getLprice());
+                    minPrice = Integer.parseInt(item.getLprice());
+                }
+                if (item.getHprice() != null && !item.getHprice().isBlank()) {
+                    maxPrice = Integer.parseInt(item.getHprice());
                 }
             } catch (NumberFormatException ignored) {}
+            if (maxPrice == 0) maxPrice = minPrice;
 
             Product product = Product.builder()
                     .name(title.length() > 100 ? title.substring(0, 100) : title)
                     .description(description)
-                    .price(price)
+                    .minPrice(minPrice)
+                    .maxPrice(maxPrice)
                     .stockQuantity(100)
                     .productCategory(item.getCategory1())
                     .subCategory(item.getCategory2())

@@ -21,8 +21,11 @@ public class ProductDetailResponse {
     @Schema(description = "상품 설명")
     private String description;
 
-    @Schema(description = "가격", example = "35000")
-    private int price;
+    @Schema(description = "최저가", example = "30000")
+    private int minPrice;
+
+    @Schema(description = "최고가", example = "40000")
+    private int maxPrice;
 
     @Schema(description = "재고 수량", example = "100")
     private int stockQuantity;
@@ -56,7 +59,8 @@ public class ProductDetailResponse {
                 .productId(product.getProductId())
                 .name(product.getName())
                 .description(product.getDescription())
-                .price(product.getPrice())
+                .minPrice(product.getMinPrice())
+                .maxPrice(product.getMaxPrice())
                 .stockQuantity(product.getStockQuantity())
                 .productCategory(product.getProductCategory())
                 .isActive(product.getIsActive())

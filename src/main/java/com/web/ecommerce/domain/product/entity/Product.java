@@ -23,8 +23,11 @@ public class Product extends BaseTimeEntity {
     @Column(name = "description", nullable = false, length = 2000)
     private String description;
 
-    @Column(name = "price", nullable = false)
-    private int price;
+    @Column(name = "min_price")
+    private int minPrice;
+
+    @Column(name = "max_price")
+    private int maxPrice;
 
     @Column(name = "stock_quantity", nullable = false)
     private int stockQuantity;
@@ -47,11 +50,12 @@ public class Product extends BaseTimeEntity {
     @Column(name = "search_keyword", length = 50)
     private String searchKeyword;
 
-    public void update(String name, String description, int price, int stockQuantity,
+    public void update(String name, String description, int minPrice, int maxPrice, int stockQuantity,
                        String productCategory, Integer isActive, String imageUrl) {
         this.name = name;
         this.description = description;
-        this.price = price;
+        this.minPrice = minPrice;
+        this.maxPrice = maxPrice;
         this.stockQuantity = stockQuantity;
         this.productCategory = productCategory;
         this.isActive = isActive;
