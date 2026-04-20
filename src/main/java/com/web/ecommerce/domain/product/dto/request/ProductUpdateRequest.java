@@ -18,9 +18,13 @@ public class ProductUpdateRequest {
     @Schema(description = "상품 설명", example = "신선한 딸기로 만든 케이크입니다.")
     private String description;
 
-    @Min(value = 0, message = "가격은 0 이상이어야 합니다.")
-    @Schema(description = "가격", example = "35000")
-    private int price;
+    @Min(value = 0, message = "최저가는 0 이상이어야 합니다.")
+    @Schema(description = "최저가", example = "30000")
+    private int minPrice;
+
+    @Min(value = 0, message = "최고가는 0 이상이어야 합니다.")
+    @Schema(description = "최고가", example = "40000")
+    private int maxPrice;
 
     @Min(value = 0, message = "재고는 0 이상이어야 합니다.")
     @Schema(description = "재고 수량", example = "100")
