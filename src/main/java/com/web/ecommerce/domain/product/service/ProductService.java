@@ -67,8 +67,8 @@ public class ProductService {
     @Transactional(readOnly = true)
     public Page<ProductDetailResponse> getProducts(String category, Pageable pageable) {
         Page<Product> products = (category != null && !category.isBlank())
-                ? productRepository.findBySearchKeyword(category, pageable)
-                : productRepository.findAll(pageable);
+                ? productRepository.findByIsActiveAndSearchKeyword(1, category, pageable)
+                : productRepository.findByIsActive(1, pageable);
 
         return products.map(ProductDetailResponse::from);
     }
@@ -120,9 +120,8 @@ public class ProductService {
 
     @Transactional
     public void deleteProduct(Long productId) {
-        if (!productRepository.existsById(productId)) {
-            throw new CustomException(ProductErrorCode.PRODUCT_NOT_FOUND);
-        }
-        productRepository.deleteById(productId);
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new CustomException(ProductErrorCode.PRODUCT_NOT_FOUND));
+        product.deactivate();
     }
 }

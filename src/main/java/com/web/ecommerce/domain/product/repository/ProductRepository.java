@@ -9,5 +9,7 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
     boolean existsByNaverProductId(String naverProductId);
 
-    Page<Product> findBySearchKeyword(String searchKeyword, Pageable pageable);
+    Page<Product> findByIsActive(int isActive, Pageable pageable);
+
+    Page<Product> findByIsActiveAndSearchKeyword(int isActive, String searchKeyword, Pageable pageable);
 }

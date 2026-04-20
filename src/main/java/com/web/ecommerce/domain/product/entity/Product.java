@@ -57,4 +57,8 @@ public class Product extends BaseTimeEntity {
         this.isActive = isActive;
         if (imageUrl != null) this.imageUrl = imageUrl;
     }
+
+    public void deactivate() {
+        this.isActive = 0;
+    }
 }
