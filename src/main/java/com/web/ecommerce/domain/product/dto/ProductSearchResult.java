@@ -1,5 +1,6 @@
 package com.web.ecommerce.domain.product.dto;
 
+import com.web.ecommerce.domain.product.dto.response.ProductResponse;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Getter;

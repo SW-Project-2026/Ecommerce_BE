@@ -1,4 +1,4 @@
-package com.web.ecommerce.domain.product.dto;
+package com.web.ecommerce.domain.product.dto.request;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Max;

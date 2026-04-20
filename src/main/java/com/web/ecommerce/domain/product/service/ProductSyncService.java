@@ -3,8 +3,6 @@ package com.web.ecommerce.domain.product.service;
 import com.web.ecommerce.domain.product.dto.NaverProductItem;
 import com.web.ecommerce.domain.product.dto.NaverSearchResponse;
 import com.web.ecommerce.domain.product.entity.Product;
-import com.web.ecommerce.domain.product.entity.ProductImage;
-import com.web.ecommerce.domain.product.repository.ProductImageRepository;
 import com.web.ecommerce.domain.product.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -13,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestClient;
 
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @Service
@@ -21,13 +20,18 @@ public class ProductSyncService {
 
     private final RestClient naverRestClient;
     private final ProductRepository productRepository;
-    private final ProductImageRepository productImageRepository;
 
-    private static final List<String> SEARCH_QUERIES = List.of(
-            "케이크", "마카롱", "쿠키", "디저트", "베이커리"
+    // 카테고리명 → 네이버 검색 키워드 목록
+    private static final Map<String, List<String>> CATEGORY_QUERIES = Map.of(
+            "가전/디지털", List.of("노트북", "스마트폰", "무선이어폰"),
+            "패션",      List.of("티셔츠", "청바지", "원피스"),
+            "뷰티",      List.of("스킨케어", "립스틱", "선크림"),
+            "식품",      List.of("케이크", "과자", "음료"),
+            "생활용품",  List.of("청소기", "주방용품", "수납"),
+            "스포츠",    List.of("운동화", "요가매트", "헬스용품")
     );
     private static final int PAGE_SIZE = 100;
-    private static final int MAX_PAGES = 2; // 쿼리당 최대 200개
+    private static final int MAX_PAGES = 1; // 카테고리당 키워드 3개 × 100개 = 300개
 
     @Transactional
     public void syncIfEmpty() {
@@ -43,20 +47,23 @@ public class ProductSyncService {
     public void sync() {
         int totalSaved = 0;
 
-        for (String query : SEARCH_QUERIES) {
-            for (int page = 1; page <= MAX_PAGES; page++) {
-                int start = (page - 1) * PAGE_SIZE + 1;
-                try {
-                    NaverSearchResponse response = fetchFromNaver(query, start);
-                    if (response == null || response.getItems() == null || response.getItems().isEmpty()) {
+        for (Map.Entry<String, List<String>> entry : CATEGORY_QUERIES.entrySet()) {
+            String category = entry.getKey();
+            for (String query : entry.getValue()) {
+                for (int page = 1; page <= MAX_PAGES; page++) {
+                    int start = (page - 1) * PAGE_SIZE + 1;
+                    try {
+                        NaverSearchResponse response = fetchFromNaver(query, start);
+                        if (response == null || response.getItems() == null || response.getItems().isEmpty()) {
+                            break;
+                        }
+                        int saved = saveProducts(response.getItems(), category);
+                        totalSaved += saved;
+                        log.info("category={}, query={}, page={}, 저장={}개", category, query, page, saved);
+                    } catch (Exception e) {
+                        log.error("네이버 API 호출 실패. category={}, query={}, page={}", category, query, page, e);
                         break;
                     }
-                    int saved = saveProducts(response.getItems());
-                    totalSaved += saved;
-                    log.info("query={}, page={}, 저장={}개", query, page, saved);
-                } catch (Exception e) {
-                    log.error("네이버 API 호출 실패. query={}, page={}", query, page, e);
-                    break;
                 }
             }
         }
@@ -75,7 +82,7 @@ public class ProductSyncService {
                 .body(NaverSearchResponse.class);
     }
 
-    private int saveProducts(List<NaverProductItem> items) {
+    private int saveProducts(List<NaverProductItem> items, String keyword) {
         int count = 0;
         for (NaverProductItem item : items) {
             if (item.getProductId() == null || productRepository.existsByNaverProductId(item.getProductId())) {
@@ -97,20 +104,14 @@ public class ProductSyncService {
                     .price(price)
                     .stockQuantity(100)
                     .productCategory(item.getCategory1())
+                    .subCategory(item.getCategory2())
+                    .searchKeyword(keyword)
+                    .imageUrl(item.getImage())
                     .isActive(1)
                     .naverProductId(item.getProductId())
                     .build();
 
-            Product savedProduct = productRepository.save(product);
-
-            if (item.getImage() != null && !item.getImage().isBlank()) {
-                ProductImage image = ProductImage.builder()
-                        .product(savedProduct)
-                        .imageUrl(item.getImage())
-                        .sortOrder(1)
-                        .build();
-                productImageRepository.save(image);
-            }
+            productRepository.save(product);
             count++;
         }
         return count;
