@@ -3,9 +3,14 @@ package com.web.ecommerce.domain.user.dto.request;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
-public class UserLoginRequest
-{
+@Getter
+@AllArgsConstructor
+@NoArgsConstructor
+public class UserLoginRequest {
   @Schema(description = "사용자 ID", example = "user123")
   @NotBlank(message = "아이디는 필수 항목입니다.")
   @Size(max = 20, message = "아이디는 20자 이하여야 합니다.")
