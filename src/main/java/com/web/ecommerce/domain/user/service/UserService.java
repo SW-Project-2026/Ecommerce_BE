@@ -5,113 +5,67 @@ import com.web.ecommerce.domain.user.dto.request.UserSignupRequest;
 import com.web.ecommerce.domain.user.dto.request.UserUpdateRequest;
 import com.web.ecommerce.domain.user.dto.response.AuthResult;
 import com.web.ecommerce.domain.user.dto.response.UserAdminResponse;
-import com.web.ecommerce.domain.user.dto.response.UserLoginResponse;
 import com.web.ecommerce.domain.user.dto.response.UserProfileResponse;
 import com.web.ecommerce.domain.user.entity.Role;
-import com.web.ecommerce.domain.user.entity.User;
-import com.web.ecommerce.domain.user.exception.UserErrorCode;
-import com.web.ecommerce.domain.user.mapper.UserMapper;
-import com.web.ecommerce.domain.user.repository.UserRepository;
-import com.web.ecommerce.global.exception.CustomException;
-import com.web.ecommerce.global.security.JwtProvider;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
-@Slf4j
-@Service
-@RequiredArgsConstructor
-public class UserService {
+public interface UserService {
 
-    private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder;
-    private final JwtProvider jwtProvider;
-    private final UserMapper userMapper;
+    /**
+     * 회원가입 후 자동 로그인 처리
+     * @param request 회원가입 요청 정보 (아이디, 비밀번호, 이름 등)
+     * @param role 부여할 권한 (USER 또는 ADMIN)
+     * @return 액세스 토큰 및 리프레시 토큰 포함 인증 결과
+     */
+    AuthResult signup(UserSignupRequest request, Role role);
 
-    @Transactional
-    public AuthResult signup(UserSignupRequest request, Role role) {
-        if (!request.getPassword().equals(request.getPasswordConfirm())) {
-            throw new CustomException(UserErrorCode.PASSWORD_CONFIRM_MISMATCH);
-        }
-        if (userRepository.existsByLoginId(request.getLoginId())) {
-            throw new CustomException(UserErrorCode.USER_ALREADY_EXISTS);
-        }
-        if (userRepository.existsByEmail(request.getEmail())) {
-            throw new CustomException(UserErrorCode.EMAIL_ALREADY_EXISTS);
-        }
+    /**
+     * 아이디/비밀번호로 로그인
+     * @param loginId 로그인 아이디
+     * @param password 비밀번호
+     * @return 액세스 토큰 및 리프레시 토큰 포함 인증 결과
+     */
+    AuthResult loginById(String loginId, String password);
 
-        User user = userMapper.toEntity(request, role, passwordEncoder.encode(request.getPassword()));
-        User saved = userRepository.save(user);
-        return toAuthResult(saved);
-    }
+    /**
+     * 내 정보 조회
+     * @param userId 로그인한 사용자 ID
+     * @return 사용자 프로필 정보
+     */
+    UserProfileResponse getMyProfile(Long userId);
 
-    @Transactional(readOnly = true)
-    public AuthResult loginById(String loginId, String password) {
-        User user = userRepository.findByLoginIdAndIsActive(loginId, 1)
-                .orElseThrow(() -> new CustomException(UserErrorCode.USER_NOT_FOUND));
+    /**
+     * 내 정보 수정 (이름, 전화번호)
+     * @param userId 로그인한 사용자 ID
+     * @param request 수정할 이름, 전화번호
+     */
+    void updateProfile(Long userId, UserUpdateRequest request);
 
-        if (!passwordEncoder.matches(password, user.getPassword())) {
-            throw new CustomException(UserErrorCode.INVALID_PASSWORD);
-        }
+    /**
+     * 비밀번호 변경
+     * @param userId 로그인한 사용자 ID
+     * @param request 현재 비밀번호, 새 비밀번호, 새 비밀번호 확인
+     */
+    void updatePassword(Long userId, UserPasswordUpdateRequest request);
 
-        return toAuthResult(user);
-    }
+    /**
+     * 회원 탈퇴 (soft delete)
+     * @param userId 로그인한 사용자 ID
+     */
+    void withdraw(Long userId);
 
-    @Transactional(readOnly = true)
-    public UserProfileResponse getMyProfile(Long userId) {
-        User user = userRepository.findByIdAndIsActive(userId, 1)
-                .orElseThrow(() -> new CustomException(UserErrorCode.USER_NOT_FOUND));
-        return userMapper.toProfileResponse(user);
-    }
+    /**
+     * 전체 회원 목록 조회 (관리자 전용)
+     * @param pageable 페이징 정보
+     * @return 회원 목록 (페이징)
+     */
+    Page<UserAdminResponse> getUserList(Pageable pageable);
 
-    @Transactional
-    public void updateProfile(Long userId, UserUpdateRequest request) {
-        User user = userRepository.findByIdAndIsActive(userId, 1)
-                .orElseThrow(() -> new CustomException(UserErrorCode.USER_NOT_FOUND));
-        user.updateProfile(request.getName(), request.getPhone());
-    }
-
-    @Transactional
-    public void updatePassword(Long userId, UserPasswordUpdateRequest request) {
-        User user = userRepository.findByIdAndIsActive(userId, 1)
-                .orElseThrow(() -> new CustomException(UserErrorCode.USER_NOT_FOUND));
-        if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPassword())) {
-            throw new CustomException(UserErrorCode.INVALID_PASSWORD);
-        }
-        if (!request.getNewPassword().equals(request.getNewPasswordConfirm())) {
-            throw new CustomException(UserErrorCode.PASSWORD_CONFIRM_MISMATCH);
-        }
-        user.updatePassword(passwordEncoder.encode(request.getNewPassword()));
-    }
-
-    @Transactional
-    public void withdraw(Long userId) {
-        User user = userRepository.findByIdAndIsActive(userId, 1)
-                .orElseThrow(() -> new CustomException(UserErrorCode.USER_NOT_FOUND));
-        user.withdraw();
-    }
-
-    @Transactional(readOnly = true)
-    public Page<UserAdminResponse> getUserList(Pageable pageable) {
-        return userRepository.findAllByRole(Role.USER, pageable)
-                .map(userMapper::toAdminResponse);
-    }
-
-    @Transactional(readOnly = true)
-    public UserAdminResponse getUserDetail(Long userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new CustomException(UserErrorCode.USER_NOT_FOUND));
-        return userMapper.toAdminResponse(user);
-    }
-
-    private AuthResult toAuthResult(User user) {
-        String accessToken = jwtProvider.generateAccessToken(user.getId(), user.getRole().name());
-        String refreshToken = jwtProvider.generateRefreshToken(user.getId());
-        UserLoginResponse response = userMapper.toLoginResponse(user, accessToken);
-        return new AuthResult(response, refreshToken);
-    }
+    /**
+     * 특정 회원 상세 조회 (관리자 전용)
+     * @param userId 조회할 사용자 ID
+     * @return 회원 상세 정보
+     */
+    UserAdminResponse getUserDetail(Long userId);
 }
