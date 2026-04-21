@@ -4,6 +4,7 @@ import com.web.ecommerce.domain.user.dto.request.UserLoginRequest;
 import com.web.ecommerce.domain.user.dto.request.UserSignupRequest;
 import com.web.ecommerce.domain.user.dto.response.AuthResult;
 import com.web.ecommerce.domain.user.dto.response.UserLoginResponse;
+import com.web.ecommerce.domain.user.entity.Role;
 import com.web.ecommerce.domain.user.service.UserService;
 import com.web.ecommerce.global.response.BaseResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -12,12 +13,13 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -28,14 +30,19 @@ public class UserController {
 
   private final UserService userService;
 
-  @Operation(summary = "회원가입", description = "회원가입 후 자동 로그인하는 API")
+  @Value("${admin.secret-key}")
+  private String adminSecretKey;
+
+
+  @Operation(summary = "사용자 회원가입", description = "사용자가 회원가입 후 자동 로그인하는 API")
   @PostMapping("/signup")
   public ResponseEntity<BaseResponse<UserLoginResponse>> signup(
       @Valid @RequestBody UserSignupRequest request,
       HttpServletResponse response
   ) {
-    AuthResult result = userService.signup(request);
+    AuthResult result = userService.signup(request, Role.USER);
     setRefreshTokenCookie(response, result.refreshToken());
+
     return ResponseEntity.status(HttpStatus.CREATED)
         .body(BaseResponse.success(201, "회원가입이 완료되었습니다.", result.loginResponse()));
   }
@@ -61,4 +68,23 @@ public class UserController {
     response.addCookie(cookie);
   }
 
+  @Operation(summary = "관리자 회원가입", description = "관리자 회원가입 API")
+  @PostMapping("/admin/signup")
+  public ResponseEntity<BaseResponse<UserLoginResponse>> adminSignup(
+      @RequestHeader("x-Admin-Secret") String secretKey,
+      @Valid @RequestBody UserSignupRequest request,
+      HttpServletResponse response
+  ){
+    if (!adminSecretKey.equals(secretKey)) {
+      return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+    }
+    AuthResult result = userService.signup(request, Role.ADMIN);
+    setRefreshTokenCookie(response, result.refreshToken());
+    return ResponseEntity.status(HttpStatus.CREATED)
+        .body(BaseResponse.success(201, "관리자 계정이 생성되었습니다.", result.loginResponse()));
+
+  }
+
 }
+
+

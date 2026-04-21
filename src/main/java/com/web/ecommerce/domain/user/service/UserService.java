@@ -3,6 +3,7 @@ package com.web.ecommerce.domain.user.service;
 import com.web.ecommerce.domain.user.dto.request.UserSignupRequest;
 import com.web.ecommerce.domain.user.dto.response.AuthResult;
 import com.web.ecommerce.domain.user.dto.response.UserLoginResponse;
+import com.web.ecommerce.domain.user.entity.Role;
 import com.web.ecommerce.domain.user.entity.User;
 import com.web.ecommerce.domain.user.exception.UserErrorCode;
 import com.web.ecommerce.domain.user.mapper.UserMapper;
@@ -26,7 +27,7 @@ public class UserService {
     private final UserMapper userMapper;
 
     @Transactional
-    public AuthResult signup(UserSignupRequest request) {
+    public AuthResult signup(UserSignupRequest request, Role role) {
         if (!request.getPassword().equals(request.getPasswordConfirm())) {
             throw new CustomException(UserErrorCode.PASSWORD_CONFIRM_MISMATCH);
         }
@@ -37,7 +38,7 @@ public class UserService {
             throw new CustomException(UserErrorCode.EMAIL_ALREADY_EXISTS);
         }
 
-        User user = userMapper.toEntity(request, passwordEncoder.encode(request.getPassword()));
+        User user = userMapper.toEntity(request, role, passwordEncoder.encode(request.getPassword()));
         User saved = userRepository.save(user);
         return toAuthResult(saved);
     }

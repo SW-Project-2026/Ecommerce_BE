@@ -31,3 +31,6 @@ swagger:
   server:
     profile: http://localhost:8080
     name: Test
+
+admin:
+  secret-key: test-admin-secret

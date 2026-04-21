@@ -1,4 +1,4 @@
-package com.web.ecommerce.domain.user.Mapper;
+package com.web.ecommerce.domain.user.mapper;
 
 import com.web.ecommerce.domain.user.dto.request.UserSignupRequest;
 import com.web.ecommerce.domain.user.dto.response.UserLoginResponse;
@@ -10,14 +10,14 @@ import org.springframework.stereotype.Component;
 public class UserMapper {
 
     // SignupRequest → User 엔티티
-    public User toEntity(UserSignupRequest request, String encodedPassword) {
+    public User toEntity(UserSignupRequest request, Role role, String encodedPassword) {
         return User.builder()
                 .name(request.getName())
                 .loginId(request.getLoginId())
                 .password(encodedPassword)
                 .email(request.getEmail())
                 .phone(request.getPhone())
-                .role(Role.USER)
+                .role(role)
                 .isActive(1)
                 .build();
     }

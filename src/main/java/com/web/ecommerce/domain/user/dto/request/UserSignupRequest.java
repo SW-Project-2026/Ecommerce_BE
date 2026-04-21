@@ -46,4 +46,7 @@ public class UserSignupRequest {
   )
   private String phone;
 
+  @Schema(description ="관리자/회원 구분", example = "ADMIN/USER")
+  private String role;
+
 }
