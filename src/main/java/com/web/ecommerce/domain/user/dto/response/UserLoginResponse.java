@@ -13,9 +13,6 @@ public class UserLoginResponse {
   @Schema(description = "접근 토큰")
   private String accessToken;
 
-  @Schema(description = "리프레시 토큰")
-  private String refreshToken;
-
   @Schema(description = "접근 허용(소지자)")
   @Builder.Default
   private String tokenType = "Bearer";
