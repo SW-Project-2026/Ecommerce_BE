@@ -1,7 +1,9 @@
 package com.web.ecommerce.domain.user.mapper;
 
 import com.web.ecommerce.domain.user.dto.request.UserSignupRequest;
+import com.web.ecommerce.domain.user.dto.response.UserAdminResponse;
 import com.web.ecommerce.domain.user.dto.response.UserLoginResponse;
+import com.web.ecommerce.domain.user.dto.response.UserProfileResponse;
 import com.web.ecommerce.domain.user.entity.Role;
 import com.web.ecommerce.domain.user.entity.User;
 import org.springframework.stereotype.Component;
@@ -9,7 +11,6 @@ import org.springframework.stereotype.Component;
 @Component
 public class UserMapper {
 
-    // SignupRequest → User 엔티티
     public User toEntity(UserSignupRequest request, Role role, String encodedPassword) {
         return User.builder()
                 .name(request.getName())
@@ -22,11 +23,18 @@ public class UserMapper {
                 .build();
     }
 
-    // User + AccessToken → LoginResponse
     public UserLoginResponse toLoginResponse(User user, String accessToken) {
         return UserLoginResponse.builder()
                 .accessToken(accessToken)
                 .role(user.getRole().name())
                 .build();
+    }
+
+    public UserProfileResponse toProfileResponse(User user) {
+        return new UserProfileResponse(user.getId(), user.getName(), user.getLoginId(), user.getEmail(), user.getPhone());
+    }
+
+    public UserAdminResponse toAdminResponse(User user) {
+        return new UserAdminResponse(user.getId(), user.getName(), user.getLoginId(), user.getEmail(), user.getPhone(), user.getRole().name(), user.getIsActive());
     }
 }

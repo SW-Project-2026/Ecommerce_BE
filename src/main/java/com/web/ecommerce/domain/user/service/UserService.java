@@ -1,8 +1,12 @@
 package com.web.ecommerce.domain.user.service;
 
+import com.web.ecommerce.domain.user.dto.request.UserPasswordUpdateRequest;
 import com.web.ecommerce.domain.user.dto.request.UserSignupRequest;
+import com.web.ecommerce.domain.user.dto.request.UserUpdateRequest;
 import com.web.ecommerce.domain.user.dto.response.AuthResult;
+import com.web.ecommerce.domain.user.dto.response.UserAdminResponse;
 import com.web.ecommerce.domain.user.dto.response.UserLoginResponse;
+import com.web.ecommerce.domain.user.dto.response.UserProfileResponse;
 import com.web.ecommerce.domain.user.entity.Role;
 import com.web.ecommerce.domain.user.entity.User;
 import com.web.ecommerce.domain.user.exception.UserErrorCode;
@@ -12,6 +16,8 @@ import com.web.ecommerce.global.exception.CustomException;
 import com.web.ecommerce.global.security.JwtProvider;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -53,6 +59,53 @@ public class UserService {
         }
 
         return toAuthResult(user);
+    }
+
+    @Transactional(readOnly = true)
+    public UserProfileResponse getMyProfile(Long userId) {
+        User user = userRepository.findByIdAndIsActive(userId, 1)
+                .orElseThrow(() -> new CustomException(UserErrorCode.USER_NOT_FOUND));
+        return userMapper.toProfileResponse(user);
+    }
+
+    @Transactional
+    public void updateProfile(Long userId, UserUpdateRequest request) {
+        User user = userRepository.findByIdAndIsActive(userId, 1)
+                .orElseThrow(() -> new CustomException(UserErrorCode.USER_NOT_FOUND));
+        user.updateProfile(request.getName(), request.getPhone());
+    }
+
+    @Transactional
+    public void updatePassword(Long userId, UserPasswordUpdateRequest request) {
+        User user = userRepository.findByIdAndIsActive(userId, 1)
+                .orElseThrow(() -> new CustomException(UserErrorCode.USER_NOT_FOUND));
+        if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPassword())) {
+            throw new CustomException(UserErrorCode.INVALID_PASSWORD);
+        }
+        if (!request.getNewPassword().equals(request.getNewPasswordConfirm())) {
+            throw new CustomException(UserErrorCode.PASSWORD_CONFIRM_MISMATCH);
+        }
+        user.updatePassword(passwordEncoder.encode(request.getNewPassword()));
+    }
+
+    @Transactional
+    public void withdraw(Long userId) {
+        User user = userRepository.findByIdAndIsActive(userId, 1)
+                .orElseThrow(() -> new CustomException(UserErrorCode.USER_NOT_FOUND));
+        user.withdraw();
+    }
+
+    @Transactional(readOnly = true)
+    public Page<UserAdminResponse> getUserList(Pageable pageable) {
+        return userRepository.findAllByRole(Role.USER, pageable)
+                .map(userMapper::toAdminResponse);
+    }
+
+    @Transactional(readOnly = true)
+    public UserAdminResponse getUserDetail(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new CustomException(UserErrorCode.USER_NOT_FOUND));
+        return userMapper.toAdminResponse(user);
     }
 
     private AuthResult toAuthResult(User user) {

@@ -49,4 +49,16 @@ public class User  extends BaseTimeEntity {
   @Column(name = "is_active")
   private Integer isActive;
 
+  public void updateProfile(String name, String phone) {
+    this.name = name;
+    this.phone = phone;
+  }
+
+  public void updatePassword(String encodedPassword) {
+    this.password = encodedPassword;
+  }
+
+  public void withdraw() {
+    this.isActive = 0;
+  }
 }

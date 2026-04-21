@@ -27,13 +27,14 @@ public class SecurityConfig {
         .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .authorizeHttpRequests(auth -> auth
             // 누구나 접근 가능
-            .requestMatchers("/api/users/signup", "/api/users/login", "/api/admin/signup").permitAll()
+            .requestMatchers("/api/users/signup", "/api/users/login", "/api/users/admin/signup").permitAll()
             .requestMatchers(HttpMethod.GET, "/api/products/**").permitAll()
             .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
             // 관리자만 가능
             .requestMatchers(HttpMethod.POST, "/api/products/**").hasRole("ADMIN")
             .requestMatchers(HttpMethod.PUT, "/api/products/**").hasRole("ADMIN")
             .requestMatchers(HttpMethod.DELETE, "/api/products/**").hasRole("ADMIN")
+            .requestMatchers("/api/users/admin/list", "/api/users/admin/**").hasRole("ADMIN")
             // 나머지는 로그인 필요
             .anyRequest().authenticated()
         )
