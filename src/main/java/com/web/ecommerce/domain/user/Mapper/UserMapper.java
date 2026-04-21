@@ -1,4 +1,4 @@
-package com.web.ecommerce.domain.user.mapper;
+package com.web.ecommerce.domain.user.Mapper;
 
 import com.web.ecommerce.domain.user.dto.request.UserSignupRequest;
 import com.web.ecommerce.domain.user.dto.response.UserLoginResponse;
