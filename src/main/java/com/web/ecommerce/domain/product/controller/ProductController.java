@@ -6,13 +6,13 @@ import com.web.ecommerce.domain.product.dto.request.ProductUpdateRequest;
 import com.web.ecommerce.domain.product.dto.ProductSearchResult;
 import com.web.ecommerce.domain.product.dto.response.ProductDetailResponse;
 import com.web.ecommerce.domain.product.service.ProductService;
+import com.web.ecommerce.global.page.response.PageResponse;
 import com.web.ecommerce.global.response.BaseResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springdoc.core.annotations.ParameterObject;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
@@ -38,10 +38,10 @@ public class ProductController {
 
     @Operation(summary = "상품 목록 조회", description = "DB에 저장된 상품 목록을 페이징 조회하는 API. category 파라미터로 세부 카테고리 필터링 가능 (예: 과자/베이커리)")
     @GetMapping
-    public ResponseEntity<BaseResponse<Page<ProductDetailResponse>>> getProducts(
+    public ResponseEntity<BaseResponse<PageResponse<ProductDetailResponse>>> getProducts(
             @RequestParam(required = false) String category,
             @ParameterObject @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
-        Page<ProductDetailResponse> result = productService.getProducts(category, pageable);
+        PageResponse<ProductDetailResponse> result = productService.getProducts(category, pageable);
         return ResponseEntity.ok(BaseResponse.success(result));
     }
 

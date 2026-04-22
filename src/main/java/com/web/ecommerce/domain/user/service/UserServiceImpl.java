@@ -13,10 +13,11 @@ import com.web.ecommerce.domain.user.exception.UserErrorCode;
 import com.web.ecommerce.domain.user.mapper.UserMapper;
 import com.web.ecommerce.domain.user.repository.UserRepository;
 import com.web.ecommerce.global.exception.CustomException;
+import com.web.ecommerce.global.page.mapper.PageMapper;
+import com.web.ecommerce.global.page.response.PageResponse;
 import com.web.ecommerce.global.security.JwtProvider;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -31,6 +32,7 @@ public class UserServiceImpl implements UserService {
     private final PasswordEncoder passwordEncoder;
     private final JwtProvider jwtProvider;
     private final UserMapper userMapper;
+    private final PageMapper pageMapper;
 
     @Override
     @Transactional
@@ -103,9 +105,10 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional(readOnly = true)
-    public Page<UserAdminResponse> getUserList(Pageable pageable) {
-        return userRepository.findAllByRole(Role.USER, pageable)
-                .map(userMapper::toAdminResponse);
+    public PageResponse<UserAdminResponse> getUserList(Pageable pageable) {
+        return pageMapper.toPageResponse(
+                userRepository.findAllByRole(Role.USER, pageable).map(userMapper::toAdminResponse)
+        );
     }
 
     @Override

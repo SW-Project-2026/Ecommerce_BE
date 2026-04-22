@@ -1,5 +1,7 @@
-package com.web.ecommerce.global.security;
+package com.web.ecommerce.global.config;
 
+import com.web.ecommerce.global.security.JwtAuthenticationFilter;
+import com.web.ecommerce.global.security.JwtProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

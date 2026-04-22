@@ -7,13 +7,13 @@ import com.web.ecommerce.domain.user.dto.request.UserUpdateRequest;
 import com.web.ecommerce.domain.user.dto.response.UserAdminResponse;
 import com.web.ecommerce.domain.user.dto.response.UserLoginResponse;
 import com.web.ecommerce.domain.user.dto.response.UserProfileResponse;
+import com.web.ecommerce.global.page.response.PageResponse;
 import com.web.ecommerce.global.response.BaseResponse;
 import com.web.ecommerce.global.security.CustomUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -108,7 +108,7 @@ public interface UserController {
      * @return 회원 목록
      */
     @Operation(summary = "전체 회원 목록 조회", description = "관리자 전용")
-    ResponseEntity<BaseResponse<Page<UserAdminResponse>>> getUserList(Pageable pageable);
+    ResponseEntity<BaseResponse<PageResponse<UserAdminResponse>>> getUserList(Pageable pageable);
 
     /**
      * 특정 회원 상세 조회 (관리자 전용)
