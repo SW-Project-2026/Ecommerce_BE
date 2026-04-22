@@ -50,6 +50,12 @@ public class Product extends BaseTimeEntity {
     @Column(name = "search_keyword", length = 50)
     private String searchKeyword;
 
+    @Column(name = "brand", length = 100)
+    private String brand;
+
+    @Column(name = "category2", length = 50)
+    private String category2;
+
     public void update(String name, String description, int minPrice, int maxPrice, int stockQuantity,
                        String productCategory, Integer isActive, String imageUrl) {
         this.name = name;

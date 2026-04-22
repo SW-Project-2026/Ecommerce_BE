@@ -17,7 +17,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Page;
+import com.web.ecommerce.global.page.response.PageResponse;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
@@ -122,7 +122,7 @@ public class UserControllerImpl implements UserController {
 
     @Override
     @GetMapping("/admin/list")
-    public ResponseEntity<BaseResponse<Page<UserAdminResponse>>> getUserList(
+    public ResponseEntity<BaseResponse<PageResponse<UserAdminResponse>>> getUserList(
             @PageableDefault(size = 20) Pageable pageable
     ) {
         return ResponseEntity.ok(BaseResponse.success(userService.getUserList(pageable)));

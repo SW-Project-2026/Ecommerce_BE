@@ -115,6 +115,8 @@ public class ProductSyncService {
                     .imageUrl(item.getImage())
                     .isActive(1)
                     .naverProductId(item.getProductId())
+                    .brand(item.getBrand())
+                    .category2(item.getCategory2())
                     .build();
 
             productRepository.save(product);

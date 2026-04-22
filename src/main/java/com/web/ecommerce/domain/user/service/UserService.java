@@ -7,7 +7,7 @@ import com.web.ecommerce.domain.user.dto.response.AuthResult;
 import com.web.ecommerce.domain.user.dto.response.UserAdminResponse;
 import com.web.ecommerce.domain.user.dto.response.UserProfileResponse;
 import com.web.ecommerce.domain.user.entity.Role;
-import org.springframework.data.domain.Page;
+import com.web.ecommerce.global.page.response.PageResponse;
 import org.springframework.data.domain.Pageable;
 
 public interface UserService {
@@ -60,7 +60,7 @@ public interface UserService {
      * @param pageable 페이징 정보
      * @return 회원 목록 (페이징)
      */
-    Page<UserAdminResponse> getUserList(Pageable pageable);
+    PageResponse<UserAdminResponse> getUserList(Pageable pageable);
 
     /**
      * 특정 회원 상세 조회 (관리자 전용)

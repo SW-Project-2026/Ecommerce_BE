@@ -11,6 +11,8 @@ import com.web.ecommerce.domain.product.entity.Product;
 import com.web.ecommerce.domain.product.exception.ProductErrorCode;
 import com.web.ecommerce.domain.product.repository.ProductRepository;
 import com.web.ecommerce.global.exception.CustomException;
+import com.web.ecommerce.global.page.mapper.PageMapper;
+import com.web.ecommerce.global.page.response.PageResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -29,6 +31,7 @@ public class ProductService {
 
     private final RestClient naverRestClient;
     private final ProductRepository productRepository;
+    private final PageMapper pageMapper;
 
     public ProductSearchResult searchProducts(ProductSearchRequest request) {
         NaverSearchResponse response;
@@ -65,12 +68,12 @@ public class ProductService {
     }
 
     @Transactional(readOnly = true)
-    public Page<ProductDetailResponse> getProducts(String category, Pageable pageable) {
+    public PageResponse<ProductDetailResponse> getProducts(String category, Pageable pageable) {
         Page<Product> products = (category != null && !category.isBlank())
                 ? productRepository.findByIsActiveAndSearchKeyword(1, category, pageable)
                 : productRepository.findByIsActive(1, pageable);
 
-        return products.map(ProductDetailResponse::from);
+        return pageMapper.toPageResponse(products.map(ProductDetailResponse::from));
     }
 
     @Transactional(readOnly = true)

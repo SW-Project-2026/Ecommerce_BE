@@ -48,6 +48,12 @@ public class ProductDetailResponse {
     @Schema(description = "이미지 URL")
     private String imageUrl;
 
+    @Schema(description = "브랜드")
+    private String brand;
+
+    @Schema(description = "세부 카테고리2", example = "베이커리")
+    private String category2;
+
     @Schema(description = "생성일시")
     private LocalDateTime createdAt;
 
@@ -68,6 +74,8 @@ public class ProductDetailResponse {
                 .subCategory(product.getSubCategory())
                 .searchKeyword(product.getSearchKeyword())
                 .imageUrl(product.getImageUrl())
+                .brand(product.getBrand())
+                .category2(product.getCategory2())
                 .createdAt(product.getCreatedAt())
                 .updatedAt(product.getUpdatedAt())
                 .build();
