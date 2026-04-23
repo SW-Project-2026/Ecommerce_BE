@@ -49,4 +49,7 @@ public class UserSignupRequest {
   @Schema(description ="관리자/회원 구분", example = "ADMIN/USER")
   private String role;
 
+  @Schema(description = "마케팅 동의 여부", example = "true")
+  private boolean marketingAgreed;
+
 }

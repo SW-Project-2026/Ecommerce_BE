@@ -42,17 +42,14 @@ public class ProductDetailResponse {
     @Schema(description = "세부 카테고리", example = "과자/베이커리")
     private String subCategory;
 
-    @Schema(description = "검색 키워드 (가전/디지털, 패션, 뷰티, 식품, 생활용품, 스포츠)")
-    private String searchKeyword;
-
     @Schema(description = "이미지 URL")
     private String imageUrl;
 
     @Schema(description = "브랜드")
     private String brand;
 
-    @Schema(description = "세부 카테고리2", example = "베이커리")
-    private String category2;
+    @Schema(description = "판매처")
+    private String mallName;
 
     @Schema(description = "생성일시")
     private LocalDateTime createdAt;
@@ -72,10 +69,9 @@ public class ProductDetailResponse {
                 .isActive(product.getIsActive())
                 .naverProductId(product.getNaverProductId())
                 .subCategory(product.getSubCategory())
-                .searchKeyword(product.getSearchKeyword())
                 .imageUrl(product.getImageUrl())
                 .brand(product.getBrand())
-                .category2(product.getCategory2())
+                .mallName(product.getMallName())
                 .createdAt(product.getCreatedAt())
                 .updatedAt(product.getUpdatedAt())
                 .build();

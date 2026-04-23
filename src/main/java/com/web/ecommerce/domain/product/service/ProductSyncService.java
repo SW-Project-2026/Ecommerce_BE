@@ -111,12 +111,11 @@ public class ProductSyncService {
                     .stockQuantity(100)
                     .productCategory(item.getCategory1())
                     .subCategory(item.getCategory2())
-                    .searchKeyword(keyword)
                     .imageUrl(item.getImage())
                     .isActive(1)
                     .naverProductId(item.getProductId())
                     .brand(item.getBrand())
-                    .category2(item.getCategory2())
+                    .mallName(item.getMallName())
                     .build();
 
             productRepository.save(product);

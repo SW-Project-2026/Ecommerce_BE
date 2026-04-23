@@ -20,6 +20,7 @@ public class UserMapper {
                 .phone(request.getPhone())
                 .role(role)
                 .isActive(1)
+                .marketingAgreed(request.isMarketingAgreed())
                 .build();
     }
 
@@ -31,7 +32,7 @@ public class UserMapper {
     }
 
     public UserProfileResponse toProfileResponse(User user) {
-        return new UserProfileResponse(user.getId(), user.getName(), user.getLoginId(), user.getEmail(), user.getPhone());
+        return new UserProfileResponse(user.getId(), user.getName(), user.getLoginId(), user.getEmail(), user.getPhone(), user.isMarketingAgreed());
     }
 
     public UserAdminResponse toAdminResponse(User user) {
