@@ -49,6 +49,9 @@ public class User  extends BaseTimeEntity {
   @Column(name = "is_active")
   private Integer isActive;
 
+  @Column(name = "marketing_agreed", nullable = false)
+  private boolean marketingAgreed;
+
   public void updateProfile(String name, String phone) {
     this.name = name;
     this.phone = phone;

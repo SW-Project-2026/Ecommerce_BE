@@ -11,5 +11,5 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
     Page<Product> findByIsActive(int isActive, Pageable pageable);
 
-    Page<Product> findByIsActiveAndSearchKeyword(int isActive, String searchKeyword, Pageable pageable);
+    Page<Product> findByIsActiveAndProductCategory(int isActive, String productCategory, Pageable pageable);
 }

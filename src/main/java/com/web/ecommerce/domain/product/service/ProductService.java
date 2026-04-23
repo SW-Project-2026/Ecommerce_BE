@@ -70,7 +70,7 @@ public class ProductService {
     @Transactional(readOnly = true)
     public PageResponse<ProductDetailResponse> getProducts(String category, Pageable pageable) {
         Page<Product> products = (category != null && !category.isBlank())
-                ? productRepository.findByIsActiveAndSearchKeyword(1, category, pageable)
+                ? productRepository.findByIsActiveAndProductCategory(1, category, pageable)
                 : productRepository.findByIsActive(1, pageable);
 
         return pageMapper.toPageResponse(products.map(ProductDetailResponse::from));

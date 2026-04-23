@@ -39,9 +39,9 @@ public class ProductController {
     @Operation(summary = "상품 목록 조회", description = "DB에 저장된 상품 목록을 페이징 조회하는 API. category 파라미터로 세부 카테고리 필터링 가능 (예: 과자/베이커리)")
     @GetMapping
     public ResponseEntity<BaseResponse<PageResponse<ProductDetailResponse>>> getProducts(
-            @RequestParam(required = false) String category,
+            @RequestParam(required = false) String productCategory,
             @ParameterObject @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
-        PageResponse<ProductDetailResponse> result = productService.getProducts(category, pageable);
+        PageResponse<ProductDetailResponse> result = productService.getProducts(productCategory, pageable);
         return ResponseEntity.ok(BaseResponse.success(result));
     }
 
