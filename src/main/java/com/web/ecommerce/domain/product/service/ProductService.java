@@ -16,7 +16,9 @@ import com.web.ecommerce.global.page.response.PageResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestClient;
@@ -68,10 +70,11 @@ public class ProductService {
     }
 
     @Transactional(readOnly = true)
-    public PageResponse<ProductDetailResponse> getProducts(String category, Pageable pageable) {
-        Page<Product> products = (category != null && !category.isBlank())
-                ? productRepository.findByIsActiveAndProductCategory(1, category, pageable)
-                : productRepository.findByIsActive(1, pageable);
+    public PageResponse<ProductDetailResponse> getProducts(String productCategory, Pageable pageable) {
+        Pageable resolved = resolveSort(pageable);
+        Page<Product> products = (productCategory != null && !productCategory.isBlank())
+                ? productRepository.findByIsActiveAndProductCategory(1, productCategory, resolved)
+                : productRepository.findByIsActive(1, resolved);
 
         return pageMapper.toPageResponse(products.map(ProductDetailResponse::from));
     }
@@ -129,4 +132,18 @@ public class ProductService {
                 .orElseThrow(() -> new CustomException(ProductErrorCode.PRODUCT_NOT_FOUND));
         product.deactivate();
     }
+
+    // 프론트에서 "price" 정렬 요청 시 엔티티 필드명 "minPrice"로 변환
+    private Pageable resolveSort(Pageable pageable) {
+        Sort mapped = Sort.by(
+        pageable.getSort().stream()
+        .map(order -> {
+        String prop = order.getProperty().equals("price") ? "minPrice" : order.getProperty();
+            return order.isAscending() ? Sort.Order.asc(prop) : Sort.Order.desc(prop);
+        })
+        .toList()
+        );
+        return PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), mapped);
+    }
+
 }
