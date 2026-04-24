@@ -13,7 +13,24 @@ spring:
         dialect: org.hibernate.dialect.PostgreSQLDialect
     show-sql: true
 
+jwt:
+  secret: test-secret-key-for-ci-must-be-32-characters-long
+  access-token-expiry: 1800000
+  refresh-token-expiry: 604800000
+
+naver:
+  api:
+    client-id: test-client-id
+    client-secret: test-client-secret
+    shopping-url: https://openapi.naver.com/v1/search/shop.json
+
+kafka:
+  bootstrap-servers: localhost:9092
+
 swagger:
   server:
     profile: http://localhost:8080
     name: Test
+
+admin:
+  secret-key: test-admin-secret
