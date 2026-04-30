@@ -1,4 +1,4 @@
-package com.web.ecommerce.domain.campaign.entity;
+package com.web.ecommerce.domain.campaign.enums;
 
 public enum CustomerSegment {
   VIP,
