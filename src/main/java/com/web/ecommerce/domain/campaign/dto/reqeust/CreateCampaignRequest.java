@@ -54,8 +54,8 @@ public class CreateCampaignRequest {
   @NoArgsConstructor
   public static class CreateCampaignFilter {
 
-    @Schema(description = "이벤트 이름")
-    private String eventName;
+    @Schema(description = "이벤트 키")
+    private String eventKey;
 
     @Schema(description = "이벤트 필드 이름")
     private String eventFieldName;

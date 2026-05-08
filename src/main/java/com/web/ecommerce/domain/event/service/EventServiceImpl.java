@@ -1,7 +1,7 @@
 package com.web.ecommerce.domain.event.service;
 
+import com.web.ecommerce.domain.event.dto.request.CreateEventFieldRequest;
 import com.web.ecommerce.domain.event.dto.request.CreateEventRequest;
-import com.web.ecommerce.domain.event.dto.request.CreateEventRequest.CreateEventFieldRequest;
 import com.web.ecommerce.domain.event.dto.request.UpdateEventRequest;
 import com.web.ecommerce.domain.event.dto.request.UpdateEventRequest.UpdateEventFieldRequest;
 import com.web.ecommerce.domain.event.dto.response.EventResponse;
@@ -29,11 +29,12 @@ public class EventServiceImpl implements EventService {
   @Override
   @Transactional
   public EventResponse createEvent(CreateEventRequest request) {
-    if (eventRepository.existsByEventName(request.getEventName())) {
+    if (eventRepository.existsByEventKey(request.getEventKey())) {
       throw new CustomException(EventErrorCode.DUPLICATE_EVENT_NAME);
     }
 
     Event event = Event.builder()
+        .eventKey(request.getEventKey())
         .eventName(request.getEventName())
         .description(request.getDescription())
         .isActive(request.getIsActive())
@@ -41,21 +42,7 @@ public class EventServiceImpl implements EventService {
 
     eventRepository.save(event);
 
-    List<EventField> fields = List.of();
-    if (request.getFields() != null && !request.getFields().isEmpty()) {
-      fields = request.getFields().stream()
-          .map(f -> EventField.builder()
-              .event(event)
-              .fieldName(f.getFieldName())
-              .fieldType(f.getFieldType())
-              .isRequired(f.getIsRequired())
-              .description(f.getDescription())
-              .build())
-          .toList();
-      eventFieldRepository.saveAll(fields);
-    }
-
-    return eventMapper.toEventResponse(event, fields);
+    return eventMapper.toEventResponse(event, List.of());
   }
 
   @Override
@@ -73,7 +60,7 @@ public class EventServiceImpl implements EventService {
     Event event = eventRepository.findById(eventId)
         .orElseThrow(() -> new CustomException(EventErrorCode.EVENT_NOT_FOUND));
 
-    event.update(request.getEventName(), request.getDescription(), request.getIsActive());
+    event.update(request.getEventKey(), request.getEventName(), request.getDescription(), request.getIsActive());
 
     if (request.getFields() != null) {
       List<EventField> updatedFields = request.getFields().stream()

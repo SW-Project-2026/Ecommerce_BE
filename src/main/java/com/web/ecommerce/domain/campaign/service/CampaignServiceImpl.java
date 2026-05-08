@@ -147,7 +147,7 @@ public class CampaignServiceImpl implements CampaignService {
     return filterRequests.stream()
         .map(f -> {
           EventField eventField = eventFieldRepository
-              .findByEventNameAndFieldName(f.getEventName(), f.getEventFieldName())
+              .findByEventKeyAndFieldName(f.getEventKey(), f.getEventFieldName())
               .orElseThrow(() -> new CustomException(GlobalErrorCode.RESOURCE_NOT_FOUND));
 
           if (!f.getOperator().supports(eventField.getFieldType())) {
@@ -173,7 +173,7 @@ public class CampaignServiceImpl implements CampaignService {
     return filterRequests.stream()
         .map(f -> {
           EventField eventField = eventFieldRepository
-              .findByEventNameAndFieldName(f.getEventName(), f.getEventFieldName())
+              .findByEventKeyAndFieldName(f.getEventKey(), f.getEventFieldName())
               .orElseThrow(() -> new CustomException(GlobalErrorCode.RESOURCE_NOT_FOUND));
 
           if (!f.getOperator().supports(eventField.getFieldType())) {

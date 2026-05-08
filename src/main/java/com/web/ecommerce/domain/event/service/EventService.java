@@ -1,7 +1,7 @@
 package com.web.ecommerce.domain.event.service;
 
+import com.web.ecommerce.domain.event.dto.request.CreateEventFieldRequest;
 import com.web.ecommerce.domain.event.dto.request.CreateEventRequest;
-import com.web.ecommerce.domain.event.dto.request.CreateEventRequest.CreateEventFieldRequest;
 import com.web.ecommerce.domain.event.dto.request.UpdateEventRequest;
 import com.web.ecommerce.domain.event.dto.request.UpdateEventRequest.UpdateEventFieldRequest;
 import com.web.ecommerce.domain.event.dto.response.EventResponse;

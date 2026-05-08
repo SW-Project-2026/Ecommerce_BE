@@ -13,6 +13,9 @@ import lombok.NoArgsConstructor;
 @Schema(title = "Event 수정 요청 DTO")
 public class UpdateEventRequest {
 
+  @Schema(description = "이벤트 키 (영문, 고유값)")
+  private String eventKey;
+
   @Schema(description = "이벤트 이름")
   private String eventName;
 

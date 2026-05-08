@@ -24,6 +24,9 @@ public class Event extends BaseTimeEntity {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
+  @Column(name = "event_key", nullable = false, unique = true)
+  private String eventKey;
+
   @Column(name ="event_name", nullable = false)
   private String eventName;
 
@@ -33,7 +36,8 @@ public class Event extends BaseTimeEntity {
   @Column(name="is_active", nullable = false)
   private Boolean isActive;
 
-  public void update(String eventName, String description, Boolean isActive) {
+  public void update(String eventKey, String eventName, String description, Boolean isActive) {
+    this.eventKey = eventKey;
     this.eventName = eventName;
     this.description = description;
     this.isActive = isActive;

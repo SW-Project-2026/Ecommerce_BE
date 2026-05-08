@@ -9,8 +9,8 @@ import org.springframework.data.repository.query.Param;
 
 public interface EventFieldRepository extends JpaRepository<EventField, Long> {
 
-  @Query("SELECT ef FROM EventField ef JOIN ef.event e WHERE e.eventName = :eventName AND ef.fieldName = :fieldName")
-  Optional<EventField> findByEventNameAndFieldName(@Param("eventName") String eventName,
+  @Query("SELECT ef FROM EventField ef JOIN ef.event e WHERE e.eventKey = :eventKey AND ef.fieldName = :fieldName")
+  Optional<EventField> findByEventKeyAndFieldName(@Param("eventKey") String eventKey,
       @Param("fieldName") String fieldName);
 
   List<EventField> findByEventId(Long eventId);
