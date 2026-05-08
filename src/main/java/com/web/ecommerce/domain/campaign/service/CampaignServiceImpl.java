@@ -1,9 +1,11 @@
 package com.web.ecommerce.domain.campaign.service;
 
 import com.web.ecommerce.domain.campaign.dto.reqeust.CreateCampaignRequest;
+import com.web.ecommerce.domain.campaign.dto.reqeust.GetCampaignsRequest;
 import com.web.ecommerce.domain.campaign.dto.reqeust.UpdateCampaignRequest;
 import com.web.ecommerce.domain.campaign.dto.reqeust.UpdateCampaignStatusRequest;
 import com.web.ecommerce.domain.campaign.dto.response.CampaignResponse;
+import com.web.ecommerce.domain.campaign.dto.response.CampaignSummaryResponse;
 import com.web.ecommerce.domain.campaign.entity.Campaign;
 import com.web.ecommerce.domain.campaign.entity.CampaignFilter;
 import com.web.ecommerce.domain.campaign.enums.CampaignGoalType;
@@ -66,12 +68,14 @@ public class CampaignServiceImpl implements CampaignService {
 
   @Override
   @Transactional(readOnly = true)
-  public List<CampaignResponse> getCampaigns(Status status) {
-    List<Campaign> campaigns = status != null
-        ? campaignRepository.findByStatus(status)
-        : campaignRepository.findAll();
-    return campaigns.stream()
-        .map(campaignMapper::toCampaignResponse)
+  public List<CampaignSummaryResponse> getCampaigns(GetCampaignsRequest request) {
+    return campaignRepository.findByFilters(
+            request.getStatus(),
+            request.getCampaignGoalType(),
+            request.getCustomerSegment(),
+            request.getCollectionType())
+        .stream()
+        .map(campaignMapper::toCampaignSummaryResponse)
         .toList();
   }
 

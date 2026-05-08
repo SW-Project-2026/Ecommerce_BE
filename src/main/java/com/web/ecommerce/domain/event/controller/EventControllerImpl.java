@@ -2,6 +2,7 @@ package com.web.ecommerce.domain.event.controller;
 
 import com.web.ecommerce.domain.event.dto.request.CreateEventRequest;
 import com.web.ecommerce.domain.event.dto.request.CreateEventRequest.CreateEventFieldRequest;
+import com.web.ecommerce.domain.event.dto.request.GetEventsRequest;
 import com.web.ecommerce.domain.event.dto.request.UpdateEventFieldRequest;
 import com.web.ecommerce.domain.event.dto.request.UpdateEventRequest;
 import com.web.ecommerce.domain.event.dto.response.EventResponse;
@@ -14,6 +15,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -37,8 +39,8 @@ public class EventControllerImpl implements EventController {
 
   @Override
   @GetMapping
-  public ResponseEntity<BaseResponse<List<EventResponse>>> getEvents() {
-    return ResponseEntity.ok(BaseResponse.success(eventService.getEvents()));
+  public ResponseEntity<BaseResponse<List<EventResponse>>> getEvents(@ModelAttribute GetEventsRequest request) {
+    return ResponseEntity.ok(BaseResponse.success(eventService.getEvents(request)));
   }
 
   @Override

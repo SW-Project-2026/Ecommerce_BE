@@ -1,18 +1,19 @@
 package com.web.ecommerce.domain.campaign.controller;
 
 import com.web.ecommerce.domain.campaign.dto.reqeust.CreateCampaignRequest;
+import com.web.ecommerce.domain.campaign.dto.reqeust.GetCampaignsRequest;
 import com.web.ecommerce.domain.campaign.dto.reqeust.UpdateCampaignRequest;
 import com.web.ecommerce.domain.campaign.dto.reqeust.UpdateCampaignStatusRequest;
 import com.web.ecommerce.domain.campaign.dto.response.CampaignResponse;
-import com.web.ecommerce.domain.campaign.enums.Status;
+import com.web.ecommerce.domain.campaign.dto.response.CampaignSummaryResponse;
 import com.web.ecommerce.global.response.BaseResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
 
 @Tag(name = "Campaign", description = "캠페인 관리 API")
 public interface CampaignController {
@@ -21,7 +22,7 @@ public interface CampaignController {
   ResponseEntity<BaseResponse<CampaignResponse>> createCampaign(@RequestBody CreateCampaignRequest request);
 
   @Operation(summary = "캠페인 목록 조회")
-  ResponseEntity<BaseResponse<List<CampaignResponse>>> getCampaigns(@RequestParam(required = false) Status status);
+  ResponseEntity<BaseResponse<List<CampaignSummaryResponse>>> getCampaigns(@ModelAttribute GetCampaignsRequest request);
 
   @Operation(summary = "캠페인 단건 조회")
   ResponseEntity<BaseResponse<CampaignResponse>> getCampaign(@PathVariable Long campaignId);

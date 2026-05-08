@@ -2,6 +2,7 @@ package com.web.ecommerce.domain.event.service;
 
 import com.web.ecommerce.domain.event.dto.request.CreateEventRequest;
 import com.web.ecommerce.domain.event.dto.request.CreateEventRequest.CreateEventFieldRequest;
+import com.web.ecommerce.domain.event.dto.request.GetEventsRequest;
 import com.web.ecommerce.domain.event.dto.request.UpdateEventFieldRequest;
 import com.web.ecommerce.domain.event.dto.request.UpdateEventRequest;
 import com.web.ecommerce.domain.event.dto.response.EventResponse;
@@ -12,7 +13,7 @@ public interface EventService {
 
   EventResponse createEvent(CreateEventRequest request);
 
-  List<EventResponse> getEvents();
+  List<EventResponse> getEvents(GetEventsRequest request);
 
   EventResponse getEvent(Long eventId);
 

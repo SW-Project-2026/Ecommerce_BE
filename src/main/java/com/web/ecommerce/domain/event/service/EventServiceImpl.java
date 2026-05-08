@@ -2,6 +2,7 @@ package com.web.ecommerce.domain.event.service;
 
 import com.web.ecommerce.domain.event.dto.request.CreateEventRequest;
 import com.web.ecommerce.domain.event.dto.request.CreateEventRequest.CreateEventFieldRequest;
+import com.web.ecommerce.domain.event.dto.request.GetEventsRequest;
 import com.web.ecommerce.domain.event.dto.request.UpdateEventFieldRequest;
 import com.web.ecommerce.domain.event.dto.request.UpdateEventRequest;
 import com.web.ecommerce.domain.event.dto.response.EventResponse;
@@ -60,8 +61,11 @@ public class EventServiceImpl implements EventService {
 
   @Override
   @Transactional(readOnly = true)
-  public List<EventResponse> getEvents() {
-    return eventRepository.findAll().stream()
+  public List<EventResponse> getEvents(GetEventsRequest request) {
+    List<Event> events = request.getIsActive() != null
+        ? eventRepository.findByIsActive(request.getIsActive())
+        : eventRepository.findAll();
+    return events.stream()
         .map(e -> eventMapper.toEventResponse(e, eventFieldRepository.findByEventId(e.getId())))
         .toList();
   }
