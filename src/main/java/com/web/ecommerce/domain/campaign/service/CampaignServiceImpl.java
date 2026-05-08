@@ -21,6 +21,7 @@ import com.web.ecommerce.domain.user.exception.UserErrorCode;
 import com.web.ecommerce.domain.user.repository.UserRepository;
 import com.web.ecommerce.global.exception.CustomException;
 import com.web.ecommerce.global.exception.GlobalErrorCode;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -50,8 +51,8 @@ public class CampaignServiceImpl implements CampaignService {
         .customerSegment(CustomerSegment.valueOf(request.getCustomerSegment()))
         .collectionType(CollectionType.valueOf(request.getCollectionType()))
         .status(Status.PENDING)
-        .startedAt(LocalDateTime.parse(request.getStartedAt()))
-        .endedAt(LocalDateTime.parse(request.getEndedAt()))
+        .startedAt(LocalDate.parse(request.getStartedAt()).atStartOfDay())
+        .endedAt(LocalDate.parse(request.getEndedAt()).atTime(23, 59, 59))
         .batchCycle(request.getBatchCycle())
         .isDuplicate(request.getIsDuplicate())
         .filterLogicalOperator(request.getFilterLogicalOperator())
@@ -103,8 +104,8 @@ public class CampaignServiceImpl implements CampaignService {
         CampaignGoalType.valueOf(request.getCampaignGoalType()),
         CustomerSegment.valueOf(request.getCustomerSegment()),
         CollectionType.valueOf(request.getCollectionType()),
-        LocalDateTime.parse(request.getStartedAt()),
-        LocalDateTime.parse(request.getEndedAt()),
+        LocalDate.parse(request.getStartedAt()).atStartOfDay(),
+        LocalDate.parse(request.getEndedAt()).atTime(23, 59, 59),
         request.getBatchCycle(),
         request.getIsDuplicate(),
         request.getFilterLogicalOperator()
