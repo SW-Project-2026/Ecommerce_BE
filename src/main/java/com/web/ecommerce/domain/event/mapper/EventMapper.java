@@ -25,7 +25,7 @@ public class EventMapper {
     return EventFieldResponse.builder()
         .fieldId(field.getId())
         .fieldName(field.getFieldName())
-        .fieldType(field.getFieldType())
+        .fieldType(field.getFieldType().name())
         .isRequired(field.getIsRequired())
         .description(field.getDescription())
         .build();

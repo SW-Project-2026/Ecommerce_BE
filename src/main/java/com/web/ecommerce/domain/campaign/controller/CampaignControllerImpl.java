@@ -3,9 +3,9 @@ package com.web.ecommerce.domain.campaign.controller;
 import com.web.ecommerce.domain.campaign.dto.reqeust.CreateCampaignRequest;
 import com.web.ecommerce.domain.campaign.dto.reqeust.GetCampaignsRequest;
 import com.web.ecommerce.domain.campaign.dto.reqeust.UpdateCampaignRequest;
-import com.web.ecommerce.domain.campaign.dto.reqeust.UpdateCampaignStatusRequest;
 import com.web.ecommerce.domain.campaign.dto.response.CampaignResponse;
 import com.web.ecommerce.domain.campaign.dto.response.CampaignSummaryResponse;
+import com.web.ecommerce.domain.campaign.enums.Status;
 import com.web.ecommerce.domain.campaign.service.CampaignService;
 import com.web.ecommerce.global.response.BaseResponse;
 import java.util.List;
@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -62,8 +63,8 @@ public class CampaignControllerImpl implements CampaignController {
   @Override
   @PatchMapping("/{campaignId}/status")
   public ResponseEntity<BaseResponse<CampaignResponse>> updateCampaignStatus(@PathVariable Long campaignId,
-      @RequestBody UpdateCampaignStatusRequest request) {
-    return ResponseEntity.ok(BaseResponse.success(campaignService.updateCampaignStatus(campaignId, request)));
+      @RequestParam Status status) {
+    return ResponseEntity.ok(BaseResponse.success(campaignService.updateCampaignStatus(campaignId, status)));
   }
 
   @Override

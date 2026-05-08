@@ -1,7 +1,10 @@
 package com.web.ecommerce.domain.event.entity;
 
+import com.web.ecommerce.domain.event.enums.FieldType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -27,22 +30,23 @@ public class EventField {
   private Long id;
 
   @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name="event_id", nullable=false)
+  @JoinColumn(name = "event_id", nullable = false)
   private Event event;
 
-  @Column(name="field_name", nullable=false)
+  @Column(name = "field_name", nullable = false)
   private String fieldName;
 
-  @Column(name="field_type", nullable=false)
-  private String fieldType;
+  @Column(name = "field_type", nullable = false)
+  @Enumerated(EnumType.STRING)
+  private FieldType fieldType;
 
-  @Column(name="is_required", nullable=false)
+  @Column(name = "is_required", nullable = false)
   private Boolean isRequired;
 
-  @Column(name="description")
+  @Column(name = "description")
   private String description;
 
-  public void update(String fieldName, String fieldType, Boolean isRequired, String description) {
+  public void update(String fieldName, FieldType fieldType, Boolean isRequired, String description) {
     this.fieldName = fieldName;
     this.fieldType = fieldType;
     this.isRequired = isRequired;

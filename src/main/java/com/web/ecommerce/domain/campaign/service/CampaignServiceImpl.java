@@ -3,7 +3,6 @@ package com.web.ecommerce.domain.campaign.service;
 import com.web.ecommerce.domain.campaign.dto.reqeust.CreateCampaignRequest;
 import com.web.ecommerce.domain.campaign.dto.reqeust.GetCampaignsRequest;
 import com.web.ecommerce.domain.campaign.dto.reqeust.UpdateCampaignRequest;
-import com.web.ecommerce.domain.campaign.dto.reqeust.UpdateCampaignStatusRequest;
 import com.web.ecommerce.domain.campaign.dto.response.CampaignResponse;
 import com.web.ecommerce.domain.campaign.dto.response.CampaignSummaryResponse;
 import com.web.ecommerce.domain.campaign.entity.Campaign;
@@ -119,12 +118,13 @@ public class CampaignServiceImpl implements CampaignService {
 
   @Override
   @Transactional
-  public CampaignResponse updateCampaignStatus(Long campaignId, UpdateCampaignStatusRequest request) {
+  public CampaignResponse updateCampaignStatus(Long campaignId, Status status) {
     Campaign campaign = campaignRepository.findById(campaignId)
         .orElseThrow(() -> new CustomException(CampaignErrorCode.CAMPAIGN_NOT_FOUND));
 
-    campaign.updateStatus(Status.valueOf(request.getStatus()));
-    return campaignMapper.toCampaignResponse(campaign);
+    campaign.updateStatus(status);
+    List<CampaignFilter> filters = campaignFilterRepository.findByCampaignId(campaignId);
+    return campaignMapper.toCampaignResponse(campaign, filters);
   }
 
   @Override
@@ -147,6 +147,11 @@ public class CampaignServiceImpl implements CampaignService {
           EventField eventField = eventFieldRepository
               .findByEventNameAndFieldName(f.getEventName(), f.getEventFieldName())
               .orElseThrow(() -> new CustomException(GlobalErrorCode.RESOURCE_NOT_FOUND));
+
+          if (!f.getOperator().supports(eventField.getFieldType())) {
+            throw new CustomException(CampaignErrorCode.INVALID_OPERATOR_FOR_FIELD_TYPE);
+          }
+
           return CampaignFilter.builder()
               .campaign(campaign)
               .eventField(eventField)

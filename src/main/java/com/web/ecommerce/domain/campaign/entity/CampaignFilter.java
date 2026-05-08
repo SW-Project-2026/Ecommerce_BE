@@ -1,6 +1,7 @@
 package com.web.ecommerce.domain.campaign.entity;
 
 import com.web.ecommerce.domain.campaign.enums.LogicalOperator;
+import com.web.ecommerce.domain.campaign.enums.Operator;
 import com.web.ecommerce.domain.event.entity.EventField;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -24,7 +25,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Getter
 @Builder
-public class CampaignFilter{
+public class CampaignFilter {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -34,17 +35,18 @@ public class CampaignFilter{
   @JoinColumn(name = "campaign_id", nullable = false)
   private Campaign campaign;
 
-  @Column(name="operator", nullable = false)
-  private String operator;
+  @Column(name = "operator", nullable = false)
+  @Enumerated(EnumType.STRING)
+  private Operator operator;
 
-  @Column(name="value", nullable = false)
+  @Column(name = "value", nullable = false)
   private String value;
 
-  @Column(name="period_days", nullable = false)
+  @Column(name = "period_days", nullable = false)
   private Integer periodDays;
 
   @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name="event_field_id", nullable = false)
+  @JoinColumn(name = "event_field_id", nullable = false)
   private EventField eventField;
 
   @Column(name = "logical_operator", nullable = false)
