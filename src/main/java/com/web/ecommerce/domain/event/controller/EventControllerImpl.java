@@ -43,13 +43,7 @@ public class EventControllerImpl implements EventController {
     return ResponseEntity.ok(BaseResponse.success(eventService.getEvents(isActive)));
   }
 
-  @Override
-  @GetMapping("/{eventId}")
-  public ResponseEntity<BaseResponse<EventResponse>> getEvent(@PathVariable Long eventId) {
-    return ResponseEntity.ok(BaseResponse.success(eventService.getEvent(eventId)));
-  }
-
-  @Override
+@Override
   @PutMapping("/{eventId}")
   public ResponseEntity<BaseResponse<EventResponse>> updateEvent(@PathVariable Long eventId,
       @RequestBody UpdateEventRequest request) {

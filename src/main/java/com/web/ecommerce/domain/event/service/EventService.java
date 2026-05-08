@@ -14,9 +14,7 @@ public interface EventService {
 
   List<EventResponse> getEvents(Boolean isActive);
 
-  EventResponse getEvent(Long eventId);
-
-  EventResponse updateEvent(Long eventId, UpdateEventRequest request);
+EventResponse updateEvent(Long eventId, UpdateEventRequest request);
 
   void deleteEvent(Long eventId);
 

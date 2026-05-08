@@ -67,16 +67,7 @@ public class EventServiceImpl implements EventService {
         .toList();
   }
 
-  @Override
-  @Transactional(readOnly = true)
-  public EventResponse getEvent(Long eventId) {
-    Event event = eventRepository.findById(eventId)
-        .orElseThrow(() -> new CustomException(EventErrorCode.EVENT_NOT_FOUND));
-    List<EventField> fields = eventFieldRepository.findByEventId(eventId);
-    return eventMapper.toEventResponse(event, fields);
-  }
-
-  @Override
+@Override
   @Transactional
   public EventResponse updateEvent(Long eventId, UpdateEventRequest request) {
     Event event = eventRepository.findById(eventId)

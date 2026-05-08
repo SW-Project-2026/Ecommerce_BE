@@ -24,10 +24,7 @@ public interface EventController {
   @Operation(summary = "이벤트 목록 조회")
   ResponseEntity<BaseResponse<List<EventResponse>>> getEvents(@RequestParam(required = false) Boolean isActive);
 
-  @Operation(summary = "이벤트 단건 조회")
-  ResponseEntity<BaseResponse<EventResponse>> getEvent(@PathVariable Long eventId);
-
-  @Operation(summary = "이벤트 수정")
+@Operation(summary = "이벤트 수정")
   ResponseEntity<BaseResponse<EventResponse>> updateEvent(@PathVariable Long eventId,
       @RequestBody UpdateEventRequest request);
 

@@ -1,5 +1,5 @@
 package com.web.ecommerce.domain.event.enums;
 
 public enum FieldType {
-  STRING, NUMBER, DATETIME
+  STRING, NUMBER, DATETIME, DATE, TIME
 }
