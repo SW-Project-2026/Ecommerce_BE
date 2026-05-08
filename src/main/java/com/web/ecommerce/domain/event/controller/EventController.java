@@ -10,6 +10,7 @@ import com.web.ecommerce.global.response.BaseResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 
@@ -17,29 +18,29 @@ import org.springframework.web.bind.annotation.RequestBody;
 public interface EventController {
 
   @Operation(summary = "이벤트 생성")
-  BaseResponse<EventResponse> createEvent(@RequestBody CreateEventRequest request);
+  ResponseEntity<BaseResponse<EventResponse>> createEvent(@RequestBody CreateEventRequest request);
 
   @Operation(summary = "이벤트 목록 조회")
-  BaseResponse<List<EventResponse>> getEvents();
+  ResponseEntity<BaseResponse<List<EventResponse>>> getEvents();
 
   @Operation(summary = "이벤트 단건 조회")
-  BaseResponse<EventResponse> getEvent(@PathVariable Long eventId);
+  ResponseEntity<BaseResponse<EventResponse>> getEvent(@PathVariable Long eventId);
 
   @Operation(summary = "이벤트 수정")
-  BaseResponse<EventResponse> updateEvent(@PathVariable Long eventId,
+  ResponseEntity<BaseResponse<EventResponse>> updateEvent(@PathVariable Long eventId,
       @RequestBody UpdateEventRequest request);
 
   @Operation(summary = "이벤트 삭제")
-  void deleteEvent(@PathVariable Long eventId);
+  ResponseEntity<Void> deleteEvent(@PathVariable Long eventId);
 
   @Operation(summary = "이벤트 필드 추가")
-  BaseResponse<EventFieldResponse> addEventField(@PathVariable Long eventId,
+  ResponseEntity<BaseResponse<EventFieldResponse>> addEventField(@PathVariable Long eventId,
       @RequestBody CreateEventFieldRequest request);
 
   @Operation(summary = "이벤트 필드 수정")
-  BaseResponse<EventFieldResponse> updateEventField(@PathVariable Long eventId,
+  ResponseEntity<BaseResponse<EventFieldResponse>> updateEventField(@PathVariable Long eventId,
       @PathVariable Long fieldId, @RequestBody UpdateEventFieldRequest request);
 
   @Operation(summary = "이벤트 필드 삭제")
-  void deleteEventField(@PathVariable Long eventId, @PathVariable Long fieldId);
+  ResponseEntity<Void> deleteEventField(@PathVariable Long eventId, @PathVariable Long fieldId);
 }
