@@ -1,6 +1,5 @@
 package com.web.ecommerce.domain.campaign.entity;
 
-import com.web.ecommerce.domain.campaign.enums.LogicalOperator;
 import com.web.ecommerce.domain.campaign.enums.Operator;
 import com.web.ecommerce.domain.event.entity.EventField;
 import jakarta.persistence.Column;
@@ -48,8 +47,4 @@ public class CampaignFilter {
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "event_field_id", nullable = false)
   private EventField eventField;
-
-  @Column(name = "logical_operator", nullable = false)
-  @Enumerated(EnumType.STRING)
-  private LogicalOperator logicalOperator;
 }

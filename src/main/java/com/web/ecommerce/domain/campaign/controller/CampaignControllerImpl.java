@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -53,7 +54,7 @@ public class CampaignControllerImpl implements CampaignController {
   }
 
   @Override
-  @PatchMapping("/{campaignId}")
+  @PutMapping("/{campaignId}")
   public ResponseEntity<BaseResponse<CampaignResponse>> updateCampaign(@PathVariable Long campaignId,
       @RequestBody UpdateCampaignRequest request) {
     Long adminId = (Long) SecurityContextHolder.getContext().getAuthentication().getPrincipal();

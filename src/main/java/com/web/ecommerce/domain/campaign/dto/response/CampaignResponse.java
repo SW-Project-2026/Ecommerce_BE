@@ -27,5 +27,6 @@ public class CampaignResponse {
   private String endedAt;
   private String createdBy;
   private String createdAt;
+  private String filterLogicalOperator;
   private List<CampaignFilterResponse> filters;
 }

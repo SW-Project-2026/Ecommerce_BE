@@ -10,7 +10,6 @@ import com.web.ecommerce.domain.campaign.entity.CampaignFilter;
 import com.web.ecommerce.domain.campaign.enums.CampaignGoalType;
 import com.web.ecommerce.domain.campaign.enums.CollectionType;
 import com.web.ecommerce.domain.campaign.enums.CustomerSegment;
-import com.web.ecommerce.domain.campaign.enums.LogicalOperator;
 import com.web.ecommerce.domain.campaign.enums.Status;
 import com.web.ecommerce.domain.campaign.exception.CampaignErrorCode;
 import com.web.ecommerce.domain.campaign.mapper.CampaignMapper;
@@ -55,6 +54,7 @@ public class CampaignServiceImpl implements CampaignService {
         .endedAt(LocalDateTime.parse(request.getEndedAt()))
         .batchCycle(request.getBatchCycle())
         .isDuplicate(request.getIsDuplicate())
+        .filterLogicalOperator(request.getFilterLogicalOperator())
         .build();
 
     campaignRepository.save(campaign);
@@ -106,11 +106,12 @@ public class CampaignServiceImpl implements CampaignService {
         LocalDateTime.parse(request.getStartedAt()),
         LocalDateTime.parse(request.getEndedAt()),
         request.getBatchCycle(),
-        request.getIsDuplicate()
+        request.getIsDuplicate(),
+        request.getFilterLogicalOperator()
     );
 
     campaignFilterRepository.deleteByCampaignId(campaignId);
-    List<CampaignFilter> filters = buildFilters(campaign, request.getFilters());
+    List<CampaignFilter> filters = buildUpdateFilters(campaign, request.getFilters());
     campaignFilterRepository.saveAll(filters);
 
     return campaignMapper.toCampaignResponse(campaign, filters);
@@ -158,7 +159,32 @@ public class CampaignServiceImpl implements CampaignService {
               .operator(f.getOperator())
               .value(f.getValue())
               .periodDays(f.getPeriodDays())
-              .logicalOperator(LogicalOperator.valueOf(f.getLogicalOperator()))
+              .build();
+        })
+        .toList();
+  }
+
+  private List<CampaignFilter> buildUpdateFilters(Campaign campaign,
+      List<UpdateCampaignRequest.UpdateCampaignFilter> filterRequests) {
+    if (filterRequests == null || filterRequests.isEmpty()) {
+      return List.of();
+    }
+    return filterRequests.stream()
+        .map(f -> {
+          EventField eventField = eventFieldRepository
+              .findByEventNameAndFieldName(f.getEventName(), f.getEventFieldName())
+              .orElseThrow(() -> new CustomException(GlobalErrorCode.RESOURCE_NOT_FOUND));
+
+          if (!f.getOperator().supports(eventField.getFieldType())) {
+            throw new CustomException(CampaignErrorCode.INVALID_OPERATOR_FOR_FIELD_TYPE);
+          }
+
+          return CampaignFilter.builder()
+              .campaign(campaign)
+              .eventField(eventField)
+              .operator(f.getOperator())
+              .value(f.getValue())
+              .periodDays(f.getPeriodDays())
               .build();
         })
         .toList();

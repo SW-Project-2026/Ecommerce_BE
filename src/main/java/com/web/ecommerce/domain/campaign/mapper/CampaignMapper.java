@@ -40,6 +40,8 @@ public class CampaignMapper {
         .endedAt(campaign.getEndedAt().toString())
         .createdBy(campaign.getCreatedBy())
         .createdAt(campaign.getCreatedAt().toString())
+        .filterLogicalOperator(campaign.getFilterLogicalOperator() != null
+            ? campaign.getFilterLogicalOperator().name() : null)
         .filters(filters.stream().map(this::toCampaignFilterResponse).toList())
         .build();
   }
@@ -53,7 +55,6 @@ public class CampaignMapper {
         .operator(filter.getOperator().name())
         .value(filter.getValue())
         .periodDays(filter.getPeriodDays())
-        .logicalOperator(filter.getLogicalOperator().name())
         .build();
   }
 }

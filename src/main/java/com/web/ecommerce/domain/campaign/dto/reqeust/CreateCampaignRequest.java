@@ -1,5 +1,6 @@
 package com.web.ecommerce.domain.campaign.dto.reqeust;
 
+import com.web.ecommerce.domain.campaign.enums.LogicalOperator;
 import com.web.ecommerce.domain.campaign.enums.Operator;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.List;
@@ -42,6 +43,9 @@ public class CreateCampaignRequest {
   @Schema(description = "보상 중복 수령 여부")
   private Boolean isDuplicate;
 
+  @Schema(description = "필터 간 논리 연산자(AND/OR)", example = "AND")
+  private LogicalOperator filterLogicalOperator;
+
   @Schema(description = "캠페인 필터 목록")
   private List<CreateCampaignFilter> filters;
 
@@ -61,9 +65,6 @@ public class CreateCampaignRequest {
 
     @Schema(description = "필드 값")
     private String value;
-
-    @Schema(description = "이벤트 사이 연산자(AND/OR)", example = "AND")
-    private String logicalOperator;
 
     @Schema(description = "기간")
     private Integer periodDays;

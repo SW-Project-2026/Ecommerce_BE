@@ -20,5 +20,4 @@ public class CampaignFilterResponse {
   private String operator;
   private String value;
   private Integer periodDays;
-  private String logicalOperator;
 }

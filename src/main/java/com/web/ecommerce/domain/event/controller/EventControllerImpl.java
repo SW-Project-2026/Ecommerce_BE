@@ -2,9 +2,8 @@ package com.web.ecommerce.domain.event.controller;
 
 import com.web.ecommerce.domain.event.dto.request.CreateEventRequest;
 import com.web.ecommerce.domain.event.dto.request.CreateEventRequest.CreateEventFieldRequest;
-import com.web.ecommerce.domain.event.dto.request.GetEventsRequest;
-import com.web.ecommerce.domain.event.dto.request.UpdateEventFieldRequest;
 import com.web.ecommerce.domain.event.dto.request.UpdateEventRequest;
+import com.web.ecommerce.domain.event.dto.request.UpdateEventRequest.UpdateEventFieldRequest;
 import com.web.ecommerce.domain.event.dto.response.EventResponse;
 import com.web.ecommerce.domain.event.dto.response.EventResponse.EventFieldResponse;
 import com.web.ecommerce.domain.event.service.EventService;
@@ -15,12 +14,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -39,8 +39,8 @@ public class EventControllerImpl implements EventController {
 
   @Override
   @GetMapping
-  public ResponseEntity<BaseResponse<List<EventResponse>>> getEvents(@ModelAttribute GetEventsRequest request) {
-    return ResponseEntity.ok(BaseResponse.success(eventService.getEvents(request)));
+  public ResponseEntity<BaseResponse<List<EventResponse>>> getEvents(@RequestParam(required = false) Boolean isActive) {
+    return ResponseEntity.ok(BaseResponse.success(eventService.getEvents(isActive)));
   }
 
   @Override
@@ -50,7 +50,7 @@ public class EventControllerImpl implements EventController {
   }
 
   @Override
-  @PatchMapping("/{eventId}")
+  @PutMapping("/{eventId}")
   public ResponseEntity<BaseResponse<EventResponse>> updateEvent(@PathVariable Long eventId,
       @RequestBody UpdateEventRequest request) {
     return ResponseEntity.ok(BaseResponse.success(eventService.updateEvent(eventId, request)));

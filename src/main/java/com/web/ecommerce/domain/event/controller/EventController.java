@@ -2,9 +2,8 @@ package com.web.ecommerce.domain.event.controller;
 
 import com.web.ecommerce.domain.event.dto.request.CreateEventRequest;
 import com.web.ecommerce.domain.event.dto.request.CreateEventRequest.CreateEventFieldRequest;
-import com.web.ecommerce.domain.event.dto.request.GetEventsRequest;
-import com.web.ecommerce.domain.event.dto.request.UpdateEventFieldRequest;
 import com.web.ecommerce.domain.event.dto.request.UpdateEventRequest;
+import com.web.ecommerce.domain.event.dto.request.UpdateEventRequest.UpdateEventFieldRequest;
 import com.web.ecommerce.domain.event.dto.response.EventResponse;
 import com.web.ecommerce.domain.event.dto.response.EventResponse.EventFieldResponse;
 import com.web.ecommerce.global.response.BaseResponse;
@@ -12,9 +11,9 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @Tag(name = "Event", description = "이벤트 관리 API")
 public interface EventController {
@@ -23,7 +22,7 @@ public interface EventController {
   ResponseEntity<BaseResponse<EventResponse>> createEvent(@RequestBody CreateEventRequest request);
 
   @Operation(summary = "이벤트 목록 조회")
-  ResponseEntity<BaseResponse<List<EventResponse>>> getEvents(@ModelAttribute GetEventsRequest request);
+  ResponseEntity<BaseResponse<List<EventResponse>>> getEvents(@RequestParam(required = false) Boolean isActive);
 
   @Operation(summary = "이벤트 단건 조회")
   ResponseEntity<BaseResponse<EventResponse>> getEvent(@PathVariable Long eventId);

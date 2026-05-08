@@ -13,12 +13,10 @@ import org.springframework.stereotype.Component;
 public class DataInitializer implements ApplicationRunner {
 
     private final ProductSyncService productSyncService;
-    private final EventDataInitializer eventDataInitializer;
 
     @Override
     public void run(ApplicationArguments args) {
         log.info("서버 시작 - 상품 데이터 초기화 확인");
         productSyncService.syncIfEmpty();
-        eventDataInitializer.syncIfEmpty();
     }
 }
