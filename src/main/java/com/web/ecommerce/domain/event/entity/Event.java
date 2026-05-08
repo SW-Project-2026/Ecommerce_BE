@@ -1,5 +1,6 @@
 package com.web.ecommerce.domain.event.entity;
 
+import com.web.ecommerce.global.common.BaseTimeEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -17,7 +18,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @Entity
 @Table(name = "event")
-public class Event {
+public class Event extends BaseTimeEntity {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -32,4 +33,9 @@ public class Event {
   @Column(name="is_active", nullable = false)
   private Boolean isActive;
 
+  public void update(String eventName, String description, Boolean isActive) {
+    this.eventName = eventName;
+    this.description = description;
+    this.isActive = isActive;
+  }
 }

@@ -2,7 +2,7 @@ package com.web.ecommerce.domain.campaign.entity;
 
 
 import com.web.ecommerce.domain.campaign.enums.CampaignGoalType;
-import com.web.ecommerce.domain.campaign.enums.CampaignType;
+import com.web.ecommerce.domain.campaign.enums.CollectionType;
 import com.web.ecommerce.domain.campaign.enums.Status;
 import com.web.ecommerce.domain.campaign.enums.CustomerSegment;
 import com.web.ecommerce.global.common.BaseTimeEntity;
@@ -26,7 +26,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Getter
 @Entity
-@Table(name = "campign")
+@Table(name = "campaign")
 public class Campaign extends BaseTimeEntity {
 
   @Id
@@ -59,11 +59,11 @@ public class Campaign extends BaseTimeEntity {
 
   @CreatedBy
   @Column(name="created_by",updatable = false)
-  private Long createdBy;
+  private String createdBy;
 
   @Column(name = "campaign_type", nullable = false)
   @Enumerated(EnumType.STRING)
-  private CampaignType campaignType;
+  private CollectionType collectionType;
 
   @Column(name="batch_cycle")
   private Integer batchCycle;
@@ -71,4 +71,21 @@ public class Campaign extends BaseTimeEntity {
   @Column(name="is_duplicate", nullable = false)
   private Boolean isDuplicate;
 
+  public void update(String campaignName, String description, CampaignGoalType campaignGoalType,
+      CustomerSegment customerSegment, CollectionType collectionType,
+      LocalDateTime startedAt, LocalDateTime endedAt, Integer batchCycle, Boolean isDuplicate) {
+    this.campaignName = campaignName;
+    this.description = description;
+    this.campaignGoalType = campaignGoalType;
+    this.customerSegment = customerSegment;
+    this.collectionType = collectionType;
+    this.startedAt = startedAt;
+    this.endedAt = endedAt;
+    this.batchCycle = batchCycle;
+    this.isDuplicate = isDuplicate;
+  }
+
+  public void updateStatus(Status status) {
+    this.status = status;
+  }
 }

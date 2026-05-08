@@ -41,4 +41,11 @@ public class EventField {
 
   @Column(name="description")
   private String description;
+
+  public void update(String fieldName, String fieldType, Boolean isRequired, String description) {
+    this.fieldName = fieldName;
+    this.fieldType = fieldType;
+    this.isRequired = isRequired;
+    this.description = description;
+  }
 }

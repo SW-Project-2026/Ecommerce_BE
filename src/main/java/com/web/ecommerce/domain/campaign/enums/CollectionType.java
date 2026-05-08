@@ -1,6 +1,6 @@
 package com.web.ecommerce.domain.campaign.enums;
 
-public enum CampaignType {
+public enum CollectionType {
   TRIGGERED,
   BATCH
 }

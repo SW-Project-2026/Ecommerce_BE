@@ -1,0 +1,74 @@
+package com.web.ecommerce.domain.campaign.controller;
+
+import com.web.ecommerce.domain.campaign.dto.reqeust.CreateCampaignRequest;
+import com.web.ecommerce.domain.campaign.dto.reqeust.UpdateCampaignRequest;
+import com.web.ecommerce.domain.campaign.dto.reqeust.UpdateCampaignStatusRequest;
+import com.web.ecommerce.domain.campaign.dto.response.CampaignResponse;
+import com.web.ecommerce.domain.campaign.enums.Status;
+import com.web.ecommerce.domain.campaign.service.CampaignService;
+import com.web.ecommerce.global.response.BaseResponse;
+import java.util.List;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+@RequestMapping("/api/campaigns")
+@RequiredArgsConstructor
+public class CampaignControllerImpl implements CampaignController {
+
+  private final CampaignService campaignService;
+
+  @Override
+  @PostMapping
+  @ResponseStatus(HttpStatus.CREATED)
+  public BaseResponse<CampaignResponse> createCampaign(@RequestBody CreateCampaignRequest request) {
+    Long adminId = (Long) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    return BaseResponse.success(201, "캠페인이 생성되었습니다.", campaignService.createCampaign(adminId, request));
+  }
+
+  @Override
+  @GetMapping
+  public BaseResponse<List<CampaignResponse>> getCampaigns(
+      @RequestParam(required = false) Status status) {
+    return BaseResponse.success(campaignService.getCampaigns(status));
+  }
+
+  @Override
+  @GetMapping("/{campaignId}")
+  public BaseResponse<CampaignResponse> getCampaign(@PathVariable Long campaignId) {
+    return BaseResponse.success(campaignService.getCampaign(campaignId));
+  }
+
+  @Override
+  @PatchMapping("/{campaignId}")
+  public BaseResponse<CampaignResponse> updateCampaign(@PathVariable Long campaignId,
+      @RequestBody UpdateCampaignRequest request) {
+    Long adminId = (Long) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    return BaseResponse.success(campaignService.updateCampaign(adminId, campaignId, request));
+  }
+
+  @Override
+  @PatchMapping("/{campaignId}/status")
+  public BaseResponse<CampaignResponse> updateCampaignStatus(@PathVariable Long campaignId,
+      @RequestBody UpdateCampaignStatusRequest request) {
+    return BaseResponse.success(campaignService.updateCampaignStatus(campaignId, request));
+  }
+
+  @Override
+  @DeleteMapping("/{campaignId}")
+  @ResponseStatus(HttpStatus.NO_CONTENT)
+  public void deleteCampaign(@PathVariable Long campaignId) {
+    campaignService.deleteCampaign(campaignId);
+  }
+}

@@ -1,6 +1,9 @@
 package com.web.ecommerce.global.config;
 
 
+import io.swagger.v3.oas.models.Components;
+import io.swagger.v3.oas.models.security.SecurityRequirement;
+import io.swagger.v3.oas.models.security.SecurityScheme;
 import org.springdoc.core.models.GroupedOpenApi;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -26,8 +29,15 @@ public class SwaggerConfig {
   public OpenAPI customOpenAPI() {
     Server server = new Server().url(profileUrl + contextPath).description(profileName + " Server");
 
+    SecurityScheme bearerScheme = new SecurityScheme()
+        .type(SecurityScheme.Type.HTTP)
+        .scheme("bearer")
+        .bearerFormat("JWT");
+
     return new OpenAPI()
         .addServersItem(server)
+        .components(new Components().addSecuritySchemes("BearerAuth", bearerScheme))
+        .addSecurityItem(new SecurityRequirement().addList("BearerAuth"))
         .info(
             new Info()
                 .title("E-commerce API 명세서")
