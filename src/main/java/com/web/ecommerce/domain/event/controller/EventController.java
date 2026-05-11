@@ -1,6 +1,7 @@
 package com.web.ecommerce.domain.event.controller;
 
 import com.web.ecommerce.domain.event.dto.request.CreateEventFieldRequest;
+import com.web.ecommerce.domain.event.dto.request.UpdateEventFieldRequest;
 import com.web.ecommerce.domain.event.dto.response.EventResponse;
 import com.web.ecommerce.domain.event.dto.response.EventResponse.EventFieldResponse;
 import com.web.ecommerce.global.response.BaseResponse;
@@ -20,7 +21,7 @@ public interface EventController {
   ResponseEntity<BaseResponse<List<EventResponse>>> getEvents(@RequestParam(required = false) Boolean isActive);
 
   @Operation(summary = "이벤트 필드 추가")
-  ResponseEntity<BaseResponse<EventFieldResponse>> addEventField(@PathVariable Long eventId,
+  ResponseEntity<BaseResponse<EventFieldResponse>> createEventField(@PathVariable Long eventId,
       @RequestBody CreateEventFieldRequest request);
 
   @Operation(summary = "이벤트 필드 수정")

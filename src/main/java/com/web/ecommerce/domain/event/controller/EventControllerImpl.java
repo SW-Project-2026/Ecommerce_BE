@@ -27,7 +27,6 @@ public class EventControllerImpl implements EventController {
 
   private final EventService eventService;
 
-
   @Override
   @GetMapping
   public ResponseEntity<BaseResponse<List<EventResponse>>> getEvents(@RequestParam(required = false) Boolean isActive) {
@@ -36,7 +35,7 @@ public class EventControllerImpl implements EventController {
 
   @Override
   @PostMapping("/{eventId}/fields")
-  public ResponseEntity<BaseResponse<EventFieldResponse>> addEventField(@PathVariable Long eventId,
+  public ResponseEntity<BaseResponse<EventFieldResponse>> createEventField(@PathVariable Long eventId,
       @RequestBody CreateEventFieldRequest request) {
     return ResponseEntity.status(HttpStatus.CREATED)
         .body(BaseResponse.success(201, "이벤트 필드가 추가되었습니다.", eventService.addEventField(eventId, request)));

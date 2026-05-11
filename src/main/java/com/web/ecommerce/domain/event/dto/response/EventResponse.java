@@ -15,7 +15,6 @@ import lombok.NoArgsConstructor;
 public class EventResponse {
 
   private Long eventId;
-  private String eventKey;
   private String eventName;
   private String description;
   private Boolean isActive;

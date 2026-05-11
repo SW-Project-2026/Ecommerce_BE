@@ -13,7 +13,6 @@ public class EventMapper {
   public EventResponse toEventResponse(Event event, List<EventField> fields) {
     return EventResponse.builder()
         .eventId(event.getId())
-        .eventKey(event.getEventKey())
         .eventName(event.getEventName())
         .description(event.getDescription())
         .isActive(event.getIsActive())
