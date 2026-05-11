@@ -51,6 +51,7 @@ public class SecurityConfig {
         .requestMatchers(HttpMethod.PUT, "/api/products/**").hasRole("ADMIN")
         .requestMatchers(HttpMethod.DELETE, "/api/products/**").hasRole("ADMIN")
         .requestMatchers(RegexRequestMatcher.regexMatcher(".*/admin/.*")).hasRole("ADMIN")
+        .requestMatchers("/api/campaigns", "/api/campaigns/**", "/api/events", "/api/events/**").hasRole("ADMIN")
         // 나머지는 로그인 필요
         .anyRequest().authenticated()
     );
