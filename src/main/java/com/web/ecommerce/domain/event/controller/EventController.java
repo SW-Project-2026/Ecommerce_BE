@@ -1,9 +1,6 @@
 package com.web.ecommerce.domain.event.controller;
 
 import com.web.ecommerce.domain.event.dto.request.CreateEventFieldRequest;
-import com.web.ecommerce.domain.event.dto.request.CreateEventRequest;
-import com.web.ecommerce.domain.event.dto.request.UpdateEventRequest;
-import com.web.ecommerce.domain.event.dto.request.UpdateEventRequest.UpdateEventFieldRequest;
 import com.web.ecommerce.domain.event.dto.response.EventResponse;
 import com.web.ecommerce.domain.event.dto.response.EventResponse.EventFieldResponse;
 import com.web.ecommerce.global.response.BaseResponse;
@@ -18,18 +15,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 @Tag(name = "Event", description = "이벤트 관리 API")
 public interface EventController {
 
-  @Operation(summary = "이벤트 생성")
-  ResponseEntity<BaseResponse<EventResponse>> createEvent(@RequestBody CreateEventRequest request);
 
   @Operation(summary = "이벤트 목록 조회")
   ResponseEntity<BaseResponse<List<EventResponse>>> getEvents(@RequestParam(required = false) Boolean isActive);
-
-@Operation(summary = "이벤트 수정")
-  ResponseEntity<BaseResponse<EventResponse>> updateEvent(@PathVariable Long eventId,
-      @RequestBody UpdateEventRequest request);
-
-  @Operation(summary = "이벤트 삭제")
-  ResponseEntity<Void> deleteEvent(@PathVariable Long eventId);
 
   @Operation(summary = "이벤트 필드 추가")
   ResponseEntity<BaseResponse<EventFieldResponse>> addEventField(@PathVariable Long eventId,
