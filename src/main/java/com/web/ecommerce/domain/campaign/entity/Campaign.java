@@ -1,18 +1,23 @@
 package com.web.ecommerce.domain.campaign.entity;
 
+import com.web.ecommerce.domain.ad.entity.AD;
 import com.web.ecommerce.domain.campaign.enums.CampaignGoalType;
 import com.web.ecommerce.domain.campaign.enums.CollectionType;
 import com.web.ecommerce.domain.campaign.enums.CustomerSegment;
 import com.web.ecommerce.domain.campaign.enums.LogicalOperator;
 import com.web.ecommerce.domain.campaign.enums.Status;
+import com.web.ecommerce.domain.coupon.entity.Coupon;
 import com.web.ecommerce.global.common.BaseTimeEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
@@ -68,12 +73,20 @@ public class Campaign extends BaseTimeEntity {
   @Column(name = "batch_cycle")
   private Integer batchCycle;
 
-  @Column(name = "is_duplicate", nullable = false)
-  private Boolean isDuplicate;
+  @Column(name ="batch_time")
+  private Integer batchTime;
 
   @Column(name = "filter_logical_operator")
   @Enumerated(EnumType.STRING)
   private LogicalOperator filterLogicalOperator;
+
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "coupon_id")
+  private Coupon coupon;
+
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "ad_id")
+  private AD ad;
 
   public void update(String campaignName, String description, CampaignGoalType campaignGoalType,
       CustomerSegment customerSegment, CollectionType collectionType,
@@ -87,7 +100,6 @@ public class Campaign extends BaseTimeEntity {
     this.startedAt = startedAt;
     this.endedAt = endedAt;
     this.batchCycle = batchCycle;
-    this.isDuplicate = isDuplicate;
     this.filterLogicalOperator = filterLogicalOperator;
   }
 

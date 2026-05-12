@@ -1,14 +1,19 @@
 package com.web.ecommerce.domain.user.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.web.ecommerce.domain.ad.entity.AdExposure;
+import com.web.ecommerce.domain.coupon.entity.UserCoupon;
 import com.web.ecommerce.global.common.BaseTimeEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -54,6 +59,14 @@ public class User  extends BaseTimeEntity {
 
   @Column(name = "marketing_agreed", nullable = false)
   private boolean marketingAgreed;
+
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "user_coupon_id")
+  private UserCoupon userCoupon;
+
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "ad_exposure_id")
+  private AdExposure adExposure;
 
   public void updateProfile(String name, String phone) {
     this.name = name;
