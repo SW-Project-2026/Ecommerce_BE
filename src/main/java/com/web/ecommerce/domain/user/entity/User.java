@@ -1,5 +1,6 @@
 package com.web.ecommerce.domain.user.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.web.ecommerce.global.common.BaseTimeEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -34,6 +35,7 @@ public class User  extends BaseTimeEntity {
   private String loginId;
 
   @Column(nullable = false)
+  @JsonIgnore
   private String password;
 
   @Column(nullable = false, unique = true, length = 100)
@@ -44,7 +46,8 @@ public class User  extends BaseTimeEntity {
 
   @Enumerated(EnumType.STRING)
   @Column(nullable = false, length = 10)
-  private Role role;
+  @Builder.Default
+  private Role role = Role.USER;
 
   @Column(name = "is_active")
   private Integer isActive;

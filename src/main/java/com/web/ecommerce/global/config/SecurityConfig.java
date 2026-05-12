@@ -43,9 +43,18 @@ public class SecurityConfig {
   private void configureAuthorization(HttpSecurity http) throws Exception {
     http.authorizeHttpRequests(auth -> auth
         // 누구나 접근 가능
-        .requestMatchers("/api/users/signup", "/api/users/login", "/api/users/admin/signup").permitAll()
-        .requestMatchers(HttpMethod.GET, "/api/products/**").permitAll()
-        .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
+        .requestMatchers("/api/users/signup", "/api/users/login", "/api/users/admin/signup")
+        .permitAll()
+
+        .requestMatchers(HttpMethod.GET, "/api/products/**")
+        .permitAll()
+
+        .requestMatchers("/error")
+        .permitAll()
+
+        .requestMatchers("/swagger-ui/**", "/v3/api-docs/**")
+        .permitAll()
+
         // 관리자만 가능
         .requestMatchers(HttpMethod.POST, "/api/products/**").hasRole("ADMIN")
         .requestMatchers(HttpMethod.PUT, "/api/products/**").hasRole("ADMIN")
