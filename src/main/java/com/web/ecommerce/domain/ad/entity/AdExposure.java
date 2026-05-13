@@ -47,4 +47,8 @@ public class AdExposure {
   @Column(name = "clicked_at")
   private LocalDateTime clickedAt;
 
+  public void click() {
+    this.clicked = true;
+    this.clickedAt = LocalDateTime.now();
+  }
 }

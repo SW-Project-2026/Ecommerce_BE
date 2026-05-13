@@ -1,5 +1,8 @@
 package com.web.ecommerce.domain.campaign.service;
 
+import com.web.ecommerce.domain.ad.entity.AD;
+import com.web.ecommerce.domain.ad.exception.AdErrorCode;
+import com.web.ecommerce.domain.ad.repository.AdRepository;
 import com.web.ecommerce.domain.campaign.dto.reqeust.CreateCampaignRequest;
 import com.web.ecommerce.domain.campaign.dto.reqeust.GetCampaignsRequest;
 import com.web.ecommerce.domain.campaign.dto.reqeust.UpdateCampaignRequest;
@@ -15,6 +18,9 @@ import com.web.ecommerce.domain.campaign.exception.CampaignErrorCode;
 import com.web.ecommerce.domain.campaign.mapper.CampaignMapper;
 import com.web.ecommerce.domain.campaign.repository.CampaignFilterRepository;
 import com.web.ecommerce.domain.campaign.repository.CampaignRepository;
+import com.web.ecommerce.domain.coupon.entity.Coupon;
+import com.web.ecommerce.domain.coupon.exception.CouponErrorCode;
+import com.web.ecommerce.domain.coupon.repository.CouponRepository;
 import com.web.ecommerce.domain.event.entity.EventField;
 import com.web.ecommerce.domain.event.repository.EventFieldRepository;
 import com.web.ecommerce.domain.user.exception.UserErrorCode;
@@ -38,6 +44,8 @@ public class CampaignServiceImpl implements CampaignService {
   private final CampaignFilterRepository campaignFilterRepository;
   private final EventFieldRepository eventFieldRepository;
   private final UserRepository userRepository;
+  private final CouponRepository couponRepository;
+  private final AdRepository adRepository;
   private final CampaignMapper campaignMapper;
 
   @Override
@@ -45,6 +53,20 @@ public class CampaignServiceImpl implements CampaignService {
   public CampaignResponse createCampaign(Long adminId, CreateCampaignRequest request) {
     userRepository.findById(adminId)
         .orElseThrow(() -> new CustomException(UserErrorCode.USER_NOT_FOUND));
+
+    if (request.getCouponId() != null && request.getAdId() != null) {
+      throw new CustomException(CampaignErrorCode.CANNOT_SET_BOTH_AD_AND_COUPON);
+    }
+
+    Coupon coupon = request.getCouponId() != null
+        ? couponRepository.findById(request.getCouponId())
+            .orElseThrow(() -> new CustomException(CouponErrorCode.COUPON_NOT_FOUND))
+        : null;
+
+    AD ad = request.getAdId() != null
+        ? adRepository.findById(request.getAdId())
+            .orElseThrow(() -> new CustomException(AdErrorCode.AD_NOT_FOUND))
+        : null;
 
     Campaign campaign = Campaign.builder()
         .campaignName(request.getCampaignName())
@@ -60,6 +82,8 @@ public class CampaignServiceImpl implements CampaignService {
         .batchDayOfWeek(request.getBatchDayOfWeek() != null ? DayOfWeek.valueOf(request.getBatchDayOfWeek()) : null)
         .batchDayOfMonth(request.getBatchDayOfMonth())
         .filterLogicalOperator(request.getFilterLogicalOperator())
+        .coupon(coupon)
+        .ad(ad)
         .build();
 
     campaignRepository.save(campaign);
@@ -102,6 +126,20 @@ public class CampaignServiceImpl implements CampaignService {
     Campaign campaign = campaignRepository.findById(campaignId)
         .orElseThrow(() -> new CustomException(CampaignErrorCode.CAMPAIGN_NOT_FOUND));
 
+    if (request.getCouponId() != null && request.getAdId() != null) {
+      throw new CustomException(CampaignErrorCode.CANNOT_SET_BOTH_AD_AND_COUPON);
+    }
+
+    Coupon coupon = request.getCouponId() != null
+        ? couponRepository.findById(request.getCouponId())
+            .orElseThrow(() -> new CustomException(CouponErrorCode.COUPON_NOT_FOUND))
+        : null;
+
+    AD ad = request.getAdId() != null
+        ? adRepository.findById(request.getAdId())
+            .orElseThrow(() -> new CustomException(AdErrorCode.AD_NOT_FOUND))
+        : null;
+
     campaign.update(
         request.getCampaignName(),
         request.getDescription(),
@@ -116,6 +154,7 @@ public class CampaignServiceImpl implements CampaignService {
         request.getBatchDayOfMonth(),
         request.getFilterLogicalOperator()
     );
+    campaign.updateAdAndCoupon(ad, coupon);
 
     campaignFilterRepository.deleteByCampaignId(campaignId);
     List<CampaignFilter> filters = buildUpdateFilters(campaign, request.getFilters());

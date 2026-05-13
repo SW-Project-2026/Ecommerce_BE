@@ -1,8 +1,6 @@
 package com.web.ecommerce.domain.user.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.web.ecommerce.domain.ad.entity.AdExposure;
-import com.web.ecommerce.domain.coupon.entity.UserCoupon;
 import com.web.ecommerce.global.common.BaseTimeEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -12,8 +10,6 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

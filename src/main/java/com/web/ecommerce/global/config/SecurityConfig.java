@@ -43,7 +43,7 @@ public class SecurityConfig {
   private void configureAuthorization(HttpSecurity http) throws Exception {
     http.authorizeHttpRequests(auth -> auth
         // 누구나 접근 가능
-        .requestMatchers("/api/users/signup", "/api/users/login", "/api/users/admin/signup")
+        .requestMatchers("/api/users/signup", "/api/users/login", "/api/users/admin/signup", "/api/users/refresh")
         .permitAll()
 
         .requestMatchers(HttpMethod.GET, "/api/products/**")
@@ -55,12 +55,22 @@ public class SecurityConfig {
         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**")
         .permitAll()
 
+        // 광고 노출/클릭은 일반 유저 접근 가능
+        .requestMatchers(HttpMethod.POST, "/api/ads/*/expose").authenticated()
+        .requestMatchers(HttpMethod.PATCH, "/api/ads/*/click").authenticated()
+
         // 관리자만 가능
         .requestMatchers(HttpMethod.POST, "/api/products/**").hasRole("ADMIN")
         .requestMatchers(HttpMethod.PUT, "/api/products/**").hasRole("ADMIN")
         .requestMatchers(HttpMethod.DELETE, "/api/products/**").hasRole("ADMIN")
         .requestMatchers(RegexRequestMatcher.regexMatcher(".*/admin/.*")).hasRole("ADMIN")
         .requestMatchers("/api/campaigns", "/api/campaigns/**", "/api/events", "/api/events/**").hasRole("ADMIN")
+        .requestMatchers("/api/coupons", "/api/coupons/**").hasRole("ADMIN")
+        .requestMatchers(HttpMethod.POST, "/api/ads").hasRole("ADMIN")
+        .requestMatchers(HttpMethod.PUT, "/api/ads/**").hasRole("ADMIN")
+        .requestMatchers(HttpMethod.DELETE, "/api/ads/**").hasRole("ADMIN")
+        .requestMatchers(HttpMethod.GET, "/api/ads", "/api/ads/**").hasRole("ADMIN")
+        .requestMatchers(HttpMethod.GET, "/api/users/*/ads").hasRole("ADMIN")
         // 나머지는 로그인 필요
         .anyRequest().authenticated()
     );

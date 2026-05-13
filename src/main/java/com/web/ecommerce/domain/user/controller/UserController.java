@@ -12,6 +12,7 @@ import com.web.ecommerce.global.response.BaseResponse;
 import com.web.ecommerce.global.security.CustomUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Pageable;
@@ -117,4 +118,7 @@ public interface UserController {
      */
     @Operation(summary = "특정 회원 조회", description = "관리자 전용")
     ResponseEntity<BaseResponse<UserAdminResponse>> getUserDetail(Long userId);
+
+    @Operation(summary = "액세스 토큰 재발급", description = "refreshToken 쿠키로 새 accessToken 발급")
+    ResponseEntity<BaseResponse<UserLoginResponse>> refresh(HttpServletRequest request);
 }

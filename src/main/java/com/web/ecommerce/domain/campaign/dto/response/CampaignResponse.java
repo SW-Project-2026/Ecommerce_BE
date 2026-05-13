@@ -30,5 +30,9 @@ public class CampaignResponse {
   private String createdBy;
   private String createdAt;
   private String filterLogicalOperator;
+  private Long couponId;
+  private String couponName;
+  private Long adId;
+  private String adName;
   private List<CampaignFilterResponse> filters;
 }

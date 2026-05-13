@@ -44,6 +44,10 @@ public class CampaignMapper {
         .createdAt(campaign.getCreatedAt().toString())
         .filterLogicalOperator(campaign.getFilterLogicalOperator() != null
             ? campaign.getFilterLogicalOperator().name() : null)
+        .couponId(campaign.getCoupon() != null ? campaign.getCoupon().getId() : null)
+        .couponName(campaign.getCoupon() != null ? campaign.getCoupon().getName() : null)
+        .adId(campaign.getAd() != null ? campaign.getAd().getAdId() : null)
+        .adName(campaign.getAd() != null ? campaign.getAd().getAdName() : null)
         .filters(filters.stream().map(this::toCampaignFilterResponse).toList())
         .build();
   }

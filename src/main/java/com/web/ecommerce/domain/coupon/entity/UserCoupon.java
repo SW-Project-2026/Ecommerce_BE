@@ -43,4 +43,8 @@ public class UserCoupon extends BaseTimeEntity {
   @Column(name = "status", nullable = false)
   private Boolean status;
 
+  public void use() {
+    this.status = true;
+    this.usedAt = LocalDateTime.now();
+  }
 }

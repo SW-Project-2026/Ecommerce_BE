@@ -117,6 +117,11 @@ public class Campaign extends BaseTimeEntity {
     this.filterLogicalOperator = filterLogicalOperator;
   }
 
+  public void updateAdAndCoupon(AD ad, Coupon coupon) {
+    this.ad = ad;
+    this.coupon = coupon;
+  }
+
   public void updateStatus(Status status) {
     this.status = status;
   }

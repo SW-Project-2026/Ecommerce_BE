@@ -1,6 +1,7 @@
 package com.web.ecommerce.domain.ad.entity;
 
 import com.web.ecommerce.domain.ad.enums.AdCategory;
+import com.web.ecommerce.domain.ad.enums.AdTargetType;
 import com.web.ecommerce.domain.product.entity.Product;
 import com.web.ecommerce.global.common.BaseTimeEntity;
 import jakarta.persistence.Column;
@@ -36,14 +37,26 @@ public class AD extends BaseTimeEntity {
   private String adName;
 
   @Enumerated(EnumType.STRING)
+  @Column(name = "target_type", nullable = false)
+  private AdTargetType targetType;
+
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "product_id")
+  private Product product;
+
+  @Enumerated(EnumType.STRING)
   @Column(name = "category")
   private AdCategory category;
 
   @Column(name = "keyword")
   private String keyword;
 
-  @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "product_id")
-  private Product product;
-
+  public void update(String adName, AdTargetType targetType, Product product,
+      AdCategory category, String keyword) {
+    this.adName = adName;
+    this.targetType = targetType;
+    this.product = product;
+    this.category = category;
+    this.keyword = keyword;
+  }
 }

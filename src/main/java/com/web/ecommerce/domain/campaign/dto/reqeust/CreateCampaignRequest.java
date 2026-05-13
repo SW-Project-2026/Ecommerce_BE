@@ -53,6 +53,12 @@ public class CreateCampaignRequest {
   @Schema(description = "필터 간 논리 연산자(AND/OR)", example = "AND")
   private LogicalOperator filterLogicalOperator;
 
+  @Schema(description = "쿠폰 ID (광고와 동시 설정 불가)")
+  private Long couponId;
+
+  @Schema(description = "광고 ID (쿠폰과 동시 설정 불가)")
+  private Long adId;
+
   @Schema(description = "캠페인 필터 목록")
   private List<CreateCampaignFilter> filters;
 
