@@ -34,3 +34,6 @@ swagger:
 
 admin:
   secret-key: test-admin-secret
+
+cors:
+  allowed-origins: http://localhost:3000
