@@ -21,8 +21,10 @@ import com.web.ecommerce.domain.user.exception.UserErrorCode;
 import com.web.ecommerce.domain.user.repository.UserRepository;
 import com.web.ecommerce.global.exception.CustomException;
 import com.web.ecommerce.global.exception.GlobalErrorCode;
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -54,7 +56,9 @@ public class CampaignServiceImpl implements CampaignService {
         .startedAt(LocalDate.parse(request.getStartedAt()).atStartOfDay())
         .endedAt(LocalDate.parse(request.getEndedAt()).atTime(23, 59, 59))
         .batchCycle(request.getBatchCycle())
-        .isDuplicate(request.getIsDuplicate())
+        .batchTime(request.getBatchTime() != null ? LocalTime.parse(request.getBatchTime()) : null)
+        .batchDayOfWeek(request.getBatchDayOfWeek() != null ? DayOfWeek.valueOf(request.getBatchDayOfWeek()) : null)
+        .batchDayOfMonth(request.getBatchDayOfMonth())
         .filterLogicalOperator(request.getFilterLogicalOperator())
         .build();
 
@@ -107,7 +111,9 @@ public class CampaignServiceImpl implements CampaignService {
         LocalDate.parse(request.getStartedAt()).atStartOfDay(),
         LocalDate.parse(request.getEndedAt()).atTime(23, 59, 59),
         request.getBatchCycle(),
-        request.getIsDuplicate(),
+        request.getBatchTime() != null ? LocalTime.parse(request.getBatchTime()) : null,
+        request.getBatchDayOfWeek() != null ? DayOfWeek.valueOf(request.getBatchDayOfWeek()) : null,
+        request.getBatchDayOfMonth(),
         request.getFilterLogicalOperator()
     );
 

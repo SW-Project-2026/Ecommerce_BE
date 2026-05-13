@@ -32,10 +32,6 @@ public class Coupon extends BaseTimeEntity {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
-  @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "user_coupon_id")
-  private UserCoupon userCoupon;
-
   @Column(name = "code", nullable = false)
   private String code;
 

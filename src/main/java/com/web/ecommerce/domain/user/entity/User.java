@@ -60,14 +60,6 @@ public class User  extends BaseTimeEntity {
   @Column(name = "marketing_agreed", nullable = false)
   private boolean marketingAgreed;
 
-  @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "user_coupon_id")
-  private UserCoupon userCoupon;
-
-  @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "ad_exposure_id")
-  private AdExposure adExposure;
-
   public void updateProfile(String name, String phone) {
     this.name = name;
     this.phone = phone;

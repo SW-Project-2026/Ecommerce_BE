@@ -21,8 +21,10 @@ public class CampaignResponse {
   private String customerSegment;
   private String status;
   private String collectionType;
-  private Integer batchCycle;
-  private Boolean isDuplicate;
+  private String batchCycle;
+  private String batchTime;
+  private String batchDayOfWeek;
+  private Integer batchDayOfMonth;
   private String startedAt;
   private String endedAt;
   private String createdBy;

@@ -1,7 +1,6 @@
 package com.web.ecommerce.domain.ad.entity;
 
 import com.web.ecommerce.domain.ad.enums.AdCategory;
-import com.web.ecommerce.domain.coupon.entity.UserCoupon;
 import com.web.ecommerce.domain.product.entity.Product;
 import com.web.ecommerce.global.common.BaseTimeEntity;
 import jakarta.persistence.Column;
@@ -42,10 +41,6 @@ public class AD extends BaseTimeEntity {
 
   @Column(name = "keyword")
   private String keyword;
-
-  @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "ad_exposure_id")
-  private AdExposure adExposure;
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "product_id")
