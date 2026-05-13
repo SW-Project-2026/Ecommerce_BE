@@ -40,10 +40,6 @@ dependencies {
     //Postgre DB
     runtimeOnly 'org.postgresql:postgresql'
 
-    // Flyway
-    implementation 'org.flywaydb:flyway-core'
-    runtimeOnly 'org.flywaydb:flyway-database-postgresql'
-
     // Test
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testCompileOnly 'org.projectlombok:lombok'
