@@ -14,9 +14,6 @@ import lombok.NoArgsConstructor;
 @Schema(title = "Event 필드 수정 요청 DTO")
 public class UpdateEventFieldRequest {
 
-  @Schema(description = "필드 ID (null이면 신규 추가)")
-  private Long fieldId;
-
   @Schema(description = "필드 이름")
   private String fieldName;
 
