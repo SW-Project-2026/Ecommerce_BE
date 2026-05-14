@@ -130,12 +130,12 @@ public class UserServiceImpl implements UserService {
         Long userId = jwtProvider.getUserId(refreshToken);
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new CustomException(UserErrorCode.USER_NOT_FOUND));
-        String newAccessToken = jwtProvider.generateAccessToken(user.getId(), user.getRole().name());
+        String newAccessToken = jwtProvider.generateAccessToken(user.getId(), user.getLoginId(), user.getRole().name());
         return userMapper.toLoginResponse(user, newAccessToken);
     }
 
     private AuthResult toAuthResult(User user) {
-        String accessToken = jwtProvider.generateAccessToken(user.getId(), user.getRole().name());
+        String accessToken = jwtProvider.generateAccessToken(user.getId(), user.getLoginId(), user.getRole().name());
         String refreshToken = jwtProvider.generateRefreshToken(user.getId());
         UserLoginResponse response = userMapper.toLoginResponse(user, accessToken);
         return new AuthResult(response, refreshToken);

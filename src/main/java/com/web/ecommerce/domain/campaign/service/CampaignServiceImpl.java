@@ -74,7 +74,7 @@ public class CampaignServiceImpl implements CampaignService {
         .campaignGoalType(CampaignGoalType.valueOf(request.getCampaignGoalType()))
         .customerSegment(CustomerSegment.valueOf(request.getCustomerSegment()))
         .collectionType(CollectionType.valueOf(request.getCollectionType()))
-        .status(Status.PENDING)
+        .status(Status.IN_PROGRESS)
         .startedAt(LocalDate.parse(request.getStartedAt()).atStartOfDay())
         .endedAt(LocalDate.parse(request.getEndedAt()).atTime(23, 59, 59))
         .batchCycle(request.getBatchCycle())

@@ -1,5 +1,6 @@
 package com.web.ecommerce.global.common;
 
+import com.web.ecommerce.global.security.UserPrincipal;
 import java.util.Optional;
 import org.springframework.data.domain.AuditorAware;
 import org.springframework.security.core.Authentication;
@@ -18,10 +19,10 @@ public class AuditorAwareImpl implements AuditorAware<String> {
     }
 
     Object principal = authentication.getPrincipal();
-    if (principal == null || principal.equals("anonymousUser")) {
-      return Optional.empty();
+    if (principal instanceof UserPrincipal userPrincipal) {
+      return Optional.of(userPrincipal.loginId());
     }
 
-    return Optional.of(principal.toString());
+    return Optional.empty();
   }
 }

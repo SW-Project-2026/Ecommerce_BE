@@ -57,7 +57,8 @@ public class Campaign extends BaseTimeEntity {
 
   @Column(name = "status", nullable = false)
   @Enumerated(EnumType.STRING)
-  private Status status;
+  @Builder.Default
+  private Status status = Status.IN_PROGRESS;
 
   @Column(name = "started_at", nullable = false)
   private LocalDateTime startedAt;

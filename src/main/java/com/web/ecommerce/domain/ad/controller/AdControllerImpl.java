@@ -10,6 +10,7 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import com.web.ecommerce.global.security.UserPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -63,7 +64,7 @@ public class AdControllerImpl implements AdController {
   @Override
   @PostMapping("/api/ads/{adId}/expose")
   public ResponseEntity<BaseResponse<AdExposureResponse>> recordExposure(@PathVariable Long adId) {
-    Long currentUserId = (Long) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    Long currentUserId = ((UserPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).id();
     return ResponseEntity.status(HttpStatus.CREATED)
         .body(BaseResponse.success(201, "광고 노출이 기록되었습니다.", adService.recordExposure(adId, currentUserId)));
   }
@@ -71,7 +72,7 @@ public class AdControllerImpl implements AdController {
   @Override
   @PatchMapping("/api/ads/{adId}/click")
   public ResponseEntity<BaseResponse<AdExposureResponse>> recordClick(@PathVariable Long adId) {
-    Long currentUserId = (Long) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    Long currentUserId = ((UserPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).id();
     return ResponseEntity.ok(BaseResponse.success(adService.recordClick(adId, currentUserId)));
   }
 
