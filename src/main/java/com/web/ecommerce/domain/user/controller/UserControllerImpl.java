@@ -13,6 +13,7 @@ import com.web.ecommerce.domain.user.service.UserService;
 import com.web.ecommerce.global.response.BaseResponse;
 import com.web.ecommerce.global.security.CustomUserDetails;
 import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -134,6 +135,24 @@ public class UserControllerImpl implements UserController {
             @PathVariable Long userId
     ) {
         return ResponseEntity.ok(BaseResponse.success(userService.getUserDetail(userId)));
+    }
+
+    @Override
+    @PostMapping("/refresh")
+    public ResponseEntity<BaseResponse<UserLoginResponse>> refresh(HttpServletRequest request) {
+        String refreshToken = null;
+        if (request.getCookies() != null) {
+            for (Cookie cookie : request.getCookies()) {
+                if ("refreshToken".equals(cookie.getName())) {
+                    refreshToken = cookie.getValue();
+                    break;
+                }
+            }
+        }
+        if (refreshToken == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        return ResponseEntity.ok(BaseResponse.success(userService.refreshAccessToken(refreshToken)));
     }
 
     private void setRefreshTokenCookie(HttpServletResponse response, String refreshToken) {

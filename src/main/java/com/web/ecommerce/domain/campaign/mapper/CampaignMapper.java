@@ -34,14 +34,20 @@ public class CampaignMapper {
         .customerSegment(campaign.getCustomerSegment().name())
         .status(campaign.getStatus().name())
         .collectionType(campaign.getCollectionType().name())
-        .batchCycle(campaign.getBatchCycle())
-        .isDuplicate(campaign.getIsDuplicate())
+        .batchCycle(campaign.getBatchCycle() != null ? campaign.getBatchCycle().name() : null)
+        .batchTime(campaign.getBatchTime() != null ? campaign.getBatchTime().toString() : null)
+        .batchDayOfWeek(campaign.getBatchDayOfWeek() != null ? campaign.getBatchDayOfWeek().name() : null)
+        .batchDayOfMonth(campaign.getBatchDayOfMonth())
         .startedAt(campaign.getStartedAt().toString())
         .endedAt(campaign.getEndedAt().toString())
         .createdBy(campaign.getCreatedBy())
         .createdAt(campaign.getCreatedAt().toString())
         .filterLogicalOperator(campaign.getFilterLogicalOperator() != null
             ? campaign.getFilterLogicalOperator().name() : null)
+        .couponId(campaign.getCoupon() != null ? campaign.getCoupon().getId() : null)
+        .couponName(campaign.getCoupon() != null ? campaign.getCoupon().getName() : null)
+        .adId(campaign.getAd() != null ? campaign.getAd().getAdId() : null)
+        .adName(campaign.getAd() != null ? campaign.getAd().getAdName() : null)
         .filters(filters.stream().map(this::toCampaignFilterResponse).toList())
         .build();
   }

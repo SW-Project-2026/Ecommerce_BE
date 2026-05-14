@@ -27,10 +27,10 @@ public class JwtProvider {
     this.refreshTokenExpiry = refreshTokenExpiry;
   }
 
-  //AccessTocken 생성
-  public String generateAccessToken(Long userId, String role){
+  public String generateAccessToken(Long userId, String loginId, String role) {
     return Jwts.builder()
         .subject(String.valueOf(userId))
+        .claim("loginId", loginId)
         .claim("role", role)
         .issuedAt(new Date())
         .expiration(new Date(System.currentTimeMillis() + accessTokenExpiry))
@@ -50,6 +50,10 @@ public class JwtProvider {
   // 토큰에서 userId 추출
   public Long getUserId(String token) {
     return Long.parseLong(getClaims(token).getSubject());
+  }
+
+  public String getLoginId(String token) {
+    return getClaims(token).get("loginId", String.class);
   }
 
   // 토큰에서 role 추출
@@ -76,7 +80,5 @@ public class JwtProvider {
         .parseSignedClaims(token)
         .getPayload();
   }
-
-
 
 }

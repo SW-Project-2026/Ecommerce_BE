@@ -40,11 +40,12 @@ public class ProductSyncService {
             return;
         }
         log.info("상품 데이터가 없습니다. 네이버 API에서 상품을 가져옵니다.");
-        sync();
+        int saved = sync();
+        log.info("초기 상품 데이터 {}개 저장 완료", saved);
     }
 
     @Transactional
-    public void sync() {
+    public int sync() {
         int totalSaved = 0;
 
         for (Map.Entry<String, List<String>> entry : CATEGORY_QUERIES.entrySet()) {
@@ -68,6 +69,7 @@ public class ProductSyncService {
             }
         }
         log.info("상품 sync 완료. 총 {}개 저장", totalSaved);
+        return totalSaved;
     }
 
     private NaverSearchResponse fetchFromNaver(String query, int start) {

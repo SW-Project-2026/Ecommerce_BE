@@ -1,5 +1,8 @@
 package com.web.ecommerce.domain.campaign.service;
 
+import com.web.ecommerce.domain.ad.entity.AD;
+import com.web.ecommerce.domain.ad.exception.AdErrorCode;
+import com.web.ecommerce.domain.ad.repository.AdRepository;
 import com.web.ecommerce.domain.campaign.dto.reqeust.CreateCampaignRequest;
 import com.web.ecommerce.domain.campaign.dto.reqeust.GetCampaignsRequest;
 import com.web.ecommerce.domain.campaign.dto.reqeust.UpdateCampaignRequest;
@@ -7,6 +10,7 @@ import com.web.ecommerce.domain.campaign.dto.response.CampaignResponse;
 import com.web.ecommerce.domain.campaign.dto.response.CampaignSummaryResponse;
 import com.web.ecommerce.domain.campaign.entity.Campaign;
 import com.web.ecommerce.domain.campaign.entity.CampaignFilter;
+import com.web.ecommerce.domain.campaign.enums.BatchCycle;
 import com.web.ecommerce.domain.campaign.enums.CampaignGoalType;
 import com.web.ecommerce.domain.campaign.enums.CollectionType;
 import com.web.ecommerce.domain.campaign.enums.CustomerSegment;
@@ -15,16 +19,24 @@ import com.web.ecommerce.domain.campaign.exception.CampaignErrorCode;
 import com.web.ecommerce.domain.campaign.mapper.CampaignMapper;
 import com.web.ecommerce.domain.campaign.repository.CampaignFilterRepository;
 import com.web.ecommerce.domain.campaign.repository.CampaignRepository;
+import com.web.ecommerce.domain.coupon.entity.Coupon;
+import com.web.ecommerce.domain.coupon.exception.CouponErrorCode;
+import com.web.ecommerce.domain.coupon.repository.CouponRepository;
 import com.web.ecommerce.domain.event.entity.EventField;
 import com.web.ecommerce.domain.event.repository.EventFieldRepository;
 import com.web.ecommerce.domain.user.exception.UserErrorCode;
 import com.web.ecommerce.domain.user.repository.UserRepository;
 import com.web.ecommerce.global.exception.CustomException;
 import com.web.ecommerce.global.exception.GlobalErrorCode;
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -36,6 +48,8 @@ public class CampaignServiceImpl implements CampaignService {
   private final CampaignFilterRepository campaignFilterRepository;
   private final EventFieldRepository eventFieldRepository;
   private final UserRepository userRepository;
+  private final CouponRepository couponRepository;
+  private final AdRepository adRepository;
   private final CampaignMapper campaignMapper;
 
   @Override
@@ -44,18 +58,36 @@ public class CampaignServiceImpl implements CampaignService {
     userRepository.findById(adminId)
         .orElseThrow(() -> new CustomException(UserErrorCode.USER_NOT_FOUND));
 
+    if (request.getCouponId() != null && request.getAdId() != null) {
+      throw new CustomException(CampaignErrorCode.CANNOT_SET_BOTH_AD_AND_COUPON);
+    }
+
+    Coupon coupon = request.getCouponId() != null
+        ? couponRepository.findById(request.getCouponId())
+            .orElseThrow(() -> new CustomException(CouponErrorCode.COUPON_NOT_FOUND))
+        : null;
+
+    AD ad = request.getAdId() != null
+        ? adRepository.findById(request.getAdId())
+            .orElseThrow(() -> new CustomException(AdErrorCode.AD_NOT_FOUND))
+        : null;
+
     Campaign campaign = Campaign.builder()
         .campaignName(request.getCampaignName())
         .description(request.getDescription())
         .campaignGoalType(CampaignGoalType.valueOf(request.getCampaignGoalType()))
         .customerSegment(CustomerSegment.valueOf(request.getCustomerSegment()))
         .collectionType(CollectionType.valueOf(request.getCollectionType()))
-        .status(Status.PENDING)
+        .status(Status.IN_PROGRESS)
         .startedAt(LocalDate.parse(request.getStartedAt()).atStartOfDay())
         .endedAt(LocalDate.parse(request.getEndedAt()).atTime(23, 59, 59))
         .batchCycle(request.getBatchCycle())
-        .isDuplicate(request.getIsDuplicate())
+        .batchTime(request.getBatchTime() != null ? LocalTime.parse(request.getBatchTime()) : null)
+        .batchDayOfWeek(request.getBatchCycle() == BatchCycle.WEEKLY && request.getBatchDayOfWeek() != null ? DayOfWeek.valueOf(request.getBatchDayOfWeek()) : null)
+        .batchDayOfMonth(request.getBatchCycle() == BatchCycle.MONTHLY ? request.getBatchDayOfMonth() : null)
         .filterLogicalOperator(request.getFilterLogicalOperator())
+        .coupon(coupon)
+        .ad(ad)
         .build();
 
     campaignRepository.save(campaign);
@@ -68,15 +100,15 @@ public class CampaignServiceImpl implements CampaignService {
 
   @Override
   @Transactional(readOnly = true)
-  public List<CampaignSummaryResponse> getCampaigns(GetCampaignsRequest request) {
+  public Page<CampaignSummaryResponse> getCampaigns(GetCampaignsRequest request) {
+    Pageable pageable = PageRequest.of(request.getPage(), request.getSize());
     return campaignRepository.findByFilters(
             request.getStatus(),
             request.getCampaignGoalType(),
             request.getCustomerSegment(),
-            request.getCollectionType())
-        .stream()
-        .map(campaignMapper::toCampaignSummaryResponse)
-        .toList();
+            request.getCollectionType(),
+            pageable)
+        .map(campaignMapper::toCampaignSummaryResponse);
   }
 
   @Override
@@ -98,6 +130,20 @@ public class CampaignServiceImpl implements CampaignService {
     Campaign campaign = campaignRepository.findById(campaignId)
         .orElseThrow(() -> new CustomException(CampaignErrorCode.CAMPAIGN_NOT_FOUND));
 
+    if (request.getCouponId() != null && request.getAdId() != null) {
+      throw new CustomException(CampaignErrorCode.CANNOT_SET_BOTH_AD_AND_COUPON);
+    }
+
+    Coupon coupon = request.getCouponId() != null
+        ? couponRepository.findById(request.getCouponId())
+            .orElseThrow(() -> new CustomException(CouponErrorCode.COUPON_NOT_FOUND))
+        : null;
+
+    AD ad = request.getAdId() != null
+        ? adRepository.findById(request.getAdId())
+            .orElseThrow(() -> new CustomException(AdErrorCode.AD_NOT_FOUND))
+        : null;
+
     campaign.update(
         request.getCampaignName(),
         request.getDescription(),
@@ -107,9 +153,12 @@ public class CampaignServiceImpl implements CampaignService {
         LocalDate.parse(request.getStartedAt()).atStartOfDay(),
         LocalDate.parse(request.getEndedAt()).atTime(23, 59, 59),
         request.getBatchCycle(),
-        request.getIsDuplicate(),
+        request.getBatchTime() != null ? LocalTime.parse(request.getBatchTime()) : null,
+        request.getBatchCycle() == BatchCycle.WEEKLY && request.getBatchDayOfWeek() != null ? DayOfWeek.valueOf(request.getBatchDayOfWeek()) : null,
+        request.getBatchCycle() == BatchCycle.MONTHLY ? request.getBatchDayOfMonth() : null,
         request.getFilterLogicalOperator()
     );
+    campaign.updateAdAndCoupon(ad, coupon);
 
     campaignFilterRepository.deleteByCampaignId(campaignId);
     List<CampaignFilter> filters = buildUpdateFilters(campaign, request.getFilters());

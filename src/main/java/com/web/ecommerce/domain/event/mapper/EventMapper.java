@@ -16,7 +16,7 @@ public class EventMapper {
         .eventName(event.getEventName())
         .description(event.getDescription())
         .isActive(event.getIsActive())
-        .createdAt(event.getCreatedAt().toString())
+        .createdAt(event.getCreatedAt() != null ? event.getCreatedAt().toString() : null)
         .fields(fields.stream().map(this::toEventFieldResponse).toList())
         .build();
   }

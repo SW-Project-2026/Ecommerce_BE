@@ -6,13 +6,13 @@ import com.web.ecommerce.domain.campaign.dto.reqeust.UpdateCampaignRequest;
 import com.web.ecommerce.domain.campaign.dto.response.CampaignResponse;
 import com.web.ecommerce.domain.campaign.dto.response.CampaignSummaryResponse;
 import com.web.ecommerce.domain.campaign.enums.Status;
-import java.util.List;
+import org.springframework.data.domain.Page;
 
 public interface CampaignService {
 
   CampaignResponse createCampaign(Long adminId, CreateCampaignRequest request);
 
-  List<CampaignSummaryResponse> getCampaigns(GetCampaignsRequest request);
+  Page<CampaignSummaryResponse> getCampaigns(GetCampaignsRequest request);
 
   CampaignResponse getCampaign(Long campaignId);
 

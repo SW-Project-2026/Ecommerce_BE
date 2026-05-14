@@ -9,7 +9,7 @@ import com.web.ecommerce.domain.campaign.enums.Status;
 import com.web.ecommerce.global.response.BaseResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import java.util.List;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -23,7 +23,7 @@ public interface CampaignController {
   ResponseEntity<BaseResponse<CampaignResponse>> createCampaign(@RequestBody CreateCampaignRequest request);
 
   @Operation(summary = "캠페인 목록 조회")
-  ResponseEntity<BaseResponse<List<CampaignSummaryResponse>>> getCampaigns(@ModelAttribute GetCampaignsRequest request);
+  ResponseEntity<BaseResponse<Page<CampaignSummaryResponse>>> getCampaigns(@ModelAttribute GetCampaignsRequest request);
 
   @Operation(summary = "캠페인 단건 조회")
   ResponseEntity<BaseResponse<CampaignResponse>> getCampaign(@PathVariable Long campaignId);

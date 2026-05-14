@@ -8,10 +8,11 @@ import com.web.ecommerce.domain.campaign.dto.response.CampaignSummaryResponse;
 import com.web.ecommerce.domain.campaign.enums.Status;
 import com.web.ecommerce.domain.campaign.service.CampaignService;
 import com.web.ecommerce.global.response.BaseResponse;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import com.web.ecommerce.global.security.UserPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -35,14 +36,14 @@ public class CampaignControllerImpl implements CampaignController {
   @Override
   @PostMapping
   public ResponseEntity<BaseResponse<CampaignResponse>> createCampaign(@RequestBody CreateCampaignRequest request) {
-    Long adminId = (Long) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    Long adminId = ((UserPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).id();
     return ResponseEntity.status(HttpStatus.CREATED)
         .body(BaseResponse.success(201, "캠페인이 생성되었습니다.", campaignService.createCampaign(adminId, request)));
   }
 
   @Override
   @GetMapping
-  public ResponseEntity<BaseResponse<List<CampaignSummaryResponse>>> getCampaigns(
+  public ResponseEntity<BaseResponse<Page<CampaignSummaryResponse>>> getCampaigns(
       @ModelAttribute GetCampaignsRequest request) {
     return ResponseEntity.ok(BaseResponse.success(campaignService.getCampaigns(request)));
   }
@@ -57,7 +58,7 @@ public class CampaignControllerImpl implements CampaignController {
   @PutMapping("/{campaignId}")
   public ResponseEntity<BaseResponse<CampaignResponse>> updateCampaign(@PathVariable Long campaignId,
       @RequestBody UpdateCampaignRequest request) {
-    Long adminId = (Long) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    Long adminId = ((UserPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).id();
     return ResponseEntity.ok(BaseResponse.success(campaignService.updateCampaign(adminId, campaignId, request)));
   }
 

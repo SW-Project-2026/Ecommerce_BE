@@ -17,4 +17,7 @@ public class GetCampaignsRequest {
   private CampaignGoalType campaignGoalType;
   private CustomerSegment customerSegment;
   private CollectionType collectionType;
+
+  private int page = 0;
+  private int size = 20;
 }

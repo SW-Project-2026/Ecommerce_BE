@@ -62,6 +62,7 @@ public class UserServiceImpl implements UserService {
             throw new CustomException(UserErrorCode.INVALID_PASSWORD);
         }
 
+        log.info("로그인 성공 - id={}, loginId={}", user.getId(), user.getLoginId());
         return toAuthResult(user);
     }
 
@@ -119,8 +120,22 @@ public class UserServiceImpl implements UserService {
         return userMapper.toAdminResponse(user);
     }
 
+    @Override
+    public UserLoginResponse refreshAccessToken(String refreshToken) {
+        try {
+            jwtProvider.validateToken(refreshToken);
+        } catch (RuntimeException e) {
+            throw new CustomException(UserErrorCode.INVALID_TOKEN);
+        }
+        Long userId = jwtProvider.getUserId(refreshToken);
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new CustomException(UserErrorCode.USER_NOT_FOUND));
+        String newAccessToken = jwtProvider.generateAccessToken(user.getId(), user.getLoginId(), user.getRole().name());
+        return userMapper.toLoginResponse(user, newAccessToken);
+    }
+
     private AuthResult toAuthResult(User user) {
-        String accessToken = jwtProvider.generateAccessToken(user.getId(), user.getRole().name());
+        String accessToken = jwtProvider.generateAccessToken(user.getId(), user.getLoginId(), user.getRole().name());
         String refreshToken = jwtProvider.generateRefreshToken(user.getId());
         UserLoginResponse response = userMapper.toLoginResponse(user, accessToken);
         return new AuthResult(response, refreshToken);
