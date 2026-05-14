@@ -3,9 +3,14 @@ package com.web.ecommerce.domain.product.controller;
 import com.web.ecommerce.domain.product.dto.request.ProductCreateRequest;
 import com.web.ecommerce.domain.product.dto.request.ProductSearchRequest;
 import com.web.ecommerce.domain.product.dto.request.ProductUpdateRequest;
+import com.web.ecommerce.domain.product.dto.request.SetScheduleRequest;
 import com.web.ecommerce.domain.product.dto.ProductSearchResult;
 import com.web.ecommerce.domain.product.dto.response.ProductDetailResponse;
+import com.web.ecommerce.domain.product.dto.response.SyncResultResponse;
+import com.web.ecommerce.domain.product.dto.response.SyncScheduleResponse;
 import com.web.ecommerce.domain.product.service.ProductService;
+import com.web.ecommerce.domain.product.service.ProductSyncScheduleService;
+import com.web.ecommerce.domain.product.service.ProductSyncService;
 import com.web.ecommerce.global.page.response.PageResponse;
 import com.web.ecommerce.global.response.BaseResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -27,6 +32,8 @@ import org.springframework.web.bind.annotation.*;
 public class ProductController {
 
     private final ProductService productService;
+    private final ProductSyncService productSyncService;
+    private final ProductSyncScheduleService productSyncScheduleService;
 
     @Operation(summary = "네이버 상품 검색", description = "네이버 쇼핑 API를 통해 상품을 검색하는 API")
     @GetMapping("/search")
@@ -75,5 +82,35 @@ public class ProductController {
     public ResponseEntity<BaseResponse<Void>> deleteProduct(@PathVariable Long productId) {
         productService.deleteProduct(productId);
         return ResponseEntity.ok(BaseResponse.success(null));
+    }
+
+    @Operation(summary = "상품 수동 수집", description = "네이버 쇼핑 API를 즉시 호출하여 DB에 상품 데이터를 저장하는 API")
+    @PostMapping("/sync")
+    public ResponseEntity<BaseResponse<SyncResultResponse>> syncProducts() {
+        int saved = productSyncService.sync();
+        return ResponseEntity.ok(BaseResponse.success(200, "상품 수집이 완료되었습니다.", SyncResultResponse.of(saved)));
+    }
+
+    @Operation(summary = "자동 수집 스케줄 등록", description = "주기(DAILY/WEEKLY/MONTHLY)와 시각(HH:mm)을 지정하여 자동 수집 스케줄을 등록하는 API. 기존 스케줄이 있으면 덮어씁니다.")
+    @PostMapping("/sync/schedule")
+    public ResponseEntity<BaseResponse<SyncScheduleResponse>> setSchedule(
+            @Valid @RequestBody SetScheduleRequest request) {
+        SyncScheduleResponse response = productSyncScheduleService.setSchedule(request);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(BaseResponse.success(201, "자동 수집 스케줄이 등록되었습니다.", response));
+    }
+
+    @Operation(summary = "자동 수집 스케줄 조회", description = "현재 등록된 자동 수집 스케줄을 조회하는 API")
+    @GetMapping("/sync/schedule")
+    public ResponseEntity<BaseResponse<SyncScheduleResponse>> getSchedule() {
+        SyncScheduleResponse response = productSyncScheduleService.getSchedule();
+        return ResponseEntity.ok(BaseResponse.success(response));
+    }
+
+    @Operation(summary = "자동 수집 스케줄 취소", description = "등록된 자동 수집 스케줄을 취소하는 API")
+    @DeleteMapping("/sync/schedule")
+    public ResponseEntity<BaseResponse<Void>> cancelSchedule() {
+        productSyncScheduleService.cancelSchedule();
+        return ResponseEntity.ok(BaseResponse.success(200, "자동 수집 스케줄이 취소되었습니다.", null));
     }
 }
