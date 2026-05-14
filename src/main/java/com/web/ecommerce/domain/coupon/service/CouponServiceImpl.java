@@ -19,6 +19,8 @@ import com.web.ecommerce.global.exception.CustomException;
 import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -56,10 +58,8 @@ public class CouponServiceImpl implements CouponService {
 
   @Override
   @Transactional(readOnly = true)
-  public List<CouponResponse> getCoupons() {
-    return couponRepository.findAll().stream()
-        .map(couponMapper::toCouponResponse)
-        .toList();
+  public Page<CouponResponse> getCoupons(Pageable pageable) {
+    return couponRepository.findAll(pageable).map(couponMapper::toCouponResponse);
   }
 
   @Override
@@ -112,10 +112,10 @@ public class CouponServiceImpl implements CouponService {
     }
 
     if (coupon.getIssueLimit() != null) {
-      long issuedCount = userCouponRepository.findByUserId(userId).stream()
-          .filter(uc -> uc.getCoupon().getId().equals(couponId))
-          .count();
-      // issueLimit은 전체 발급 수량 제한이므로 별도 count 쿼리 필요 (여기서는 간략화)
+      long issuedCount = userCouponRepository.countByCouponId(couponId);
+      if (issuedCount >= coupon.getIssueLimit()) {
+        throw new CustomException(CouponErrorCode.ISSUE_LIMIT_EXCEEDED);
+      }
     }
 
     UserCoupon userCoupon = UserCoupon.builder()
@@ -130,10 +130,8 @@ public class CouponServiceImpl implements CouponService {
 
   @Override
   @Transactional(readOnly = true)
-  public List<UserCouponResponse> getUserCoupons(Long userId) {
-    return userCouponRepository.findByUserId(userId).stream()
-        .map(couponMapper::toUserCouponResponse)
-        .toList();
+  public Page<UserCouponResponse> getUserCoupons(Long userId, Pageable pageable) {
+    return userCouponRepository.findByUserId(userId, pageable).map(couponMapper::toUserCouponResponse);
   }
 
   @Override

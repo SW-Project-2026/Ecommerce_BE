@@ -8,6 +8,7 @@ import com.web.ecommerce.global.response.BaseResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 
 @Tag(name = "Coupon", description = "쿠폰 API")
@@ -17,7 +18,7 @@ public interface CouponController {
   ResponseEntity<BaseResponse<CouponResponse>> createCoupon(CreateCouponRequest request);
 
   @Operation(summary = "쿠폰 목록 조회 (ADMIN)")
-  ResponseEntity<BaseResponse<List<CouponResponse>>> getCoupons();
+  ResponseEntity<BaseResponse<Page<CouponResponse>>> getCoupons(int page, int size);
 
   @Operation(summary = "쿠폰 단건 조회 (ADMIN)")
   ResponseEntity<BaseResponse<CouponResponse>> getCoupon(Long couponId);
@@ -32,7 +33,7 @@ public interface CouponController {
   ResponseEntity<BaseResponse<UserCouponResponse>> issueCoupon(Long couponId, Long userId);
 
   @Operation(summary = "회원 쿠폰 목록 조회")
-  ResponseEntity<BaseResponse<List<UserCouponResponse>>> getUserCoupons(Long userId);
+  ResponseEntity<BaseResponse<Page<UserCouponResponse>>> getUserCoupons(Long userId, int page, int size);
 
   @Operation(summary = "쿠폰 사용 처리")
   ResponseEntity<BaseResponse<UserCouponResponse>> useCoupon(Long userId, Long userCouponId);

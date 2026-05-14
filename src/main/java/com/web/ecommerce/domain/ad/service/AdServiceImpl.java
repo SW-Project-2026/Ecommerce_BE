@@ -22,6 +22,8 @@ import com.web.ecommerce.global.exception.GlobalErrorCode;
 import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -58,11 +60,8 @@ public class AdServiceImpl implements AdService {
 
   @Override
   @Transactional(readOnly = true)
-  public List<AdResponse> getAds() {
-
-    return adRepository.findAll().stream()
-        .map(adMapper::toAdResponse)
-        .toList();
+  public Page<AdResponse> getAds(Pageable pageable) {
+    return adRepository.findAll(pageable).map(adMapper::toAdResponse);
   }
 
   @Override
@@ -134,9 +133,7 @@ public class AdServiceImpl implements AdService {
 
   @Override
   @Transactional(readOnly = true)
-  public List<AdExposureResponse> getUserExposures(Long userId) {
-    return adExposureRepository.findByUser_Id(userId).stream()
-        .map(adMapper::toAdExposureResponse)
-        .toList();
+  public Page<AdExposureResponse> getUserExposures(Long userId, Pageable pageable) {
+    return adExposureRepository.findByUser_Id(userId, pageable).map(adMapper::toAdExposureResponse);
   }
 }

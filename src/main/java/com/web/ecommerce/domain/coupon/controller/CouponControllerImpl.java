@@ -6,8 +6,9 @@ import com.web.ecommerce.domain.coupon.dto.response.CouponResponse;
 import com.web.ecommerce.domain.coupon.dto.response.UserCouponResponse;
 import com.web.ecommerce.domain.coupon.service.CouponService;
 import com.web.ecommerce.global.response.BaseResponse;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -35,8 +37,10 @@ public class CouponControllerImpl implements CouponController {
 
   @Override
   @GetMapping("/api/coupons")
-  public ResponseEntity<BaseResponse<List<CouponResponse>>> getCoupons() {
-    return ResponseEntity.ok(BaseResponse.success(couponService.getCoupons()));
+  public ResponseEntity<BaseResponse<Page<CouponResponse>>> getCoupons(
+      @RequestParam(defaultValue = "0") int page,
+      @RequestParam(defaultValue = "20") int size) {
+    return ResponseEntity.ok(BaseResponse.success(couponService.getCoupons(PageRequest.of(page, size))));
   }
 
   @Override
@@ -69,8 +73,11 @@ public class CouponControllerImpl implements CouponController {
 
   @Override
   @GetMapping("/api/users/{userId}/coupons")
-  public ResponseEntity<BaseResponse<List<UserCouponResponse>>> getUserCoupons(@PathVariable Long userId) {
-    return ResponseEntity.ok(BaseResponse.success(couponService.getUserCoupons(userId)));
+  public ResponseEntity<BaseResponse<Page<UserCouponResponse>>> getUserCoupons(
+      @PathVariable Long userId,
+      @RequestParam(defaultValue = "0") int page,
+      @RequestParam(defaultValue = "20") int size) {
+    return ResponseEntity.ok(BaseResponse.success(couponService.getUserCoupons(userId, PageRequest.of(page, size))));
   }
 
   @Override

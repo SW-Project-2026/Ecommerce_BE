@@ -5,7 +5,8 @@ import com.web.ecommerce.domain.campaign.enums.CampaignGoalType;
 import com.web.ecommerce.domain.campaign.enums.CollectionType;
 import com.web.ecommerce.domain.campaign.enums.CustomerSegment;
 import com.web.ecommerce.domain.campaign.enums.Status;
-import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -17,9 +18,10 @@ public interface CampaignRepository extends JpaRepository<Campaign, Long> {
       "(:campaignGoalType IS NULL OR c.campaignGoalType = :campaignGoalType) AND " +
       "(:customerSegment IS NULL OR c.customerSegment = :customerSegment) AND " +
       "(:collectionType IS NULL OR c.collectionType = :collectionType)")
-  List<Campaign> findByFilters(
+  Page<Campaign> findByFilters(
       @Param("status") Status status,
       @Param("campaignGoalType") CampaignGoalType campaignGoalType,
       @Param("customerSegment") CustomerSegment customerSegment,
-      @Param("collectionType") CollectionType collectionType);
+      @Param("collectionType") CollectionType collectionType,
+      Pageable pageable);
 }

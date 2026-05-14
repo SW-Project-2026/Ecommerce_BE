@@ -6,8 +6,9 @@ import com.web.ecommerce.domain.ad.dto.response.AdExposureResponse;
 import com.web.ecommerce.domain.ad.dto.response.AdResponse;
 import com.web.ecommerce.domain.ad.service.AdService;
 import com.web.ecommerce.global.response.BaseResponse;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import com.web.ecommerce.global.security.UserPrincipal;
@@ -37,8 +38,10 @@ public class AdControllerImpl implements AdController {
 
   @Override
   @GetMapping("/api/ads")
-  public ResponseEntity<BaseResponse<List<AdResponse>>> getAds() {
-    return ResponseEntity.ok(BaseResponse.success(adService.getAds()));
+  public ResponseEntity<BaseResponse<Page<AdResponse>>> getAds(
+      @RequestParam(defaultValue = "0") int page,
+      @RequestParam(defaultValue = "20") int size) {
+    return ResponseEntity.ok(BaseResponse.success(adService.getAds(PageRequest.of(page, size))));
   }
 
   @Override
@@ -78,7 +81,10 @@ public class AdControllerImpl implements AdController {
 
   @Override
   @GetMapping("/api/users/{userId}/ads")
-  public ResponseEntity<BaseResponse<List<AdExposureResponse>>> getUserExposures(@PathVariable Long userId) {
-    return ResponseEntity.ok(BaseResponse.success(adService.getUserExposures(userId)));
+  public ResponseEntity<BaseResponse<Page<AdExposureResponse>>> getUserExposures(
+      @PathVariable Long userId,
+      @RequestParam(defaultValue = "0") int page,
+      @RequestParam(defaultValue = "20") int size) {
+    return ResponseEntity.ok(BaseResponse.success(adService.getUserExposures(userId, PageRequest.of(page, size))));
   }
 }

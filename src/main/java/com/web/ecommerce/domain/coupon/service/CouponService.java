@@ -5,12 +5,14 @@ import com.web.ecommerce.domain.coupon.dto.request.UpdateCouponRequest;
 import com.web.ecommerce.domain.coupon.dto.response.CouponResponse;
 import com.web.ecommerce.domain.coupon.dto.response.UserCouponResponse;
 import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 public interface CouponService {
 
   CouponResponse createCoupon(CreateCouponRequest request);
 
-  List<CouponResponse> getCoupons();
+  Page<CouponResponse> getCoupons(Pageable pageable);
 
   CouponResponse getCoupon(Long couponId);
 
@@ -20,7 +22,7 @@ public interface CouponService {
 
   UserCouponResponse issueCoupon(Long couponId, Long userId);
 
-  List<UserCouponResponse> getUserCoupons(Long userId);
+  Page<UserCouponResponse> getUserCoupons(Long userId, Pageable pageable);
 
   UserCouponResponse useCoupon(Long userCouponId);
 }

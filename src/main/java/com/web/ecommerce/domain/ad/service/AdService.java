@@ -5,12 +5,14 @@ import com.web.ecommerce.domain.ad.dto.request.UpdateAdRequest;
 import com.web.ecommerce.domain.ad.dto.response.AdExposureResponse;
 import com.web.ecommerce.domain.ad.dto.response.AdResponse;
 import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 public interface AdService {
 
   AdResponse createAd(CreateAdRequest request);
 
-  List<AdResponse> getAds();
+  Page<AdResponse> getAds(Pageable pageable);
 
   AdResponse getAd(Long adId);
 
@@ -22,5 +24,5 @@ public interface AdService {
 
   AdExposureResponse recordClick(Long adId, Long userId);
 
-  List<AdExposureResponse> getUserExposures(Long userId);
+  Page<AdExposureResponse> getUserExposures(Long userId, Pageable pageable);
 }

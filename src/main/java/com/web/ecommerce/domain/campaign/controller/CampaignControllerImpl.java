@@ -8,8 +8,8 @@ import com.web.ecommerce.domain.campaign.dto.response.CampaignSummaryResponse;
 import com.web.ecommerce.domain.campaign.enums.Status;
 import com.web.ecommerce.domain.campaign.service.CampaignService;
 import com.web.ecommerce.global.response.BaseResponse;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import com.web.ecommerce.global.security.UserPrincipal;
@@ -43,7 +43,7 @@ public class CampaignControllerImpl implements CampaignController {
 
   @Override
   @GetMapping
-  public ResponseEntity<BaseResponse<List<CampaignSummaryResponse>>> getCampaigns(
+  public ResponseEntity<BaseResponse<Page<CampaignSummaryResponse>>> getCampaigns(
       @ModelAttribute GetCampaignsRequest request) {
     return ResponseEntity.ok(BaseResponse.success(campaignService.getCampaigns(request)));
   }

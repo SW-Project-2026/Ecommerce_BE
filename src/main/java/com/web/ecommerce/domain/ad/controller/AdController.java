@@ -8,6 +8,7 @@ import com.web.ecommerce.global.response.BaseResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 
 @Tag(name = "Ad", description = "광고 API")
@@ -17,7 +18,7 @@ public interface AdController {
   ResponseEntity<BaseResponse<AdResponse>> createAd(CreateAdRequest request);
 
   @Operation(summary = "광고 목록 조회 (ADMIN)")
-  ResponseEntity<BaseResponse<List<AdResponse>>> getAds();
+  ResponseEntity<BaseResponse<Page<AdResponse>>> getAds(int page, int size);
 
   @Operation(summary = "광고 단건 조회 (ADMIN)")
   ResponseEntity<BaseResponse<AdResponse>> getAd(Long adId);
@@ -35,5 +36,5 @@ public interface AdController {
   ResponseEntity<BaseResponse<AdExposureResponse>> recordClick(Long adId);
 
   @Operation(summary = "회원 광고 노출 목록 조회")
-  ResponseEntity<BaseResponse<List<AdExposureResponse>>> getUserExposures(Long userId);
+  ResponseEntity<BaseResponse<Page<AdExposureResponse>>> getUserExposures(Long userId, int page, int size);
 }

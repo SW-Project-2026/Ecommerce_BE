@@ -10,6 +10,7 @@ import com.web.ecommerce.domain.campaign.dto.response.CampaignResponse;
 import com.web.ecommerce.domain.campaign.dto.response.CampaignSummaryResponse;
 import com.web.ecommerce.domain.campaign.entity.Campaign;
 import com.web.ecommerce.domain.campaign.entity.CampaignFilter;
+import com.web.ecommerce.domain.campaign.enums.BatchCycle;
 import com.web.ecommerce.domain.campaign.enums.CampaignGoalType;
 import com.web.ecommerce.domain.campaign.enums.CollectionType;
 import com.web.ecommerce.domain.campaign.enums.CustomerSegment;
@@ -33,6 +34,9 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -79,8 +83,8 @@ public class CampaignServiceImpl implements CampaignService {
         .endedAt(LocalDate.parse(request.getEndedAt()).atTime(23, 59, 59))
         .batchCycle(request.getBatchCycle())
         .batchTime(request.getBatchTime() != null ? LocalTime.parse(request.getBatchTime()) : null)
-        .batchDayOfWeek(request.getBatchDayOfWeek() != null ? DayOfWeek.valueOf(request.getBatchDayOfWeek()) : null)
-        .batchDayOfMonth(request.getBatchDayOfMonth())
+        .batchDayOfWeek(request.getBatchCycle() == BatchCycle.WEEKLY && request.getBatchDayOfWeek() != null ? DayOfWeek.valueOf(request.getBatchDayOfWeek()) : null)
+        .batchDayOfMonth(request.getBatchCycle() == BatchCycle.MONTHLY ? request.getBatchDayOfMonth() : null)
         .filterLogicalOperator(request.getFilterLogicalOperator())
         .coupon(coupon)
         .ad(ad)
@@ -96,15 +100,15 @@ public class CampaignServiceImpl implements CampaignService {
 
   @Override
   @Transactional(readOnly = true)
-  public List<CampaignSummaryResponse> getCampaigns(GetCampaignsRequest request) {
+  public Page<CampaignSummaryResponse> getCampaigns(GetCampaignsRequest request) {
+    Pageable pageable = PageRequest.of(request.getPage(), request.getSize());
     return campaignRepository.findByFilters(
             request.getStatus(),
             request.getCampaignGoalType(),
             request.getCustomerSegment(),
-            request.getCollectionType())
-        .stream()
-        .map(campaignMapper::toCampaignSummaryResponse)
-        .toList();
+            request.getCollectionType(),
+            pageable)
+        .map(campaignMapper::toCampaignSummaryResponse);
   }
 
   @Override
@@ -150,8 +154,8 @@ public class CampaignServiceImpl implements CampaignService {
         LocalDate.parse(request.getEndedAt()).atTime(23, 59, 59),
         request.getBatchCycle(),
         request.getBatchTime() != null ? LocalTime.parse(request.getBatchTime()) : null,
-        request.getBatchDayOfWeek() != null ? DayOfWeek.valueOf(request.getBatchDayOfWeek()) : null,
-        request.getBatchDayOfMonth(),
+        request.getBatchCycle() == BatchCycle.WEEKLY && request.getBatchDayOfWeek() != null ? DayOfWeek.valueOf(request.getBatchDayOfWeek()) : null,
+        request.getBatchCycle() == BatchCycle.MONTHLY ? request.getBatchDayOfMonth() : null,
         request.getFilterLogicalOperator()
     );
     campaign.updateAdAndCoupon(ad, coupon);
