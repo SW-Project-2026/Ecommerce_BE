@@ -39,5 +39,6 @@ out/
 .claude
 .env
 application.yml
+docker-compose-prod.yml
 !src/test/resources/application-test.yml
 !src/main/resources/application-prod.yml

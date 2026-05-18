@@ -3,6 +3,8 @@ name: CD
 on:
   push:
     branches: [ main ]
+  pull_request:
+    branches: [main]
 
 jobs:
   deploy:
@@ -43,5 +45,8 @@ jobs:
               -e DB_NAME=ecommerce \
               -e DB_USERNAME=admin \
               -e DB_PASSWORD=admin1234 \
+              -e JWT_SECRET=${{ secrets.JWT_SECRET }} \
+              -e NAVER_CLIENT_ID=${{ secrets.NAVER_CLIENT_ID }} \
+              -e NAVER_CLIENT_SECRET=${{ secrets.NAVER_CLIENT_SECRET }} \
               --network host \
               jiwoodd/ecommerce:latest
