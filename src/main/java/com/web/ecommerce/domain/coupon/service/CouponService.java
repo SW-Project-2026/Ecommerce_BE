@@ -23,9 +23,7 @@ public interface CouponService {
 
   void deleteCoupon(Long couponId);
 
-  UserCouponResponse issueCoupon(Long couponId, Long userId);
-
-  Page<UserCouponResponse> getUserCoupons(Long userId, String status, Pageable pageable);
+Page<UserCouponResponse> getUserCoupons(Long userId, String status, Pageable pageable);
 
   UserCouponResponse useCoupon(Long userCouponId);
 

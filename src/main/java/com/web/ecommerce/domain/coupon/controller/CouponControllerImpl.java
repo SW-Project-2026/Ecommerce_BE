@@ -69,15 +69,7 @@ public class CouponControllerImpl implements CouponController {
     return ResponseEntity.noContent().build();
   }
 
-  @Override
-  @PostMapping("/api/coupons/{couponId}/issue/{userId}")
-  public ResponseEntity<BaseResponse<UserCouponResponse>> issueCoupon(@PathVariable Long couponId,
-      @PathVariable Long userId) {
-    return ResponseEntity.status(HttpStatus.CREATED)
-        .body(BaseResponse.success(201, "쿠폰이 발급되었습니다.", couponService.issueCoupon(couponId, userId)));
-  }
-
-  @Override
+@Override
   @GetMapping("/api/users/me/coupons")
   public ResponseEntity<BaseResponse<Page<UserCouponResponse>>> getUserCoupons(
       @RequestParam String status,

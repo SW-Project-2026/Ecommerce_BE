@@ -158,9 +158,8 @@ public class CouponServiceImpl implements CouponService {
     couponRepository.delete(coupon);
   }
 
-  @Override
   @Transactional
-  public UserCouponResponse issueCoupon(Long couponId, Long userId) {
+  private UserCouponResponse issueCoupon(Long couponId, Long userId) {
     Coupon coupon = couponRepository.findByIdWithLock(couponId)
         .orElseThrow(() -> new CustomException(CouponErrorCode.COUPON_NOT_FOUND));
     User user = userRepository.findById(userId)

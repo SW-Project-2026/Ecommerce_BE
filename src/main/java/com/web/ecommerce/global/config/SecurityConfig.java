@@ -75,8 +75,9 @@ public class SecurityConfig {
         .requestMatchers(HttpMethod.POST, "/api/ads").hasRole("ADMIN")
         .requestMatchers(HttpMethod.PUT, "/api/ads/**").hasRole("ADMIN")
         .requestMatchers(HttpMethod.DELETE, "/api/ads/**").hasRole("ADMIN")
-        .requestMatchers(HttpMethod.GET, "/api/ads", "/api/ads/**").hasRole("ADMIN")
+        .requestMatchers(HttpMethod.GET, "/api/ads/select").hasRole("ADMIN")
         .requestMatchers(HttpMethod.GET, "/api/users/*/ads").hasRole("ADMIN")
+        .requestMatchers(HttpMethod.GET, "/api/ads", "/api/ads/**").hasRole("ADMIN")
         // 나머지는 로그인 필요
         .anyRequest().authenticated()
     );
