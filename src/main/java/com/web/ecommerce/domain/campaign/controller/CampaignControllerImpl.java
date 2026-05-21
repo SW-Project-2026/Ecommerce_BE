@@ -75,4 +75,5 @@ public class CampaignControllerImpl implements CampaignController {
     campaignService.deleteCampaign(campaignId);
     return ResponseEntity.noContent().build();
   }
+
 }

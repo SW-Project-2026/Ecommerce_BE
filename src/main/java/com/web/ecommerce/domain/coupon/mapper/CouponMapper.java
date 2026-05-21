@@ -4,6 +4,7 @@ import com.web.ecommerce.domain.coupon.dto.response.CouponResponse;
 import com.web.ecommerce.domain.coupon.dto.response.UserCouponResponse;
 import com.web.ecommerce.domain.coupon.entity.Coupon;
 import com.web.ecommerce.domain.coupon.entity.UserCoupon;
+import com.web.ecommerce.domain.coupon.enums.CouponStatus;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -19,7 +20,6 @@ public class CouponMapper {
         .minOrderAmount(coupon.getMinOrderAmount())
         .maxDiscountAmount(coupon.getMaxDiscountAmount())
         .expiredAt(coupon.getExpiredAt())
-        .issuanceMethod(coupon.getIssuanceMethod().name())
         .issueLimit(coupon.getIssueLimit())
         .createdAt(coupon.getCreatedAt() != null ? coupon.getCreatedAt().toString() : null)
         .build();
@@ -34,6 +34,15 @@ public class CouponMapper {
           .plusDays(coupon.getExpiredAt()).toString();
     }
 
+    String statusName = userCoupon.getStatus().name();
+
+    // 계산된 만료일이 현재 날짜보다 과거라면 화면에는 EXPIRED로 내려줌
+    if (userCoupon.getStatus() == CouponStatus.AVAILABLE && expiredAt != null) {
+      if (java.time.LocalDate.parse(expiredAt).isBefore(java.time.LocalDate.now())) {
+        statusName = CouponStatus.EXPIRED.name();
+      }
+    }
+
     return UserCouponResponse.builder()
         .userCouponId(userCoupon.getId())
         .couponId(coupon.getId())
@@ -44,7 +53,7 @@ public class CouponMapper {
         .minOrderAmount(coupon.getMinOrderAmount())
         .maxDiscountAmount(coupon.getMaxDiscountAmount())
         .expiredAt(expiredAt)
-        .isUsed(userCoupon.getStatus())
+        .status(statusName)
         .usedAt(userCoupon.getUsedAt() != null ? userCoupon.getUsedAt().toString() : null)
         .issuedAt(userCoupon.getCreatedAt() != null ? userCoupon.getCreatedAt().toString() : null)
         .build();

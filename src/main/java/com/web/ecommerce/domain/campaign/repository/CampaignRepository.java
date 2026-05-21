@@ -5,6 +5,9 @@ import com.web.ecommerce.domain.campaign.enums.CampaignGoalType;
 import com.web.ecommerce.domain.campaign.enums.CollectionType;
 import com.web.ecommerce.domain.campaign.enums.CustomerSegment;
 import com.web.ecommerce.domain.campaign.enums.Status;
+import com.web.ecommerce.domain.coupon.enums.IssuanceMethod;
+import java.time.LocalDateTime;
+import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -24,4 +27,10 @@ public interface CampaignRepository extends JpaRepository<Campaign, Long> {
       @Param("customerSegment") CustomerSegment customerSegment,
       @Param("collectionType") CollectionType collectionType,
       Pageable pageable);
+
+  @Query("SELECT c FROM Campaign c WHERE c.issueType = :issueType AND c.status = 'IN_PROGRESS' " +
+      "AND c.startedAt <= :now AND c.endedAt >= :now AND c.coupon IS NOT NULL")
+  List<Campaign> findActiveDownloadCampaigns(
+      @Param("issueType") IssuanceMethod issueType,
+      @Param("now") LocalDateTime now);
 }

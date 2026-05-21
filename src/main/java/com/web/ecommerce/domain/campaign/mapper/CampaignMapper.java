@@ -44,6 +44,8 @@ public class CampaignMapper {
         .createdAt(campaign.getCreatedAt().toString())
         .filterLogicalOperator(campaign.getFilterLogicalOperator() != null
             ? campaign.getFilterLogicalOperator().name() : null)
+        .couponRestrictionDays(campaign.getCouponRestrictionDays())
+        .issueType(campaign.getIssueType() != null ? campaign.getIssueType().name() : null)
         .couponId(campaign.getCoupon() != null ? campaign.getCoupon().getId() : null)
         .couponName(campaign.getCoupon() != null ? campaign.getCoupon().getName() : null)
         .adId(campaign.getAd() != null ? campaign.getAd().getAdId() : null)

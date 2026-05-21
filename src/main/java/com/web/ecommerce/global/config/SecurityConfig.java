@@ -56,8 +56,14 @@ public class SecurityConfig {
         .permitAll()
 
         // 광고 노출/클릭은 일반 유저 접근 가능
-        .requestMatchers(HttpMethod.POST, "/api/ads/*/expose").authenticated()
-        .requestMatchers(HttpMethod.PATCH, "/api/ads/*/click").authenticated()
+        .requestMatchers(HttpMethod.POST, "/api/ads/*/expose").hasRole("USER")
+        .requestMatchers(HttpMethod.PATCH, "/api/ads/*/click").hasRole("USER")
+
+        // 일반 유저 쿠폰 관련 (본인 쿠폰만)
+        .requestMatchers(HttpMethod.GET, "/api/coupons/downloadable").hasRole("USER")
+        .requestMatchers(HttpMethod.POST, "/api/coupons/*/download").hasRole("USER")
+        .requestMatchers(HttpMethod.GET, "/api/users/me/coupons").hasRole("USER")
+        .requestMatchers(HttpMethod.PATCH, "/api/users/me/coupons/*/use").hasRole("USER")
 
         // 관리자만 가능
         .requestMatchers(HttpMethod.POST, "/api/products/**").hasRole("ADMIN")
@@ -69,8 +75,9 @@ public class SecurityConfig {
         .requestMatchers(HttpMethod.POST, "/api/ads").hasRole("ADMIN")
         .requestMatchers(HttpMethod.PUT, "/api/ads/**").hasRole("ADMIN")
         .requestMatchers(HttpMethod.DELETE, "/api/ads/**").hasRole("ADMIN")
-        .requestMatchers(HttpMethod.GET, "/api/ads", "/api/ads/**").hasRole("ADMIN")
+        .requestMatchers(HttpMethod.GET, "/api/ads/select").hasRole("ADMIN")
         .requestMatchers(HttpMethod.GET, "/api/users/*/ads").hasRole("ADMIN")
+        .requestMatchers(HttpMethod.GET, "/api/ads", "/api/ads/**").hasRole("ADMIN")
         // 나머지는 로그인 필요
         .anyRequest().authenticated()
     );

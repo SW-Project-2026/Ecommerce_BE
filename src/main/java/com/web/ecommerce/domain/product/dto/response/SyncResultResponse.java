@@ -13,13 +13,17 @@ public class SyncResultResponse {
     @Schema(description = "신규 저장된 상품 수")
     private int savedCount;
 
-    @Schema(description = "수집 완료 시각")
-    private LocalDateTime syncedAt;
+    @Schema(description = "마지막 수집 시각")
+    private LocalDateTime lastSyncedAt;
+
+    @Schema(description = "수집 상태", example = "정상")
+    private String syncStatus;
 
     public static SyncResultResponse of(int savedCount) {
         return SyncResultResponse.builder()
                 .savedCount(savedCount)
-                .syncedAt(LocalDateTime.now())
+                .lastSyncedAt(LocalDateTime.now())
+                .syncStatus("정상")
                 .build();
     }
 }
