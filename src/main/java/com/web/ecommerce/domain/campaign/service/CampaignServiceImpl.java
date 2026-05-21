@@ -8,6 +8,7 @@ import com.web.ecommerce.domain.campaign.dto.reqeust.GetCampaignsRequest;
 import com.web.ecommerce.domain.campaign.dto.reqeust.UpdateCampaignRequest;
 import com.web.ecommerce.domain.campaign.dto.response.CampaignResponse;
 import com.web.ecommerce.domain.campaign.dto.response.CampaignSummaryResponse;
+import com.web.ecommerce.domain.campaign.dto.response.CouponSendResponse;
 import com.web.ecommerce.domain.campaign.entity.Campaign;
 import com.web.ecommerce.domain.campaign.entity.CampaignFilter;
 import com.web.ecommerce.domain.campaign.enums.BatchCycle;
@@ -20,10 +21,14 @@ import com.web.ecommerce.domain.campaign.mapper.CampaignMapper;
 import com.web.ecommerce.domain.campaign.repository.CampaignFilterRepository;
 import com.web.ecommerce.domain.campaign.repository.CampaignRepository;
 import com.web.ecommerce.domain.coupon.entity.Coupon;
+import com.web.ecommerce.domain.coupon.entity.UserCoupon;
+import com.web.ecommerce.domain.coupon.enums.IssuanceMethod;
 import com.web.ecommerce.domain.coupon.exception.CouponErrorCode;
 import com.web.ecommerce.domain.coupon.repository.CouponRepository;
+import com.web.ecommerce.domain.coupon.repository.UserCouponRepository;
 import com.web.ecommerce.domain.event.entity.EventField;
 import com.web.ecommerce.domain.event.repository.EventFieldRepository;
+import com.web.ecommerce.domain.user.entity.User;
 import com.web.ecommerce.domain.user.exception.UserErrorCode;
 import com.web.ecommerce.domain.user.repository.UserRepository;
 import com.web.ecommerce.global.exception.CustomException;
@@ -49,6 +54,7 @@ public class CampaignServiceImpl implements CampaignService {
   private final EventFieldRepository eventFieldRepository;
   private final UserRepository userRepository;
   private final CouponRepository couponRepository;
+  private final UserCouponRepository userCouponRepository;
   private final AdRepository adRepository;
   private final CampaignMapper campaignMapper;
 
@@ -86,6 +92,8 @@ public class CampaignServiceImpl implements CampaignService {
         .batchDayOfWeek(request.getBatchCycle() == BatchCycle.WEEKLY && request.getBatchDayOfWeek() != null ? DayOfWeek.valueOf(request.getBatchDayOfWeek()) : null)
         .batchDayOfMonth(request.getBatchCycle() == BatchCycle.MONTHLY ? request.getBatchDayOfMonth() : null)
         .filterLogicalOperator(request.getFilterLogicalOperator())
+        .couponRestrictionDays(request.getCouponRestrictionDays())
+        .issueType(request.getIssueType() != null ? IssuanceMethod.valueOf(request.getIssueType()) : null)
         .coupon(coupon)
         .ad(ad)
         .build();
@@ -156,7 +164,9 @@ public class CampaignServiceImpl implements CampaignService {
         request.getBatchTime() != null ? LocalTime.parse(request.getBatchTime()) : null,
         request.getBatchCycle() == BatchCycle.WEEKLY && request.getBatchDayOfWeek() != null ? DayOfWeek.valueOf(request.getBatchDayOfWeek()) : null,
         request.getBatchCycle() == BatchCycle.MONTHLY ? request.getBatchDayOfMonth() : null,
-        request.getFilterLogicalOperator()
+        request.getFilterLogicalOperator(),
+        request.getCouponRestrictionDays(),
+        request.getIssueType() != null ? IssuanceMethod.valueOf(request.getIssueType()) : null
     );
     campaign.updateAdAndCoupon(ad, coupon);
 

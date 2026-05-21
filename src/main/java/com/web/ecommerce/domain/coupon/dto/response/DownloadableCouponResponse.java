@@ -10,21 +10,14 @@ import lombok.NoArgsConstructor;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
-@Schema(title = "회원 쿠폰 응답 DTO")
-public class UserCouponResponse {
+@Schema(title = "다운로드 가능 쿠폰 응답 DTO")
+public class DownloadableCouponResponse {
 
-  private Long userCouponId;
   private Long couponId;
-  private String couponName;
-  private String code;
+  private String name;
   private String discountType;
   private Integer discountAmount;
   private Integer minOrderAmount;
   private Integer maxDiscountAmount;
-  private String expiredAt;
-  private String usedAt;
-  private String issuedAt;
-
-  @Schema(description = "USED, AVAILABLE, EXPIRED", example = "AVAILABLE")
-  private String status;
+  private Integer expiredAt;
 }

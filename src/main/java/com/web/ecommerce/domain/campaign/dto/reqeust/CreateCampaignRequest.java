@@ -53,6 +53,12 @@ public class CreateCampaignRequest {
   @Schema(description = "필터 간 논리 연산자(AND/OR)", example = "AND")
   private LogicalOperator filterLogicalOperator;
 
+  @Schema(description = "쿠폰 중복 발급 제한 기간 (N일 이내 동일 쿠폰 발급 이력 있는 사용자 제외, null이면 제한 없음)")
+  private Integer couponRestrictionDays;
+
+  @Schema(description = "발급 방식 (AUTO/DOWNLOAD/MESSAGE)", example = "MESSAGE")
+  private String issueType;
+
   @Schema(description = "쿠폰 ID (광고와 동시 설정 불가)")
   private Long couponId;
 

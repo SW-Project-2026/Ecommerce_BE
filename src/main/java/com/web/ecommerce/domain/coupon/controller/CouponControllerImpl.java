@@ -3,10 +3,16 @@ package com.web.ecommerce.domain.coupon.controller;
 import com.web.ecommerce.domain.coupon.dto.request.CreateCouponRequest;
 import com.web.ecommerce.domain.coupon.dto.request.UpdateCouponRequest;
 import com.web.ecommerce.domain.coupon.dto.response.CouponResponse;
+import com.web.ecommerce.domain.coupon.dto.response.CouponSelectResponse;
+import com.web.ecommerce.domain.coupon.dto.response.DownloadableCouponResponse;
 import com.web.ecommerce.domain.coupon.dto.response.UserCouponResponse;
 import com.web.ecommerce.domain.coupon.service.CouponService;
 import com.web.ecommerce.global.response.BaseResponse;
+import com.web.ecommerce.global.response.CursorResponse;
+import com.web.ecommerce.global.security.UserPrincipal;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
@@ -86,4 +92,28 @@ public class CouponControllerImpl implements CouponController {
       @PathVariable Long userCouponId) {
     return ResponseEntity.ok(BaseResponse.success(couponService.useCoupon(userCouponId)));
   }
+
+  @Override
+  @GetMapping("/api/coupons/select")
+  public ResponseEntity<BaseResponse<CursorResponse<CouponSelectResponse>>> getCouponSelectList(
+      @RequestParam(required = false) Long cursor,
+      @RequestParam(defaultValue = "3") int size) {
+    return ResponseEntity.ok(BaseResponse.success(couponService.getCouponSelectList(cursor, size)));
+  }
+
+  @Override
+  @GetMapping("/api/coupons/downloadable")
+  public ResponseEntity<BaseResponse<List<DownloadableCouponResponse>>> getDownloadableCoupons() {
+    Long currentUserId = ((UserPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).id();
+    return ResponseEntity.ok(BaseResponse.success(couponService.getDownloadableCoupons(currentUserId)));
+  }
+
+  @Override
+  @PostMapping("/api/coupons/{couponId}/download")
+  public ResponseEntity<BaseResponse<UserCouponResponse>> downloadCoupon(@PathVariable Long couponId) {
+    Long currentUserId = ((UserPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).id();
+    return ResponseEntity.status(HttpStatus.CREATED)
+        .body(BaseResponse.success(201, "쿠폰이 발급되었습니다.", couponService.downloadCoupon(couponId, currentUserId)));
+  }
+
 }

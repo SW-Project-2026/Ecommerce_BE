@@ -4,10 +4,11 @@ import com.web.ecommerce.domain.ad.dto.request.CreateAdRequest;
 import com.web.ecommerce.domain.ad.dto.request.UpdateAdRequest;
 import com.web.ecommerce.domain.ad.dto.response.AdExposureResponse;
 import com.web.ecommerce.domain.ad.dto.response.AdResponse;
+import com.web.ecommerce.domain.ad.dto.response.AdSelectResponse;
 import com.web.ecommerce.global.response.BaseResponse;
+import com.web.ecommerce.global.response.CursorResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 
@@ -37,4 +38,7 @@ public interface AdController {
 
   @Operation(summary = "회원 광고 노출 목록 조회")
   ResponseEntity<BaseResponse<Page<AdExposureResponse>>> getUserExposures(Long userId, int page, int size);
+
+  @Operation(summary = "광고 선택 목록 조회 (캠페인 생성용)", description = "cursor 기반 무한스크롤. cursor=0 또는 미입력 시 처음부터 조회.")
+  ResponseEntity<BaseResponse<CursorResponse<AdSelectResponse>>> getAdSelectList(Long cursor, int size);
 }

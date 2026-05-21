@@ -11,5 +11,7 @@ public interface UserCouponRepository extends JpaRepository<UserCoupon, Long> {
 
   boolean existsByUserIdAndCouponId(Long userId, Long couponId);
 
-  long countByCouponId(Long couponId);
+  boolean existsByUserIdAndCouponIdAndIsDuplicateFalseAndCreatedAtAfter(Long userId, Long couponId, java.time.LocalDateTime after);
+
+  long countByCouponIdAndIsDuplicateFalse(Long couponId);
 }
