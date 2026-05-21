@@ -4,8 +4,10 @@ import com.web.ecommerce.domain.ad.dto.request.CreateAdRequest;
 import com.web.ecommerce.domain.ad.dto.request.UpdateAdRequest;
 import com.web.ecommerce.domain.ad.dto.response.AdExposureResponse;
 import com.web.ecommerce.domain.ad.dto.response.AdResponse;
+import com.web.ecommerce.domain.ad.dto.response.AdSelectResponse;
 import com.web.ecommerce.domain.ad.service.AdService;
 import com.web.ecommerce.global.response.BaseResponse;
+import com.web.ecommerce.global.response.CursorResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -86,5 +88,13 @@ public class AdControllerImpl implements AdController {
       @RequestParam(defaultValue = "0") int page,
       @RequestParam(defaultValue = "20") int size) {
     return ResponseEntity.ok(BaseResponse.success(adService.getUserExposures(userId, PageRequest.of(page, size))));
+  }
+
+  @Override
+  @GetMapping("/api/ads/select")
+  public ResponseEntity<BaseResponse<CursorResponse<AdSelectResponse>>> getAdSelectList(
+      @RequestParam(required = false) Long cursor,
+      @RequestParam(defaultValue = "3") int size) {
+    return ResponseEntity.ok(BaseResponse.success(adService.getAdSelectList(cursor, size)));
   }
 }

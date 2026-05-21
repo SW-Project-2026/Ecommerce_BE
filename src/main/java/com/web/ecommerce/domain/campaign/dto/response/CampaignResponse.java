@@ -30,6 +30,8 @@ public class CampaignResponse {
   private String createdBy;
   private String createdAt;
   private String filterLogicalOperator;
+  private Integer couponRestrictionDays;
+  private String issueType;
   private Long couponId;
   private String couponName;
   private Long adId;

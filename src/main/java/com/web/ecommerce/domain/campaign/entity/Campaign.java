@@ -2,6 +2,7 @@ package com.web.ecommerce.domain.campaign.entity;
 
 import com.web.ecommerce.domain.ad.entity.AD;
 import com.web.ecommerce.domain.campaign.enums.BatchCycle;
+import com.web.ecommerce.domain.coupon.enums.IssuanceMethod;
 import com.web.ecommerce.domain.campaign.enums.CampaignGoalType;
 import com.web.ecommerce.domain.campaign.enums.CollectionType;
 import com.web.ecommerce.domain.campaign.enums.CustomerSegment;
@@ -92,6 +93,13 @@ public class Campaign extends BaseTimeEntity {
   @Enumerated(EnumType.STRING)
   private LogicalOperator filterLogicalOperator;
 
+  @Column(name = "coupon_restriction_days")
+  private Integer couponRestrictionDays;
+
+  @Column(name = "issue_type")
+  @Enumerated(EnumType.STRING)
+  private IssuanceMethod issueType;
+
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "coupon_id")
   private Coupon coupon;
@@ -103,7 +111,8 @@ public class Campaign extends BaseTimeEntity {
   public void update(String campaignName, String description, CampaignGoalType campaignGoalType,
       CustomerSegment customerSegment, CollectionType collectionType,
       LocalDateTime startedAt, LocalDateTime endedAt, BatchCycle batchCycle, LocalTime batchTime,
-      DayOfWeek batchDayOfWeek, Integer batchDayOfMonth, LogicalOperator filterLogicalOperator) {
+      DayOfWeek batchDayOfWeek, Integer batchDayOfMonth, LogicalOperator filterLogicalOperator,
+      Integer couponRestrictionDays, IssuanceMethod issueType) {
     this.campaignName = campaignName;
     this.description = description;
     this.campaignGoalType = campaignGoalType;
@@ -116,6 +125,8 @@ public class Campaign extends BaseTimeEntity {
     this.batchDayOfWeek = batchDayOfWeek;
     this.batchDayOfMonth = batchDayOfMonth;
     this.filterLogicalOperator = filterLogicalOperator;
+    this.couponRestrictionDays = couponRestrictionDays;
+    this.issueType = issueType;
   }
 
   public void updateAdAndCoupon(AD ad, Coupon coupon) {

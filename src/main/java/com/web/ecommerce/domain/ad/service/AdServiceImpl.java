@@ -4,6 +4,7 @@ import com.web.ecommerce.domain.ad.dto.request.CreateAdRequest;
 import com.web.ecommerce.domain.ad.dto.request.UpdateAdRequest;
 import com.web.ecommerce.domain.ad.dto.response.AdExposureResponse;
 import com.web.ecommerce.domain.ad.dto.response.AdResponse;
+import com.web.ecommerce.domain.ad.dto.response.AdSelectResponse;
 import com.web.ecommerce.domain.ad.entity.AD;
 import com.web.ecommerce.domain.ad.entity.AdExposure;
 import com.web.ecommerce.domain.ad.enums.AdCategory;
@@ -19,10 +20,12 @@ import com.web.ecommerce.domain.user.exception.UserErrorCode;
 import com.web.ecommerce.domain.user.repository.UserRepository;
 import com.web.ecommerce.global.exception.CustomException;
 import com.web.ecommerce.global.exception.GlobalErrorCode;
+import com.web.ecommerce.global.response.CursorResponse;
 import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -135,5 +138,31 @@ public class AdServiceImpl implements AdService {
   @Transactional(readOnly = true)
   public Page<AdExposureResponse> getUserExposures(Long userId, Pageable pageable) {
     return adExposureRepository.findByUser_Id(userId, pageable).map(adMapper::toAdExposureResponse);
+  }
+
+  @Override
+  @Transactional(readOnly = true)
+  public CursorResponse<AdSelectResponse> getAdSelectList(Long cursor, int size) {
+    List<AD> ads = adRepository.findByCursor(
+        cursor == null ? 0L : cursor,
+        PageRequest.of(0, size + 1)
+    );
+
+    boolean hasNext = ads.size() > size;
+    if (hasNext) {
+      ads = ads.subList(0, size);
+    }
+
+    List<AdSelectResponse> content = ads.stream()
+        .map(a -> AdSelectResponse.builder()
+            .id(a.getAdId())
+            .adName(a.getAdName())
+            .targetType(a.getTargetType().name())
+            .category(a.getCategory() != null ? a.getCategory().name() : null)
+            .build())
+        .toList();
+
+    Long nextCursor = hasNext ? ads.get(ads.size() - 1).getAdId() : null;
+    return CursorResponse.of(content, nextCursor, hasNext);
   }
 }

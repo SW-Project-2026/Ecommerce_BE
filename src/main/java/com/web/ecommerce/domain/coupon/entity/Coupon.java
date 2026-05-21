@@ -1,7 +1,6 @@
 package com.web.ecommerce.domain.coupon.entity;
 
 import com.web.ecommerce.domain.coupon.enums.DiscountType;
-import com.web.ecommerce.domain.coupon.enums.IssuanceMethod;
 import com.web.ecommerce.global.common.BaseTimeEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -11,6 +10,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.persistence.Version;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -53,13 +53,11 @@ public class Coupon extends BaseTimeEntity {
   @Column(name = "issue_limit")
   private Integer issueLimit;
 
-  @Column(name = "issuance_method", nullable = false)
-  @Enumerated(EnumType.STRING)
-  private IssuanceMethod issuanceMethod;
+  @Version
+  private Long version;
 
   public void update(String name, String code, DiscountType discountType, Integer discountAmount,
-      Integer minOrderAmount, Integer maxDiscountAmount, Integer expiredAt,
-      IssuanceMethod issuanceMethod, Integer issueLimit) {
+      Integer minOrderAmount, Integer maxDiscountAmount, Integer expiredAt, Integer issueLimit) {
     this.name = name;
     this.code = code;
     this.discountType = discountType;
@@ -67,7 +65,7 @@ public class Coupon extends BaseTimeEntity {
     this.minOrderAmount = minOrderAmount;
     this.maxDiscountAmount = maxDiscountAmount;
     this.expiredAt = expiredAt;
-    this.issuanceMethod = issuanceMethod;
     this.issueLimit = issueLimit;
   }
+
 }
