@@ -35,11 +35,11 @@ public interface CouponController {
   @Operation(summary = "특정 회원에게 쿠폰 발급 (ADMIN)")
   ResponseEntity<BaseResponse<UserCouponResponse>> issueCoupon(Long couponId, Long userId);
 
-  @Operation(summary = "회원 쿠폰 목록 조회")
-  ResponseEntity<BaseResponse<Page<UserCouponResponse>>> getUserCoupons(Long userId, int page, int size);
+  @Operation(summary = "내 쿠폰 목록 조회 (마이페이지)", description = "status: AVAILABLE(사용 전), USED(사용 완료), EXPIRED(만료)")
+  ResponseEntity<BaseResponse<Page<UserCouponResponse>>> getUserCoupons(String status, int page, int size);
 
   @Operation(summary = "쿠폰 사용 처리")
-  ResponseEntity<BaseResponse<UserCouponResponse>> useCoupon(Long userId, Long userCouponId);
+  ResponseEntity<BaseResponse<UserCouponResponse>> useCoupon(Long userCouponId);
 
   @Operation(summary = "쿠폰 선택 목록 조회 (캠페인 생성용)", description = "cursor 기반 무한스크롤. cursor=0 또는 미입력 시 처음부터 조회.")
   ResponseEntity<BaseResponse<CursorResponse<CouponSelectResponse>>> getCouponSelectList(Long cursor, int size);

@@ -78,18 +78,18 @@ public class CouponControllerImpl implements CouponController {
   }
 
   @Override
-  @GetMapping("/api/users/{userId}/coupons")
+  @GetMapping("/api/users/me/coupons")
   public ResponseEntity<BaseResponse<Page<UserCouponResponse>>> getUserCoupons(
-      @PathVariable Long userId,
+      @RequestParam String status,
       @RequestParam(defaultValue = "0") int page,
       @RequestParam(defaultValue = "20") int size) {
-    return ResponseEntity.ok(BaseResponse.success(couponService.getUserCoupons(userId, PageRequest.of(page, size))));
+    Long currentUserId = ((UserPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).id();
+    return ResponseEntity.ok(BaseResponse.success(couponService.getUserCoupons(currentUserId, status, PageRequest.of(page, size))));
   }
 
   @Override
-  @PatchMapping("/api/users/{userId}/coupons/{userCouponId}/use")
-  public ResponseEntity<BaseResponse<UserCouponResponse>> useCoupon(@PathVariable Long userId,
-      @PathVariable Long userCouponId) {
+  @PatchMapping("/api/users/me/coupons/{userCouponId}/use")
+  public ResponseEntity<BaseResponse<UserCouponResponse>> useCoupon(@PathVariable Long userCouponId) {
     return ResponseEntity.ok(BaseResponse.success(couponService.useCoupon(userCouponId)));
   }
 

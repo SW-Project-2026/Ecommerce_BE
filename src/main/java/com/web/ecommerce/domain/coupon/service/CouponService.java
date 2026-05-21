@@ -25,7 +25,7 @@ public interface CouponService {
 
   UserCouponResponse issueCoupon(Long couponId, Long userId);
 
-  Page<UserCouponResponse> getUserCoupons(Long userId, Pageable pageable);
+  Page<UserCouponResponse> getUserCoupons(Long userId, String status, Pageable pageable);
 
   UserCouponResponse useCoupon(Long userCouponId);
 

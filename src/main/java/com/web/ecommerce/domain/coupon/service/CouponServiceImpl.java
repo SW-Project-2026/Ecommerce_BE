@@ -188,8 +188,10 @@ public class CouponServiceImpl implements CouponService {
 
   @Override
   @Transactional(readOnly = true)
-  public Page<UserCouponResponse> getUserCoupons(Long userId, Pageable pageable) {
-    return userCouponRepository.findByUserId(userId, pageable).map(couponMapper::toUserCouponResponse);
+  public Page<UserCouponResponse> getUserCoupons(Long userId, String status, Pageable pageable) {
+    CouponStatus couponStatus = CouponStatus.valueOf(status);
+    return userCouponRepository.findByUserIdAndStatusAndIsDuplicateFalse(userId, couponStatus, pageable)
+        .map(couponMapper::toUserCouponResponse);
   }
 
   @Override
