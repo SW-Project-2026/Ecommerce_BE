@@ -48,5 +48,6 @@ jobs:
               -e JWT_SECRET=${{ secrets.JWT_SECRET }} \
               -e NAVER_CLIENT_ID=${{ secrets.NAVER_CLIENT_ID }} \
               -e NAVER_CLIENT_SECRET=${{ secrets.NAVER_CLIENT_SECRET }} \
+              -e ADMIN_SECRET_KEY=${{ secrets.ADMIN_SECRET_KEY }} \
               --network host \
               jiwoodd/ecommerce:latest
