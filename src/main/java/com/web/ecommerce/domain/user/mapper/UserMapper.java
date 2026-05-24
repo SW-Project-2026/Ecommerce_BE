@@ -20,7 +20,7 @@ public class UserMapper {
                 .phone(request.getPhone())
                 .role(role)
                 .isActive(1)
-                .marketingAgreed(request.isMarketingAgreed())
+                .marketingAgreed(Boolean.TRUE.equals(request.getMarketingAgreed()))
                 .build();
     }
 

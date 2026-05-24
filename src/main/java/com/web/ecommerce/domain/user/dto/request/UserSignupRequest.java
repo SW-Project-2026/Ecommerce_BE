@@ -50,6 +50,6 @@ public class UserSignupRequest {
   private String role;
 
   @Schema(description = "마케팅 동의 여부", example = "true")
-  private boolean marketingAgreed;
+  private Boolean marketingAgreed;
 
 }
