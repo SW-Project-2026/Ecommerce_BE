@@ -14,7 +14,6 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 public class CouponExpiryBatchService {
-
   private final UserCouponRepository userCouponRepository;
 
   // 매일 자정 만료 쿠폰 처리
