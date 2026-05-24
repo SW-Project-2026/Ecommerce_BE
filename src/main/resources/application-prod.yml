@@ -14,6 +14,9 @@ spring:
         format_sql: false
     show-sql: false
 
+  autoconfigure:
+    exclude: org.springframework.boot.autoconfigure.kafka.KafkaAutoConfiguration
+
 naver:
   api:
     client-id: ${NAVER_CLIENT_ID:dummy}
@@ -26,13 +29,10 @@ jwt:
   refresh-token-expiry: 86400000
 
 cors:
-  allowed-origins: http://localhost:3000,http://localhost:5173
+  allowed-origins: http://134.185.111.176
 
 admin:
   secret-key: ${ADMIN_SECRET_KEY:local-admin-secret}
-
-kafka:
-  bootstrap-servers: localhost:9092
 
 swagger:
   server:
