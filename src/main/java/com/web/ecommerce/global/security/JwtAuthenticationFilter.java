@@ -18,24 +18,30 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
   private final JwtProvider jwtProvider;
 
-  //매 요청마다 jwt 검증 후 SecurityContext에 인증 정보 저장
   @Override
   protected void doFilterInternal(HttpServletRequest request,
       HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
     String token = resolveToken(request);
 
-    if (token != null && jwtProvider.validateToken(token)) {
-      Long userId = jwtProvider.getUserId(token);
-      String loginId = jwtProvider.getLoginId(token);
-      String role = jwtProvider.getRole(token);
+    if (token != null) {
+      try {
+        if (jwtProvider.validateToken(token)) {
+          Long userId = jwtProvider.getUserId(token);
+          String loginId = jwtProvider.getLoginId(token);
+          String role = jwtProvider.getRole(token);
 
-      UserPrincipal principal = new UserPrincipal(userId, loginId);
-      UsernamePasswordAuthenticationToken authentication =
-          new UsernamePasswordAuthenticationToken(
-              principal, null,
-              List.of(new SimpleGrantedAuthority("ROLE_" + role))
-          );
-      SecurityContextHolder.getContext().setAuthentication(authentication);
+          UserPrincipal principal = new UserPrincipal(userId, loginId);
+          UsernamePasswordAuthenticationToken authentication =
+              new UsernamePasswordAuthenticationToken(
+                  principal, null,
+                  List.of(new SimpleGrantedAuthority("ROLE_" + role))
+              );
+          SecurityContextHolder.getContext().setAuthentication(authentication);
+        }
+      } catch (RuntimeException e) {
+        // 만료/무효 토큰 → 인증 없이 통과 (Security가 401/403 처리)
+        SecurityContextHolder.clearContext();
+      }
     }
 
     filterChain.doFilter(request, response);
