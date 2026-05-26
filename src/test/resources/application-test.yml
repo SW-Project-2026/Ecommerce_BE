@@ -35,5 +35,13 @@ swagger:
 admin:
   secret-key: test-admin-secret
 
+app:
+  base-url: http://localhost:8080
+
+solapi:
+  api-key: dummy
+  secret-key: dummy
+  from: 01000000000
+
 cors:
   allowed-origins: http://localhost:3000
