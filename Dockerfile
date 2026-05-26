@@ -10,4 +10,9 @@ RUN chmod +x gradlew && ./gradlew build -x test
 FROM eclipse-temurin:21-jre
 WORKDIR /app
 COPY --from=builder /app/build/libs/*.jar app.jar
-ENTRYPOINT ["java", "-jar", "app.jar"]
+ENTRYPOINT ["java", \
+  "-Xms128m", "-Xmx350m", \
+  "-XX:+UseG1GC", \
+  "-XX:MaxMetaspaceSize=128m", \
+  "-Dfile.encoding=UTF-8", \
+  "-jar", "app.jar"]
