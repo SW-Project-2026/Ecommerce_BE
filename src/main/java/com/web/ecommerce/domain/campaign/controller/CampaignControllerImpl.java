@@ -2,9 +2,11 @@ package com.web.ecommerce.domain.campaign.controller;
 
 import com.web.ecommerce.domain.campaign.dto.reqeust.CreateCampaignRequest;
 import com.web.ecommerce.domain.campaign.dto.reqeust.GetCampaignsRequest;
+import com.web.ecommerce.domain.campaign.dto.reqeust.SendSmsRequest;
 import com.web.ecommerce.domain.campaign.dto.reqeust.UpdateCampaignRequest;
 import com.web.ecommerce.domain.campaign.dto.response.CampaignResponse;
 import com.web.ecommerce.domain.campaign.dto.response.CampaignSummaryResponse;
+import com.web.ecommerce.domain.campaign.dto.response.SmsSendResponse;
 import com.web.ecommerce.domain.campaign.enums.Status;
 import com.web.ecommerce.domain.campaign.service.CampaignService;
 import com.web.ecommerce.global.response.BaseResponse;
@@ -74,6 +76,20 @@ public class CampaignControllerImpl implements CampaignController {
   public ResponseEntity<Void> deleteCampaign(@PathVariable Long campaignId) {
     campaignService.deleteCampaign(campaignId);
     return ResponseEntity.noContent().build();
+  }
+
+  @Override
+  @PostMapping("/{campaignId}/send-sms")
+  public ResponseEntity<BaseResponse<SmsSendResponse>> sendSms(@PathVariable Long campaignId,
+      @RequestBody SendSmsRequest request) {
+    return ResponseEntity.ok(BaseResponse.success(campaignService.sendSms(campaignId, request)));
+  }
+
+  @Override
+  @PostMapping("/{campaignId}/retry-sms")
+  public ResponseEntity<BaseResponse<SmsSendResponse>> retrySms(@PathVariable Long campaignId,
+      @RequestBody SendSmsRequest request) {
+    return ResponseEntity.ok(BaseResponse.success(campaignService.retrySms(campaignId, request)));
   }
 
 }

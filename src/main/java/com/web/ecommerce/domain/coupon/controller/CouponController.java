@@ -47,4 +47,7 @@ public interface CouponController {
   @Operation(summary = "쿠폰 다운로드 발급", description = "사용자가 팝업에서 쿠폰 다운로드 버튼 클릭 시 호출.")
   ResponseEntity<BaseResponse<UserCouponResponse>> downloadCoupon(Long couponId);
 
+  @Operation(summary = "SMS 링크 쿠폰 수령", description = "SMS 링크 클릭 시 토큰으로 쿠폰 자동 발급. 인증 불필요.")
+  ResponseEntity<BaseResponse<UserCouponResponse>> claimCoupon(String token);
+
 }

@@ -2,9 +2,11 @@ package com.web.ecommerce.domain.campaign.controller;
 
 import com.web.ecommerce.domain.campaign.dto.reqeust.CreateCampaignRequest;
 import com.web.ecommerce.domain.campaign.dto.reqeust.GetCampaignsRequest;
+import com.web.ecommerce.domain.campaign.dto.reqeust.SendSmsRequest;
 import com.web.ecommerce.domain.campaign.dto.reqeust.UpdateCampaignRequest;
 import com.web.ecommerce.domain.campaign.dto.response.CampaignResponse;
 import com.web.ecommerce.domain.campaign.dto.response.CampaignSummaryResponse;
+import com.web.ecommerce.domain.campaign.dto.response.SmsSendResponse;
 import com.web.ecommerce.domain.campaign.enums.Status;
 import com.web.ecommerce.global.response.BaseResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -38,4 +40,12 @@ public interface CampaignController {
 
   @Operation(summary = "캠페인 삭제")
   ResponseEntity<Void> deleteCampaign(@PathVariable Long campaignId);
+
+  @Operation(summary = "캠페인 문자 발송 (SMS/LMS)")
+  ResponseEntity<BaseResponse<SmsSendResponse>> sendSms(@PathVariable Long campaignId,
+      @RequestBody SendSmsRequest request);
+
+  @Operation(summary = "캠페인 문자 재발송 (실패 대상)")
+  ResponseEntity<BaseResponse<SmsSendResponse>> retrySms(@PathVariable Long campaignId,
+      @RequestBody SendSmsRequest request);
 }
