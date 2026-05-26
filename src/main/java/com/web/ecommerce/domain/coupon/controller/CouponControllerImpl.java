@@ -108,4 +108,11 @@ public class CouponControllerImpl implements CouponController {
         .body(BaseResponse.success(201, "쿠폰이 발급되었습니다.", couponService.downloadCoupon(couponId, currentUserId)));
   }
 
+  @Override
+  @GetMapping("/api/coupons/claim")
+  public ResponseEntity<BaseResponse<UserCouponResponse>> claimCoupon(@RequestParam String token) {
+    return ResponseEntity.status(HttpStatus.CREATED)
+        .body(BaseResponse.success(201, "쿠폰이 발급되었습니다.", couponService.claimCouponByToken(token)));
+  }
+
 }

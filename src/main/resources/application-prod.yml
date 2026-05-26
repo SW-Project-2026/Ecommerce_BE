@@ -28,8 +28,11 @@ jwt:
   access-token-expiry: 600000
   refresh-token-expiry: 86400000
 
+app:
+  base-url: http://100.54.193.43:8080
+
 cors:
-  allowed-origins: http://134.185.111.176
+  allowed-origins: http://100.54.193.43,https://astounding-dango-6fd6b5.netlify.app
 
 admin:
   secret-key: ${ADMIN_SECRET_KEY:local-admin-secret}
@@ -41,5 +44,5 @@ solapi:
 
 swagger:
   server:
-    profile: http://134.185.111.176:8080
+    profile: http://100.54.193.43:8080
     name: Production

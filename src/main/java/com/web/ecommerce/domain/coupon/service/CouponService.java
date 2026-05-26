@@ -32,4 +32,6 @@ Page<UserCouponResponse> getUserCoupons(Long userId, String status, Pageable pag
   List<DownloadableCouponResponse> getDownloadableCoupons(Long userId);
 
   UserCouponResponse downloadCoupon(Long couponId, Long userId);
+
+  UserCouponResponse claimCouponByToken(String token);
 }

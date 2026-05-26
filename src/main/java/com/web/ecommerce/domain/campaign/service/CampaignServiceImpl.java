@@ -38,6 +38,7 @@ import com.web.ecommerce.domain.user.exception.UserErrorCode;
 import com.web.ecommerce.domain.user.repository.UserRepository;
 import com.web.ecommerce.global.exception.CustomException;
 import com.web.ecommerce.global.exception.GlobalErrorCode;
+import com.web.ecommerce.global.security.JwtProvider;
 import com.web.ecommerce.global.sms.SmsService;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
@@ -45,6 +46,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -65,6 +67,10 @@ public class CampaignServiceImpl implements CampaignService {
   private final AdRepository adRepository;
   private final CampaignMapper campaignMapper;
   private final SmsService smsService;
+  private final JwtProvider jwtProvider;
+
+  @Value("${app.base-url}")
+  private String baseUrl;
 
   @Override
   @Transactional
@@ -216,19 +222,26 @@ public class CampaignServiceImpl implements CampaignService {
   @Override
   @Transactional
   public SmsSendResponse sendSms(Long campaignId, SendSmsRequest request) {
-    campaignRepository.findById(campaignId)
+    Campaign campaign = campaignRepository.findById(campaignId)
         .orElseThrow(() -> new CustomException(CampaignErrorCode.CAMPAIGN_NOT_FOUND));
 
     List<CampaignTarget> campaignTargets = campaignTargetRepository.findByCampaignIdWithUser(campaignId);
 
+    boolean hasCoupon = campaign.getCoupon() != null;
+
     int success = 0;
     int fail = 0;
     for (CampaignTarget target : campaignTargets) {
+      String content = request.getContent();
+      if (hasCoupon) {
+        String token = jwtProvider.generateCouponClaimToken(target.getUser().getId(), campaign.getCoupon().getId());
+        content += "\n쿠폰 받기: " + baseUrl + "/api/coupons/claim?token=" + token;
+      }
       boolean sent = smsService.sendCustomMessage(
           target.getUser().getPhone(),
           request.getMessageType(),
           request.getSubject(),
-          request.getContent()
+          content
       );
       if (sent) {
         target.markSent();

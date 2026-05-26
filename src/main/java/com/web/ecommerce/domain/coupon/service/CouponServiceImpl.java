@@ -23,6 +23,7 @@ import com.web.ecommerce.domain.user.exception.UserErrorCode;
 import com.web.ecommerce.domain.user.repository.UserRepository;
 import com.web.ecommerce.global.exception.CustomException;
 import com.web.ecommerce.global.response.CursorResponse;
+import com.web.ecommerce.global.security.JwtProvider;
 import com.web.ecommerce.global.sms.SmsService;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -43,6 +44,7 @@ public class CouponServiceImpl implements CouponService {
   private final CampaignRepository campaignRepository;
   private final CouponMapper couponMapper;
   private final SmsService smsService;
+  private final JwtProvider jwtProvider;
 
   @Override
   @Transactional
@@ -241,6 +243,15 @@ public class CouponServiceImpl implements CouponService {
   @Override
   @Transactional
   public UserCouponResponse downloadCoupon(Long couponId, Long userId) {
+    return issueCoupon(couponId, userId);
+  }
+
+  @Override
+  @Transactional
+  public UserCouponResponse claimCouponByToken(String token) {
+    jwtProvider.validateToken(token);
+    Long userId = jwtProvider.getCouponClaimUserId(token);
+    Long couponId = jwtProvider.getCouponClaimCouponId(token);
     return issueCoupon(couponId, userId);
   }
 
