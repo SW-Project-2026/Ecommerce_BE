@@ -55,6 +55,9 @@ public class SecurityConfig {
         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**")
         .permitAll()
 
+        .requestMatchers(HttpMethod.GET, "/api/coupons/claim")
+        .permitAll()
+
         // 광고 노출/클릭은 일반 유저 접근 가능
         .requestMatchers(HttpMethod.POST, "/api/ads/*/expose").hasRole("USER")
         .requestMatchers(HttpMethod.PATCH, "/api/ads/*/click").hasRole("USER")

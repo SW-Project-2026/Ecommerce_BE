@@ -27,6 +27,25 @@ public class JwtProvider {
     this.refreshTokenExpiry = refreshTokenExpiry;
   }
 
+  public String generateCouponClaimToken(Long userId, Long couponId) {
+    return Jwts.builder()
+        .subject(String.valueOf(userId))
+        .claim("couponId", couponId)
+        .claim("type", "COUPON_CLAIM")
+        .issuedAt(new Date())
+        .expiration(new Date(System.currentTimeMillis() + 7L * 24 * 60 * 60 * 1000))
+        .signWith(secretKey)
+        .compact();
+  }
+
+  public Long getCouponClaimUserId(String token) {
+    return Long.parseLong(getClaims(token).getSubject());
+  }
+
+  public Long getCouponClaimCouponId(String token) {
+    return getClaims(token).get("couponId", Long.class);
+  }
+
   public String generateAccessToken(Long userId, String loginId, String role) {
     return Jwts.builder()
         .subject(String.valueOf(userId))
