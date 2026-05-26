@@ -49,5 +49,8 @@ jobs:
               -e NAVER_CLIENT_ID=${{ secrets.NAVER_CLIENT_ID }} \
               -e NAVER_CLIENT_SECRET=${{ secrets.NAVER_CLIENT_SECRET }} \
               -e ADMIN_SECRET_KEY=${{ secrets.ADMIN_SECRET_KEY }} \
+              -e SOLAPI_API_KEY=${{ secrets.SOLAPI_API_KEY }} \
+              -e SOLAPI_SECRET_KEY=${{ secrets.SOLAPI_SECRET_KEY }} \
+              -e SOLAPI_FROM=${{ secrets.SOLAPI_FROM }} \
               --network host \
               jiwoodd/ecommerce:latest

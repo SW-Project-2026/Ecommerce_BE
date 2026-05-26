@@ -3,8 +3,10 @@ package com.web.ecommerce.domain.campaign.service;
 import com.web.ecommerce.domain.campaign.dto.reqeust.CreateCampaignRequest;
 import com.web.ecommerce.domain.campaign.dto.reqeust.GetCampaignsRequest;
 import com.web.ecommerce.domain.campaign.dto.reqeust.UpdateCampaignRequest;
+import com.web.ecommerce.domain.campaign.dto.reqeust.SendSmsRequest;
 import com.web.ecommerce.domain.campaign.dto.response.CampaignResponse;
 import com.web.ecommerce.domain.campaign.dto.response.CampaignSummaryResponse;
+import com.web.ecommerce.domain.campaign.dto.response.SmsSendResponse;
 import com.web.ecommerce.domain.campaign.enums.Status;
 import org.springframework.data.domain.Page;
 
@@ -21,4 +23,8 @@ public interface CampaignService {
   CampaignResponse updateCampaignStatus(Long campaignId, Status status);
 
   void deleteCampaign(Long campaignId);
+
+  SmsSendResponse sendSms(Long campaignId, SendSmsRequest request);
+
+  SmsSendResponse retrySms(Long campaignId, SendSmsRequest request);
 }

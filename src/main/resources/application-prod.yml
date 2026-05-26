@@ -34,6 +34,11 @@ cors:
 admin:
   secret-key: ${ADMIN_SECRET_KEY:local-admin-secret}
 
+solapi:
+  api-key: ${SOLAPI_API_KEY}
+  secret-key: ${SOLAPI_SECRET_KEY}
+  from: ${SOLAPI_FROM}
+
 swagger:
   server:
     profile: http://134.185.111.176:8080
