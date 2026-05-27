@@ -11,7 +11,7 @@ import com.web.ecommerce.domain.user.dto.response.UserProfileResponse;
 import com.web.ecommerce.domain.user.entity.Role;
 import com.web.ecommerce.domain.user.service.UserService;
 import com.web.ecommerce.global.response.BaseResponse;
-import com.web.ecommerce.global.security.CustomUserDetails;
+import com.web.ecommerce.global.security.UserPrincipal;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -87,37 +87,37 @@ public class UserControllerImpl implements UserController {
     @Override
     @GetMapping("/me")
     public ResponseEntity<BaseResponse<UserProfileResponse>> getMyProfile(
-            @AuthenticationPrincipal CustomUserDetails userDetails
+            @AuthenticationPrincipal UserPrincipal userDetails
     ) {
-        return ResponseEntity.ok(BaseResponse.success(userService.getMyProfile(userDetails.getId())));
+        return ResponseEntity.ok(BaseResponse.success(userService.getMyProfile(userDetails.id())));
     }
 
     @Override
     @PutMapping("/me")
     public ResponseEntity<BaseResponse<Void>> updateProfile(
-            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @AuthenticationPrincipal UserPrincipal userDetails,
             @Valid @RequestBody UserUpdateRequest request
     ) {
-        userService.updateProfile(userDetails.getId(), request);
+        userService.updateProfile(userDetails.id(), request);
         return ResponseEntity.ok(BaseResponse.success(200, "정보가 수정되었습니다.", null));
     }
 
     @Override
     @PatchMapping("/me/password")
     public ResponseEntity<BaseResponse<Void>> updatePassword(
-            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @AuthenticationPrincipal UserPrincipal userDetails,
             @Valid @RequestBody UserPasswordUpdateRequest request
     ) {
-        userService.updatePassword(userDetails.getId(), request);
+        userService.updatePassword(userDetails.id(), request);
         return ResponseEntity.ok(BaseResponse.success(200, "비밀번호가 변경되었습니다.", null));
     }
 
     @Override
     @DeleteMapping("/me")
     public ResponseEntity<BaseResponse<Void>> withdraw(
-            @AuthenticationPrincipal CustomUserDetails userDetails
+            @AuthenticationPrincipal UserPrincipal userDetails
     ) {
-        userService.withdraw(userDetails.getId());
+        userService.withdraw(userDetails.id());
         return ResponseEntity.ok(BaseResponse.success(200, "탈퇴가 완료되었습니다.", null));
     }
 
