@@ -44,6 +44,9 @@ public class SecurityConfig {
   /** 권한 설정 */
   private void configureAuthorization(HttpSecurity http) throws Exception {
     http.authorizeHttpRequests(auth -> auth
+        // CORS preflight
+        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+
         // 누구나 접근 가능
         .requestMatchers("/api/users/signup", "/api/users/login", "/api/users/admin/signup", "/api/users/refresh")
         .permitAll()
