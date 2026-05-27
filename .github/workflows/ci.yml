@@ -49,6 +49,6 @@ jobs:
         run: chmod +x gradlew
 
       - name: 빌드 및 테스트
-        run: ./gradlew build
+        run: ./gradlew build --stacktrace
         env:
           SPRING_PROFILES_ACTIVE: test
