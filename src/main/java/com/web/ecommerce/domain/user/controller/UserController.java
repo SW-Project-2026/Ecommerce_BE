@@ -9,7 +9,7 @@ import com.web.ecommerce.domain.user.dto.response.UserLoginResponse;
 import com.web.ecommerce.domain.user.dto.response.UserProfileResponse;
 import com.web.ecommerce.global.page.response.PageResponse;
 import com.web.ecommerce.global.response.BaseResponse;
-import com.web.ecommerce.global.security.CustomUserDetails;
+import com.web.ecommerce.global.security.UserPrincipal;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
@@ -69,7 +69,7 @@ public interface UserController {
      */
     @Operation(summary = "내 정보 조회")
     ResponseEntity<BaseResponse<UserProfileResponse>> getMyProfile(
-            @AuthenticationPrincipal CustomUserDetails userDetails
+            @AuthenticationPrincipal UserPrincipal userDetails
     );
 
     /**
@@ -79,7 +79,7 @@ public interface UserController {
      */
     @Operation(summary = "내 정보 수정", description = "이름, 전화번호 수정")
     ResponseEntity<BaseResponse<Void>> updateProfile(
-            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @AuthenticationPrincipal UserPrincipal userDetails,
             @Valid @RequestBody UserUpdateRequest request
     );
 
@@ -90,7 +90,7 @@ public interface UserController {
      */
     @Operation(summary = "비밀번호 변경")
     ResponseEntity<BaseResponse<Void>> updatePassword(
-            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @AuthenticationPrincipal UserPrincipal userDetails,
             @Valid @RequestBody UserPasswordUpdateRequest request
     );
 
@@ -100,7 +100,7 @@ public interface UserController {
      */
     @Operation(summary = "회원 탈퇴")
     ResponseEntity<BaseResponse<Void>> withdraw(
-            @AuthenticationPrincipal CustomUserDetails userDetails
+            @AuthenticationPrincipal UserPrincipal userDetails
     );
 
     /**
