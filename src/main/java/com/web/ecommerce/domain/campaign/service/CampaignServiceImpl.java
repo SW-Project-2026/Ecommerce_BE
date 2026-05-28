@@ -107,8 +107,12 @@ public class CampaignServiceImpl implements CampaignService {
         .batchDayOfWeek(request.getBatchCycle() == BatchCycle.WEEKLY && request.getBatchDayOfWeek() != null ? DayOfWeek.valueOf(request.getBatchDayOfWeek()) : null)
         .batchDayOfMonth(request.getBatchCycle() == BatchCycle.MONTHLY ? request.getBatchDayOfMonth() : null)
         .filterLogicalOperator(request.getFilterLogicalOperator())
-        .couponRestrictionDays(request.getCouponRestrictionDays())
+        .couponRestrictionDays(coupon != null ? request.getCouponRestrictionDays() : null)
         .issueType(request.getIssueType() != null ? IssuanceMethod.valueOf(request.getIssueType()) : null)
+        .messageType(coupon != null ? request.getMessageType() : null)
+        .messageSubject(coupon != null ? request.getMessageSubject() : null)
+        .messageContent(coupon != null ? request.getMessageContent() : null)
+        .duplicatePolicy(coupon != null ? request.getDuplicatePolicy() : null)
         .coupon(coupon)
         .ad(ad)
         .build();
@@ -186,8 +190,12 @@ public class CampaignServiceImpl implements CampaignService {
         request.getBatchCycle() == BatchCycle.WEEKLY && request.getBatchDayOfWeek() != null ? DayOfWeek.valueOf(request.getBatchDayOfWeek()) : null,
         request.getBatchCycle() == BatchCycle.MONTHLY ? request.getBatchDayOfMonth() : null,
         request.getFilterLogicalOperator(),
-        request.getCouponRestrictionDays(),
-        request.getIssueType() != null ? IssuanceMethod.valueOf(request.getIssueType()) : null
+        coupon != null ? request.getCouponRestrictionDays() : null,
+        request.getIssueType() != null ? IssuanceMethod.valueOf(request.getIssueType()) : null,
+        coupon != null ? request.getMessageType() : null,
+        coupon != null ? request.getMessageSubject() : null,
+        coupon != null ? request.getMessageContent() : null,
+        coupon != null ? request.getDuplicatePolicy() : null
     );
     campaign.updateAdAndCoupon(ad, coupon);
 
@@ -303,6 +311,44 @@ public class CampaignServiceImpl implements CampaignService {
         .successCount(success)
         .failCount(fail)
         .build();
+  }
+
+  @Override
+  @Transactional
+  public void executeBatchSend(Long campaignId) {
+    Campaign campaign = campaignRepository.findById(campaignId)
+        .orElseThrow(() -> new CustomException(CampaignErrorCode.CAMPAIGN_NOT_FOUND));
+
+    List<CampaignTarget> targets = campaignTargetRepository.findByCampaignIdWithUser(campaignId);
+
+    boolean hasCoupon = campaign.getCoupon() != null;
+    boolean checkDuplicate = campaign.getDuplicatePolicy() == DuplicatePolicy.CHECK;
+    Integer restrictionDays = campaign.getCouponRestrictionDays();
+    LocalDateTime cutoff = (checkDuplicate && restrictionDays != null)
+        ? LocalDateTime.now().minusDays(restrictionDays)
+        : null;
+
+    for (CampaignTarget target : targets) {
+      if (cutoff != null && target.getSentAt() != null && target.getSentAt().isAfter(cutoff)) {
+        continue;
+      }
+      String content = campaign.getMessageContent();
+      if (hasCoupon) {
+        String token = jwtProvider.generateCouponClaimToken(target.getUser().getId(), campaign.getCoupon().getId());
+        content += "\n쿠폰 받기: " + baseUrl + "/api/coupons/claim?token=" + token;
+      }
+      boolean sent = smsService.sendCustomMessage(
+          target.getUser().getPhone(),
+          campaign.getMessageType(),
+          campaign.getMessageSubject(),
+          content
+      );
+      if (sent) {
+        target.markSent();
+      } else {
+        target.markFailed();
+      }
+    }
   }
 
   private List<User> resolveTargetUsers(CustomerSegment segment) {

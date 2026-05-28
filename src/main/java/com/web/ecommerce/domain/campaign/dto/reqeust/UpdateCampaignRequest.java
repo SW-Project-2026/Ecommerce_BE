@@ -1,6 +1,7 @@
 package com.web.ecommerce.domain.campaign.dto.reqeust;
 
 import com.web.ecommerce.domain.campaign.enums.BatchCycle;
+import com.web.ecommerce.domain.campaign.enums.DuplicatePolicy;
 import com.web.ecommerce.domain.campaign.enums.LogicalOperator;
 import com.web.ecommerce.domain.campaign.enums.Operator;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -62,6 +63,18 @@ public class UpdateCampaignRequest {
 
   @Schema(description = "광고 ID (쿠폰과 동시 설정 불가, null이면 해제)")
   private Long adId;
+
+  @Schema(description = "메시지 타입 (SMS/LMS) - BATCH 캠페인 자동 발송 시 사용", example = "LMS")
+  private String messageType;
+
+  @Schema(description = "메시지 제목 (LMS 전용) - BATCH 캠페인 자동 발송 시 사용", example = "특별 쿠폰 안내")
+  private String messageSubject;
+
+  @Schema(description = "메시지 내용 - BATCH 캠페인 자동 발송 시 사용", example = "안녕하세요. 특별 쿠폰을 발급해 드립니다.")
+  private String messageContent;
+
+  @Schema(description = "중복 발송 정책 (CHECK: N일 내 발송 이력 있으면 스킵 / IGNORE: 이력 무시하고 발송)", example = "CHECK")
+  private DuplicatePolicy duplicatePolicy;
 
   @Schema(description = "캠페인 필터 목록")
   private List<UpdateCampaignFilter> filters;

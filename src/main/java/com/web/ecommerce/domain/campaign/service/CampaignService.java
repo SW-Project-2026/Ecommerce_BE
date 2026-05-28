@@ -27,4 +27,6 @@ public interface CampaignService {
   SmsSendResponse sendSms(Long campaignId, SendSmsRequest request);
 
   SmsSendResponse retrySms(Long campaignId, SendSmsRequest request);
+
+  void executeBatchSend(Long campaignId);
 }
