@@ -2,6 +2,7 @@ package com.web.ecommerce.domain.campaign.entity;
 
 import com.web.ecommerce.domain.ad.entity.AD;
 import com.web.ecommerce.domain.campaign.enums.BatchCycle;
+import com.web.ecommerce.domain.campaign.enums.DuplicatePolicy;
 import com.web.ecommerce.domain.coupon.enums.IssuanceMethod;
 import com.web.ecommerce.domain.campaign.enums.CampaignGoalType;
 import com.web.ecommerce.domain.campaign.enums.CollectionType;
@@ -100,6 +101,19 @@ public class Campaign extends BaseTimeEntity {
   @Enumerated(EnumType.STRING)
   private IssuanceMethod issueType;
 
+  @Column(name = "message_type")
+  private String messageType;
+
+  @Column(name = "message_subject")
+  private String messageSubject;
+
+  @Column(name = "message_content", columnDefinition = "TEXT")
+  private String messageContent;
+
+  @Enumerated(EnumType.STRING)
+  @Column(name = "duplicate_policy")
+  private DuplicatePolicy duplicatePolicy;
+
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "coupon_id")
   private Coupon coupon;
@@ -112,7 +126,8 @@ public class Campaign extends BaseTimeEntity {
       CustomerSegment customerSegment, CollectionType collectionType,
       LocalDateTime startedAt, LocalDateTime endedAt, BatchCycle batchCycle, LocalTime batchTime,
       DayOfWeek batchDayOfWeek, Integer batchDayOfMonth, LogicalOperator filterLogicalOperator,
-      Integer couponRestrictionDays, IssuanceMethod issueType) {
+      Integer couponRestrictionDays, IssuanceMethod issueType,
+      String messageType, String messageSubject, String messageContent, DuplicatePolicy duplicatePolicy) {
     this.campaignName = campaignName;
     this.description = description;
     this.campaignGoalType = campaignGoalType;
@@ -127,6 +142,10 @@ public class Campaign extends BaseTimeEntity {
     this.filterLogicalOperator = filterLogicalOperator;
     this.couponRestrictionDays = couponRestrictionDays;
     this.issueType = issueType;
+    this.messageType = messageType;
+    this.messageSubject = messageSubject;
+    this.messageContent = messageContent;
+    this.duplicatePolicy = duplicatePolicy;
   }
 
   public void updateAdAndCoupon(AD ad, Coupon coupon) {

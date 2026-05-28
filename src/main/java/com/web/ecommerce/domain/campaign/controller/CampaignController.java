@@ -7,6 +7,7 @@ import com.web.ecommerce.domain.campaign.dto.reqeust.UpdateCampaignRequest;
 import com.web.ecommerce.domain.campaign.dto.response.CampaignResponse;
 import com.web.ecommerce.domain.campaign.dto.response.CampaignSummaryResponse;
 import com.web.ecommerce.domain.campaign.dto.response.SmsSendResponse;
+import com.web.ecommerce.domain.campaign.dto.response.SmsStatusResponse;
 import com.web.ecommerce.domain.campaign.enums.Status;
 import com.web.ecommerce.global.response.BaseResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -48,4 +49,8 @@ public interface CampaignController {
   @Operation(summary = "캠페인 문자 재발송 (실패 대상)")
   ResponseEntity<BaseResponse<SmsSendResponse>> retrySms(@PathVariable Long campaignId,
       @RequestBody SendSmsRequest request);
+
+  @Operation(summary = "캠페인 SMS 발송 현황 조회")
+  ResponseEntity<BaseResponse<SmsStatusResponse>> getSmsStatus(@PathVariable Long campaignId,
+      @RequestParam(required = false) Long cursor);
 }

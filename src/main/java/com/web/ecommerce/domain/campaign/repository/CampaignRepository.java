@@ -33,4 +33,8 @@ public interface CampaignRepository extends JpaRepository<Campaign, Long> {
   List<Campaign> findActiveDownloadCampaigns(
       @Param("issueType") IssuanceMethod issueType,
       @Param("now") LocalDateTime now);
+
+  @Query("SELECT c FROM Campaign c WHERE c.collectionType = 'BATCH' AND c.status = 'IN_PROGRESS' " +
+      "AND c.startedAt <= :now AND c.endedAt >= :now AND c.messageContent IS NOT NULL")
+  List<Campaign> findSchedulableBatchCampaigns(@Param("now") LocalDateTime now);
 }
