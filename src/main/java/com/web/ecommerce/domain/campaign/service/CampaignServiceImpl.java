@@ -11,6 +11,8 @@ import com.web.ecommerce.domain.campaign.dto.response.CampaignResponse;
 import com.web.ecommerce.domain.campaign.dto.response.CampaignSummaryResponse;
 import com.web.ecommerce.domain.campaign.dto.response.CouponSendResponse;
 import com.web.ecommerce.domain.campaign.dto.response.SmsSendResponse;
+import com.web.ecommerce.domain.campaign.dto.response.SmsStatusResponse;
+import com.web.ecommerce.domain.campaign.dto.response.SmsTargetResponse;
 import com.web.ecommerce.domain.campaign.entity.Campaign;
 import com.web.ecommerce.domain.campaign.entity.CampaignFilter;
 import com.web.ecommerce.domain.campaign.enums.BatchCycle;
@@ -39,6 +41,7 @@ import com.web.ecommerce.domain.user.exception.UserErrorCode;
 import com.web.ecommerce.domain.user.repository.UserRepository;
 import com.web.ecommerce.global.exception.CustomException;
 import com.web.ecommerce.global.exception.GlobalErrorCode;
+import com.web.ecommerce.global.response.CursorResponse;
 import com.web.ecommerce.global.security.JwtProvider;
 import com.web.ecommerce.global.sms.SmsService;
 import java.time.DayOfWeek;
@@ -310,6 +313,38 @@ public class CampaignServiceImpl implements CampaignService {
         .totalCount(failedTargets.size())
         .successCount(success)
         .failCount(fail)
+        .build();
+  }
+
+  @Override
+  @Transactional(readOnly = true)
+  public SmsStatusResponse getSmsStatus(Long campaignId, Long cursor) {
+    campaignRepository.findById(campaignId)
+        .orElseThrow(() -> new CustomException(CampaignErrorCode.CAMPAIGN_NOT_FOUND));
+
+    long sent = campaignTargetRepository.countByCampaignIdAndStatus(campaignId, SendStatus.SENT);
+    long failed = campaignTargetRepository.countByCampaignIdAndStatus(campaignId, SendStatus.FAILED);
+
+    int size = 3;
+    List<CampaignTarget> fetched = campaignTargetRepository
+        .findByCampaignIdWithCursor(campaignId, cursor, PageRequest.of(0, size + 1));
+
+    boolean hasNext = fetched.size() > size;
+    List<CampaignTarget> content = hasNext ? fetched.subList(0, size) : fetched;
+    Long nextCursor = hasNext ? content.get(content.size() - 1).getId() : null;
+
+    List<SmsTargetResponse> items = content.stream()
+        .map(ct -> SmsTargetResponse.builder()
+            .loginId(ct.getUser().getLoginId())
+            .status(ct.getStatus())
+            .sentAt(ct.getSentAt())
+            .build())
+        .toList();
+
+    return SmsStatusResponse.builder()
+        .sentCount(sent)
+        .failedCount(failed)
+        .targets(CursorResponse.of(items, nextCursor, hasNext))
         .build();
   }
 

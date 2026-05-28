@@ -7,6 +7,7 @@ import com.web.ecommerce.domain.campaign.dto.reqeust.UpdateCampaignRequest;
 import com.web.ecommerce.domain.campaign.dto.response.CampaignResponse;
 import com.web.ecommerce.domain.campaign.dto.response.CampaignSummaryResponse;
 import com.web.ecommerce.domain.campaign.dto.response.SmsSendResponse;
+import com.web.ecommerce.domain.campaign.dto.response.SmsStatusResponse;
 import com.web.ecommerce.domain.campaign.enums.Status;
 import com.web.ecommerce.domain.campaign.service.CampaignService;
 import com.web.ecommerce.global.response.BaseResponse;
@@ -90,6 +91,13 @@ public class CampaignControllerImpl implements CampaignController {
   public ResponseEntity<BaseResponse<SmsSendResponse>> retrySms(@PathVariable Long campaignId,
       @RequestBody SendSmsRequest request) {
     return ResponseEntity.ok(BaseResponse.success(campaignService.retrySms(campaignId, request)));
+  }
+
+  @Override
+  @GetMapping("/{campaignId}/sms-status")
+  public ResponseEntity<BaseResponse<SmsStatusResponse>> getSmsStatus(@PathVariable Long campaignId,
+      @RequestParam(required = false) Long cursor) {
+    return ResponseEntity.ok(BaseResponse.success(campaignService.getSmsStatus(campaignId, cursor)));
   }
 
 }

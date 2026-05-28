@@ -7,6 +7,7 @@ import com.web.ecommerce.domain.campaign.dto.reqeust.SendSmsRequest;
 import com.web.ecommerce.domain.campaign.dto.response.CampaignResponse;
 import com.web.ecommerce.domain.campaign.dto.response.CampaignSummaryResponse;
 import com.web.ecommerce.domain.campaign.dto.response.SmsSendResponse;
+import com.web.ecommerce.domain.campaign.dto.response.SmsStatusResponse;
 import com.web.ecommerce.domain.campaign.enums.Status;
 import org.springframework.data.domain.Page;
 
@@ -29,4 +30,6 @@ public interface CampaignService {
   SmsSendResponse retrySms(Long campaignId, SendSmsRequest request);
 
   void executeBatchSend(Long campaignId);
+
+  SmsStatusResponse getSmsStatus(Long campaignId, Long cursor);
 }
