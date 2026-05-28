@@ -21,4 +21,7 @@ public class SmsSendResponse {
 
     @Schema(description = "발송 실패 인원 (전화번호 없음 포함)")
     private int failCount;
+
+    @Schema(description = "중복 정책으로 인해 스킵된 인원")
+    private int skippedCount;
 }

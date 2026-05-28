@@ -17,6 +17,7 @@ import com.web.ecommerce.domain.campaign.enums.BatchCycle;
 import com.web.ecommerce.domain.campaign.enums.CampaignGoalType;
 import com.web.ecommerce.domain.campaign.enums.CollectionType;
 import com.web.ecommerce.domain.campaign.enums.CustomerSegment;
+import com.web.ecommerce.domain.campaign.enums.DuplicatePolicy;
 import com.web.ecommerce.domain.campaign.enums.SendStatus;
 import com.web.ecommerce.domain.campaign.enums.Status;
 import com.web.ecommerce.domain.campaign.exception.CampaignErrorCode;
@@ -228,10 +229,20 @@ public class CampaignServiceImpl implements CampaignService {
     List<CampaignTarget> campaignTargets = campaignTargetRepository.findByCampaignIdWithUser(campaignId);
 
     boolean hasCoupon = campaign.getCoupon() != null;
+    boolean checkDuplicate = request.getDuplicatePolicy() == DuplicatePolicy.CHECK;
+    Integer restrictionDays = campaign.getCouponRestrictionDays();
+    LocalDateTime cutoff = (checkDuplicate && restrictionDays != null)
+        ? LocalDateTime.now().minusDays(restrictionDays)
+        : null;
 
     int success = 0;
     int fail = 0;
+    int skipped = 0;
     for (CampaignTarget target : campaignTargets) {
+      if (cutoff != null && target.getSentAt() != null && target.getSentAt().isAfter(cutoff)) {
+        skipped++;
+        continue;
+      }
       String content = request.getContent();
       if (hasCoupon) {
         String token = jwtProvider.generateCouponClaimToken(target.getUser().getId(), campaign.getCoupon().getId());
@@ -256,6 +267,7 @@ public class CampaignServiceImpl implements CampaignService {
         .totalCount(campaignTargets.size())
         .successCount(success)
         .failCount(fail)
+        .skippedCount(skipped)
         .build();
   }
 
