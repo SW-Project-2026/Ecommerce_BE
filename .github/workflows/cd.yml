@@ -22,39 +22,42 @@ jobs:
       - name: Gradle 빌드 (JAR 생성)
         run: ./gradlew bootJar -x test
 
+      - name: SSH 키 설정
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H 3.94.195.37 >> ~/.ssh/known_hosts
+
       - name: JAR 및 배포 파일 전송
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: 3.94.195.37
-          username: ubuntu
-          key: ${{ secrets.EC2_SSH_KEY }}
-          source: "build/libs/*.jar,Dockerfile,docker-compose.yml"
-          target: "/home/ubuntu/app"
-          strip_components: 2
+        run: |
+          scp build/libs/*.jar ubuntu@3.94.195.37:/home/ubuntu/app/app.jar
+          scp Dockerfile docker-compose.yml ubuntu@3.94.195.37:/home/ubuntu/app/
+
+      - name: .env 생성 및 전송
+        env:
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          NAVER_CLIENT_ID: ${{ secrets.NAVER_CLIENT_ID }}
+          NAVER_CLIENT_SECRET: ${{ secrets.NAVER_CLIENT_SECRET }}
+          ADMIN_SECRET_KEY: ${{ secrets.ADMIN_SECRET_KEY }}
+          SOLAPI_API_KEY: ${{ secrets.SOLAPI_API_KEY }}
+          SOLAPI_SECRET_KEY: ${{ secrets.SOLAPI_SECRET_KEY }}
+          SOLAPI_FROM: ${{ secrets.SOLAPI_FROM }}
+        run: |
+          {
+            echo "DB_NAME=ecommerce"
+            echo "DB_USERNAME=admin"
+            echo "DB_PASSWORD=$DB_PASSWORD"
+            echo "JWT_SECRET=$JWT_SECRET"
+            echo "NAVER_CLIENT_ID=$NAVER_CLIENT_ID"
+            echo "NAVER_CLIENT_SECRET=$NAVER_CLIENT_SECRET"
+            echo "ADMIN_SECRET_KEY=$ADMIN_SECRET_KEY"
+            echo "SOLAPI_API_KEY=$SOLAPI_API_KEY"
+            echo "SOLAPI_SECRET_KEY=$SOLAPI_SECRET_KEY"
+            echo "SOLAPI_FROM=$SOLAPI_FROM"
+          } > /tmp/.env
+          scp /tmp/.env ubuntu@3.94.195.37:/home/ubuntu/app/.env
 
       - name: EC2 배포
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: 3.94.195.37
-          username: ubuntu
-          key: ${{ secrets.EC2_SSH_KEY }}
-          script: |
-            cd /home/ubuntu/app
-
-            mv *.jar app.jar 2>/dev/null || true
-
-            cat > .env << 'EOF'
-            DB_NAME=ecommerce
-            DB_USERNAME=admin
-            DB_PASSWORD=${{ secrets.DB_PASSWORD }}
-            JWT_SECRET=${{ secrets.JWT_SECRET }}
-            NAVER_CLIENT_ID=${{ secrets.NAVER_CLIENT_ID }}
-            NAVER_CLIENT_SECRET=${{ secrets.NAVER_CLIENT_SECRET }}
-            ADMIN_SECRET_KEY=${{ secrets.ADMIN_SECRET_KEY }}
-            SOLAPI_API_KEY=${{ secrets.SOLAPI_API_KEY }}
-            SOLAPI_SECRET_KEY=${{ secrets.SOLAPI_SECRET_KEY }}
-            SOLAPI_FROM=${{ secrets.SOLAPI_FROM }}
-            EOF
-
-            docker compose up -d db
-            docker compose up -d --build app
+        run: ssh ubuntu@3.94.195.37 'cd /home/ubuntu/app && docker compose up -d db && docker compose up -d --build app'
