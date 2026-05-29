@@ -31,5 +31,5 @@ public interface CampaignService {
 
   void executeBatchSend(Long campaignId);
 
-  SmsStatusResponse getSmsStatus(Long campaignId, Long cursor);
+  SmsStatusResponse getSmsStatus(Long campaignId, Long cursor, String date, String time);
 }

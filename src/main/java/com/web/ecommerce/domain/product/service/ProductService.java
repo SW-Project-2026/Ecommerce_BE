@@ -22,6 +22,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Set;
 
 @Slf4j
 @Service
@@ -124,17 +125,24 @@ public class ProductService {
         product.deactivate();
     }
 
-    // 프론트에서 "price" 정렬 요청 시 엔티티 필드명 "minPrice"로 변환
+    private static final Set<String> VALID_SORT_PROPERTIES = Set.of(
+        "productId", "name", "minPrice", "maxPrice", "createdAt", "updatedAt"
+    );
+
     private Pageable resolveSort(Pageable pageable) {
-        Sort mapped = Sort.by(
-        pageable.getSort().stream()
-        .map(order -> {
-        String prop = order.getProperty().equals("price") ? "minPrice" : order.getProperty();
-            return order.isAscending() ? Sort.Order.asc(prop) : Sort.Order.desc(prop);
-        })
-        .toList()
-        );
-        return PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), mapped);
+        List<Sort.Order> orders = pageable.getSort().stream()
+            .map(order -> {
+                String prop = order.getProperty().equals("price") ? "minPrice" : order.getProperty();
+                return order.isAscending() ? Sort.Order.asc(prop) : Sort.Order.desc(prop);
+            })
+            .filter(order -> VALID_SORT_PROPERTIES.contains(order.getProperty()))
+            .toList();
+
+        Sort sort = orders.isEmpty()
+            ? Sort.by(Sort.Order.desc("createdAt"))
+            : Sort.by(orders);
+
+        return PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), sort);
     }
 
 }

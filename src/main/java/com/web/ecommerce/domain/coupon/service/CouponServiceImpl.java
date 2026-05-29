@@ -252,7 +252,9 @@ public class CouponServiceImpl implements CouponService {
     jwtProvider.validateToken(token);
     Long userId = jwtProvider.getCouponClaimUserId(token);
     Long couponId = jwtProvider.getCouponClaimCouponId(token);
-    return issueCoupon(couponId, userId);
+    return userCouponRepository.findByUserIdAndCouponId(userId, couponId)
+        .map(couponMapper::toUserCouponResponse)
+        .orElseGet(() -> issueCoupon(couponId, userId));
   }
 
   @Override
