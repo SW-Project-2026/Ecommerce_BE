@@ -19,6 +19,15 @@ public class CampaignScheduler {
     private final CampaignRepository campaignRepository;
     private final CampaignService campaignService;
 
+    @Scheduled(cron = "0 0 * * * *")
+    @org.springframework.transaction.annotation.Transactional
+    public void expireEndedCampaigns() {
+        int count = campaignRepository.expireCampaigns(LocalDateTime.now());
+        if (count > 0) {
+            log.info("만료 캠페인 상태 업데이트. count={}", count);
+        }
+    }
+
     @Scheduled(cron = "0 * * * * *")
     public void executeBatchCampaigns() {
         LocalDateTime now = LocalDateTime.now();
