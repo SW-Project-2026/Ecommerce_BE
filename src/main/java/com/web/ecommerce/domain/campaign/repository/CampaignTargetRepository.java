@@ -35,10 +35,7 @@ public interface CampaignTargetRepository extends JpaRepository<CampaignTarget, 
       @Param("to") LocalDateTime to);
 
   @Query("SELECT ct FROM CampaignTarget ct JOIN FETCH ct.user WHERE ct.campaign.id = :campaignId " +
-      "AND (:cursor IS NULL OR ct.id > :cursor) " +
-      "AND (:from IS NULL OR ct.sentAt >= :from) " +
-      "AND (:to IS NULL OR ct.sentAt < :to) " +
-      "ORDER BY ct.id ASC")
+      "AND ct.id > :cursor AND ct.sentAt >= :from AND ct.sentAt < :to ORDER BY ct.id ASC")
   List<CampaignTarget> findByCampaignIdWithCursorAndFilter(
       @Param("campaignId") Long campaignId,
       @Param("cursor") Long cursor,
