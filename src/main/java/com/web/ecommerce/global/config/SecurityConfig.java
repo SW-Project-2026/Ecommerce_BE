@@ -3,6 +3,7 @@ package com.web.ecommerce.global.config;
 import com.web.ecommerce.global.security.JwtAuthenticationFilter;
 import com.web.ecommerce.global.security.JwtProvider;
 import lombok.RequiredArgsConstructor;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -37,6 +38,9 @@ public class SecurityConfig {
         .cors(Customizer.withDefaults())
         .csrf(AbstractHttpConfigurer::disable)
         .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+        .exceptionHandling(e -> e
+            .authenticationEntryPoint((request, response, ex) ->
+                response.sendError(HttpServletResponse.SC_UNAUTHORIZED)))
         .addFilterBefore(new JwtAuthenticationFilter(jwtProvider),
             UsernamePasswordAuthenticationFilter.class);
   }

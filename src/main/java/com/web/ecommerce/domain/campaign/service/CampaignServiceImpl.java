@@ -48,6 +48,7 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.format.DateTimeParseException;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -112,10 +113,10 @@ public class CampaignServiceImpl implements CampaignService {
         .filterLogicalOperator(request.getFilterLogicalOperator())
         .couponRestrictionDays(coupon != null ? request.getCouponRestrictionDays() : null)
         .issueType(request.getIssueType() != null ? IssuanceMethod.valueOf(request.getIssueType()) : null)
-        .messageType(coupon != null ? request.getMessageType() : null)
-        .messageSubject(coupon != null ? request.getMessageSubject() : null)
-        .messageContent(coupon != null ? request.getMessageContent() : null)
-        .duplicatePolicy(coupon != null ? request.getDuplicatePolicy() : null)
+        .messageType(request.getMessageType())
+        .messageSubject(request.getMessageSubject())
+        .messageContent(request.getMessageContent())
+        .duplicatePolicy(request.getDuplicatePolicy())
         .coupon(coupon)
         .ad(ad)
         .build();
@@ -195,10 +196,10 @@ public class CampaignServiceImpl implements CampaignService {
         request.getFilterLogicalOperator(),
         coupon != null ? request.getCouponRestrictionDays() : null,
         request.getIssueType() != null ? IssuanceMethod.valueOf(request.getIssueType()) : null,
-        coupon != null ? request.getMessageType() : null,
-        coupon != null ? request.getMessageSubject() : null,
-        coupon != null ? request.getMessageContent() : null,
-        coupon != null ? request.getDuplicatePolicy() : null
+        request.getMessageType(),
+        request.getMessageSubject(),
+        request.getMessageContent(),
+        request.getDuplicatePolicy()
     );
     campaign.updateAdAndCoupon(ad, coupon);
 
@@ -250,7 +251,9 @@ public class CampaignServiceImpl implements CampaignService {
     int fail = 0;
     int skipped = 0;
     for (CampaignTarget target : campaignTargets) {
-      if (cutoff != null && target.getSentAt() != null && target.getSentAt().isAfter(cutoff)) {
+      if (hasCoupon && checkDuplicate && cutoff != null
+          && userCouponRepository.existsByUserIdAndCouponIdAndIsDuplicateFalseAndCreatedAtAfter(
+              target.getUser().getId(), campaign.getCoupon().getId(), cutoff)) {
         skipped++;
         continue;
       }
@@ -318,16 +321,36 @@ public class CampaignServiceImpl implements CampaignService {
 
   @Override
   @Transactional(readOnly = true)
-  public SmsStatusResponse getSmsStatus(Long campaignId, Long cursor) {
+  public SmsStatusResponse getSmsStatus(Long campaignId, Long cursor, String date, String time) {
     campaignRepository.findById(campaignId)
         .orElseThrow(() -> new CustomException(CampaignErrorCode.CAMPAIGN_NOT_FOUND));
 
-    long sent = campaignTargetRepository.countByCampaignIdAndStatus(campaignId, SendStatus.SENT);
-    long failed = campaignTargetRepository.countByCampaignIdAndStatus(campaignId, SendStatus.FAILED);
+    LocalDate today = LocalDate.now();
+    LocalDateTime todayStart = today.atStartOfDay();
+    LocalDateTime todayEnd = today.plusDays(1).atStartOfDay();
+
+    long todaySent = campaignTargetRepository.countByCampaignIdAndStatusAndSentAtBetween(
+        campaignId, SendStatus.SENT, todayStart, todayEnd);
+    long todayFailed = campaignTargetRepository.countByCampaignIdAndStatusAndSentAtBetween(
+        campaignId, SendStatus.FAILED, todayStart, todayEnd);
+
+    LocalDateTime filterFrom = null;
+    LocalDateTime filterTo = null;
+    if (date != null) {
+      LocalDate filterDate = LocalDate.parse(date);
+      if (time != null) {
+        LocalTime filterTime = LocalTime.parse(time);
+        filterFrom = filterDate.atTime(filterTime);
+        filterTo = filterFrom.plusMinutes(1);
+      } else {
+        filterFrom = filterDate.atStartOfDay();
+        filterTo = filterDate.plusDays(1).atStartOfDay();
+      }
+    }
 
     int size = 3;
     List<CampaignTarget> fetched = campaignTargetRepository
-        .findByCampaignIdWithCursor(campaignId, cursor, PageRequest.of(0, size + 1));
+        .findByCampaignIdWithCursorAndFilter(campaignId, cursor, filterFrom, filterTo, PageRequest.of(0, size + 1));
 
     boolean hasNext = fetched.size() > size;
     List<CampaignTarget> content = hasNext ? fetched.subList(0, size) : fetched;
@@ -342,8 +365,8 @@ public class CampaignServiceImpl implements CampaignService {
         .toList();
 
     return SmsStatusResponse.builder()
-        .sentCount(sent)
-        .failedCount(failed)
+        .todaySentCount(todaySent)
+        .todayFailedCount(todayFailed)
         .targets(CursorResponse.of(items, nextCursor, hasNext))
         .build();
   }

@@ -50,7 +50,10 @@ public interface CampaignController {
   ResponseEntity<BaseResponse<SmsSendResponse>> retrySms(@PathVariable Long campaignId,
       @RequestBody SendSmsRequest request);
 
-  @Operation(summary = "캠페인 SMS 발송 현황 조회")
+  @Operation(summary = "캠페인 SMS 발송 현황 조회",
+      description = "오늘 성공/실패 인원 + 대상자 커서 목록. date(yyyy-MM-dd), time(HH:mm) 파라미터로 필터링 가능")
   ResponseEntity<BaseResponse<SmsStatusResponse>> getSmsStatus(@PathVariable Long campaignId,
-      @RequestParam(required = false) Long cursor);
+      @RequestParam(required = false) Long cursor,
+      @RequestParam(required = false) String date,
+      @RequestParam(required = false) String time);
 }

@@ -96,8 +96,10 @@ public class CampaignControllerImpl implements CampaignController {
   @Override
   @GetMapping("/{campaignId}/sms-status")
   public ResponseEntity<BaseResponse<SmsStatusResponse>> getSmsStatus(@PathVariable Long campaignId,
-      @RequestParam(required = false) Long cursor) {
-    return ResponseEntity.ok(BaseResponse.success(campaignService.getSmsStatus(campaignId, cursor)));
+      @RequestParam(required = false) Long cursor,
+      @RequestParam(required = false) String date,
+      @RequestParam(required = false) String time) {
+    return ResponseEntity.ok(BaseResponse.success(campaignService.getSmsStatus(campaignId, cursor, date, time)));
   }
 
 }

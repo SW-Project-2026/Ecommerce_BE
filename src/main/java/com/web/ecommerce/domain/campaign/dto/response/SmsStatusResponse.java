@@ -14,12 +14,12 @@ import lombok.NoArgsConstructor;
 @Schema(title = "SMS 발송 현황 DTO")
 public class SmsStatusResponse {
 
-    @Schema(description = "발송 성공 인원")
-    private long sentCount;
+    @Schema(description = "오늘 발송 성공 인원")
+    private long todaySentCount;
 
-    @Schema(description = "발송 실패 인원")
-    private long failedCount;
+    @Schema(description = "오늘 발송 실패 인원")
+    private long todayFailedCount;
 
-    @Schema(description = "대상자 목록 (커서 기반)")
+    @Schema(description = "대상자 목록 (커서 기반, 날짜/시간 필터 적용)")
     private CursorResponse<SmsTargetResponse> targets;
 }
