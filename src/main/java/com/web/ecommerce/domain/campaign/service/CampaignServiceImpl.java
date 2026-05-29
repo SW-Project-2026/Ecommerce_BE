@@ -349,8 +349,12 @@ public class CampaignServiceImpl implements CampaignService {
     }
 
     int size = 3;
-    List<CampaignTarget> fetched = campaignTargetRepository
-        .findByCampaignIdWithCursorAndFilter(campaignId, cursor, filterFrom, filterTo, PageRequest.of(0, size + 1));
+    long cursorId = cursor != null ? cursor : 0L;
+    List<CampaignTarget> fetched = filterFrom != null
+        ? campaignTargetRepository.findByCampaignIdWithCursorAndFilter(
+            campaignId, cursorId, filterFrom, filterTo, PageRequest.of(0, size + 1))
+        : campaignTargetRepository.findByCampaignIdWithCursor(
+            campaignId, cursor, PageRequest.of(0, size + 1));
 
     boolean hasNext = fetched.size() > size;
     List<CampaignTarget> content = hasNext ? fetched.subList(0, size) : fetched;
