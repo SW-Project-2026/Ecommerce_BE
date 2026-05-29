@@ -6,4 +6,5 @@ ENTRYPOINT ["java", \
   "-XX:+UseG1GC", \
   "-XX:MaxMetaspaceSize=128m", \
   "-Dfile.encoding=UTF-8", \
+  "-Duser.timezone=Asia/Seoul", \
   "-jar", "app.jar"]
