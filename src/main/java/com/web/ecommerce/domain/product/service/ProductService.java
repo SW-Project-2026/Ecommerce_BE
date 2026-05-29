@@ -1,6 +1,5 @@
 package com.web.ecommerce.domain.product.service;
 
-import com.web.ecommerce.domain.product.dto.NaverSearchResponse;
 import com.web.ecommerce.domain.product.dto.response.ProductResponse;
 import com.web.ecommerce.domain.product.dto.request.ProductCreateRequest;
 import com.web.ecommerce.domain.product.dto.request.ProductSearchRequest;
@@ -21,8 +20,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.client.RestClient;
-import org.springframework.web.client.RestClientException;
 
 import java.util.List;
 
@@ -31,42 +28,36 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ProductService {
 
-    private final RestClient naverRestClient;
     private final ProductRepository productRepository;
     private final PageMapper pageMapper;
 
+    @Transactional(readOnly = true)
     public ProductSearchResult searchProducts(ProductSearchRequest request) {
-        NaverSearchResponse response;
-        try {
-            response = naverRestClient.get()
-                    .uri(uriBuilder -> uriBuilder
-                            .queryParam("query", request.getQuery())
-                            .queryParam("display", request.getDisplay())
-                            .queryParam("start", request.getStart())
-                            .queryParam("sort", request.getSort())
-                            .build())
-                    .retrieve()
-                    .body(NaverSearchResponse.class);
-        } catch (RestClientException e) {
-            log.error("네이버 쇼핑 API 호출 실패. query={}", request.getQuery(), e);
-            throw new CustomException(ProductErrorCode.NAVER_API_CALL_FAILED);
-        }
+        int pageNumber = (request.getStart() - 1) / request.getDisplay();
+        Pageable pageable = PageRequest.of(pageNumber, request.getDisplay(), resolveSearchSort(request.getSort()));
 
-        if (response == null || response.getItems() == null) {
-            log.warn("네이버 API 응답이 비어있습니다. query={}", request.getQuery());
-            throw new CustomException(ProductErrorCode.NAVER_API_EMPTY_RESPONSE);
-        }
+        Page<Product> page = productRepository.findByIsActiveAndNameContainingIgnoreCase(
+                1, request.getQuery(), pageable);
 
-        List<ProductResponse> products = response.getItems().stream()
+        List<ProductResponse> products = page.getContent().stream()
                 .map(ProductResponse::from)
                 .toList();
 
         return ProductSearchResult.builder()
-                .total(response.getTotal())
-                .start(response.getStart())
-                .display(response.getDisplay())
+                .total((int) page.getTotalElements())
+                .start(request.getStart())
+                .display(request.getDisplay())
                 .products(products)
                 .build();
+    }
+
+    private Sort resolveSearchSort(String sort) {
+        return switch (sort) {
+            case "asc" -> Sort.by(Sort.Order.asc("minPrice"));
+            case "dsc" -> Sort.by(Sort.Order.desc("minPrice"));
+            case "date" -> Sort.by(Sort.Order.desc("createdAt"));
+            default -> Sort.by(Sort.Order.asc("name"));
+        };
     }
 
     @Transactional(readOnly = true)

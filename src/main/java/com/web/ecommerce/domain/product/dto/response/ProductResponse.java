@@ -1,6 +1,7 @@
 package com.web.ecommerce.domain.product.dto.response;
 
 import com.web.ecommerce.domain.product.dto.NaverProductItem;
+import com.web.ecommerce.domain.product.entity.Product;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Getter;
@@ -42,6 +43,20 @@ public class ProductResponse {
 
     @Schema(description = "카테고리 2")
     private String category2;
+
+    public static ProductResponse from(Product product) {
+        return ProductResponse.builder()
+                .productId(String.valueOf(product.getProductId()))
+                .title(product.getName())
+                .image(product.getImageUrl())
+                .lowestPrice(String.valueOf(product.getMinPrice()))
+                .highestPrice(String.valueOf(product.getMaxPrice()))
+                .mallName(product.getMallName())
+                .brand(product.getBrand())
+                .category1(product.getProductCategory())
+                .category2(product.getSubCategory())
+                .build();
+    }
 
     public static ProductResponse from(NaverProductItem item) {
         return ProductResponse.builder()

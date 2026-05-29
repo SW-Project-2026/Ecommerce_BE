@@ -35,7 +35,7 @@ public class ProductController {
     private final ProductSyncService productSyncService;
     private final ProductSyncScheduleService productSyncScheduleService;
 
-    @Operation(summary = "네이버 상품 검색", description = "네이버 쇼핑 API를 통해 상품을 검색하는 API")
+    @Operation(summary = "상품 검색", description = "DB에 저장된 상품을 키워드로 검색하는 API")
     @GetMapping("/search")
     public ResponseEntity<BaseResponse<ProductSearchResult>> searchProducts(
             @Valid @ModelAttribute ProductSearchRequest request) {
