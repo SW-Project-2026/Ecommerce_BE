@@ -23,9 +23,9 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
   Page<User> findAllByRole(Role role, Pageable pageable);
 
-  @Query("SELECT u FROM User u WHERE u.isActive = 1 AND u.phone IS NOT NULL AND u.phone <> '' AND u.marketingAgreed = true")
+  @Query("SELECT u FROM User u WHERE u.isActive = 1 AND u.role = 'USER' AND u.phone IS NOT NULL AND u.phone <> '' AND u.marketingAgreed = true")
   List<User> findSmsTargetUsers();
 
-  @Query("SELECT u FROM User u WHERE u.isActive = 1 AND u.phone IS NOT NULL AND u.phone <> '' AND u.marketingAgreed = true AND u.createdAt >= :since")
+  @Query("SELECT u FROM User u WHERE u.isActive = 1 AND u.role = 'USER' AND u.phone IS NOT NULL AND u.phone <> '' AND u.marketingAgreed = true AND u.createdAt >= :since")
   List<User> findNewSmsTargetUsers(@Param("since") LocalDateTime since);
 }
