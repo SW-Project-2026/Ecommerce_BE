@@ -334,23 +334,22 @@ public class CampaignServiceImpl implements CampaignService {
     long todayFailed = campaignTargetRepository.countByCampaignIdAndStatusAndSentAtBetween(
         campaignId, SendStatus.FAILED, todayStart, todayEnd);
 
-    LocalDateTime filterFrom = null;
-    LocalDateTime filterTo = null;
-    if (date != null) {
-      LocalDate filterDate = LocalDate.parse(date);
-      if (time != null) {
-        LocalTime filterTime = LocalTime.parse(time);
-        filterFrom = filterDate.atTime(filterTime);
-        filterTo = filterFrom.plusMinutes(1);
-      } else {
-        filterFrom = filterDate.atStartOfDay();
-        filterTo = filterDate.plusDays(1).atStartOfDay();
-      }
+    LocalDate filterDate = (date != null) ? LocalDate.parse(date) : LocalDate.now();
+    LocalDateTime filterFrom;
+    LocalDateTime filterTo;
+    if (time != null) {
+      LocalTime filterTime = LocalTime.parse(time);
+      filterFrom = filterDate.atTime(filterTime);
+      filterTo = filterFrom.plusMinutes(1);
+    } else {
+      filterFrom = filterDate.atStartOfDay();
+      filterTo = filterDate.plusDays(1).atStartOfDay();
     }
 
     int size = 3;
-    List<CampaignTarget> fetched = campaignTargetRepository
-        .findByCampaignIdWithCursorAndFilter(campaignId, cursor, filterFrom, filterTo, PageRequest.of(0, size + 1));
+    long cursorId = cursor != null ? cursor : 0L;
+    List<CampaignTarget> fetched = campaignTargetRepository.findByCampaignIdWithCursorAndFilter(
+        campaignId, cursorId, filterFrom, filterTo, PageRequest.of(0, size + 1));
 
     boolean hasNext = fetched.size() > size;
     List<CampaignTarget> content = hasNext ? fetched.subList(0, size) : fetched;
