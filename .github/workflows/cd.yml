@@ -33,7 +33,7 @@ jobs:
           strip_components: 2
 
       - name: EC2 배포
-        uses: appleboy/ssh-action@v1
+        uses: appleboy/ssh-action@v1.0.3
         with:
           host: 3.94.195.37
           username: ubuntu
