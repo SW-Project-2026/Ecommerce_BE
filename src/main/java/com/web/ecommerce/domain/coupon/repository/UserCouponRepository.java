@@ -4,6 +4,7 @@ import com.web.ecommerce.domain.coupon.entity.UserCoupon;
 import com.web.ecommerce.domain.coupon.enums.CouponStatus;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -15,6 +16,8 @@ public interface UserCouponRepository extends JpaRepository<UserCoupon, Long> {
   Page<UserCoupon> findByUserIdAndStatusAndIsDuplicateFalse(Long userId, CouponStatus status, Pageable pageable);
 
   boolean existsByUserIdAndCouponId(Long userId, Long couponId);
+
+  Optional<UserCoupon> findByUserIdAndCouponId(Long userId, Long couponId);
 
   boolean existsByUserIdAndCouponIdAndIsDuplicateFalseAndCreatedAtAfter(Long userId, Long couponId, LocalDateTime after);
 
