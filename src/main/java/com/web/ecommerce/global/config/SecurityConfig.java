@@ -89,6 +89,11 @@ public class SecurityConfig {
         // 주문
         .requestMatchers("/api/orders", "/api/orders/**").hasRole("USER")
 
+        // 관리자 대시보드
+        .requestMatchers("/api/admin/dashboard").hasRole("ADMIN")
+        .requestMatchers("/api/admin/users/*/orders").hasRole("ADMIN")
+        .requestMatchers("/api/admin/users/*/cart").hasRole("ADMIN")
+
         // 관리자만 가능
         .requestMatchers(HttpMethod.POST, "/api/products/**").hasRole("ADMIN")
         .requestMatchers(HttpMethod.PUT, "/api/products/**").hasRole("ADMIN")

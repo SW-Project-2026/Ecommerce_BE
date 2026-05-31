@@ -2,6 +2,7 @@ package com.web.ecommerce.domain.user.repository;
 
 import com.web.ecommerce.domain.user.entity.Role;
 import com.web.ecommerce.domain.user.entity.User;
+import com.web.ecommerce.domain.user.entity.UserGrade;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -28,4 +29,10 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
   @Query("SELECT u FROM User u WHERE u.isActive = 1 AND u.role = 'USER' AND u.phone IS NOT NULL AND u.phone <> '' AND u.marketingAgreed = true AND u.createdAt >= :since")
   List<User> findNewSmsTargetUsers(@Param("since") LocalDateTime since);
+
+  long countByRoleAndIsActive(Role role, int isActive);
+
+  long countByRoleAndIsActiveAndCreatedAtAfter(Role role, int isActive, LocalDateTime after);
+
+  long countByRoleAndIsActiveAndGrade(Role role, int isActive, UserGrade grade);
 }
