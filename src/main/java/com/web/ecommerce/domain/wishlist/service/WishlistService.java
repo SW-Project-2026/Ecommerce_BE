@@ -1,12 +1,11 @@
 package com.web.ecommerce.domain.wishlist.service;
 
 import com.web.ecommerce.domain.wishlist.dto.response.WishlistResponse;
-
-import java.util.List;
+import com.web.ecommerce.global.response.CursorResponse;
 
 public interface WishlistService {
 
-    List<WishlistResponse> getWishlist(Long userId);
+    CursorResponse<WishlistResponse> getWishlist(Long userId, Long cursor, int size);
 
     WishlistResponse addToWishlist(Long userId, Long productId);
 

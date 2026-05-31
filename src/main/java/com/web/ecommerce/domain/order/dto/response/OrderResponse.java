@@ -12,6 +12,7 @@ public class OrderResponse {
     private Long orderId;
     private String orderDate;
     private String status;
+    private String statusLabel;   // 주문 대기 / 결제 완료 / 배송 중 / 배송 완료 / 주문 취소
     private int totalAmount;
     private int discountAmount;
     private int finalAmount;

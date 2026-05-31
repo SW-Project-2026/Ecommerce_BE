@@ -93,6 +93,7 @@ public class SecurityConfig {
         .requestMatchers("/api/admin/dashboard").hasRole("ADMIN")
         .requestMatchers("/api/admin/users/*/orders").hasRole("ADMIN")
         .requestMatchers("/api/admin/users/*/cart").hasRole("ADMIN")
+        .requestMatchers("/api/admin/users/*/wishlist").hasRole("ADMIN")
 
         // 관리자만 가능
         .requestMatchers(HttpMethod.POST, "/api/products/**").hasRole("ADMIN")

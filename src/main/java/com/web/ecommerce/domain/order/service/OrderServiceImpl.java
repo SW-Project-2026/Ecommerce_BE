@@ -15,6 +15,7 @@ import com.web.ecommerce.domain.order.enums.OrderStatus;
 import com.web.ecommerce.domain.order.exception.OrderErrorCode;
 import com.web.ecommerce.domain.order.mapper.OrderMapper;
 import com.web.ecommerce.domain.order.repository.OrderRepository;
+import com.web.ecommerce.global.response.CursorResponse;
 import com.web.ecommerce.domain.product.entity.Product;
 import com.web.ecommerce.domain.product.exception.ProductErrorCode;
 import com.web.ecommerce.domain.product.repository.ProductRepository;
@@ -31,6 +32,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import org.springframework.data.domain.PageRequest;
 
 @Service
 @RequiredArgsConstructor
@@ -45,9 +47,19 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional(readOnly = true)
-    public Page<OrderResponse> getOrders(Long userId, Pageable pageable) {
-        return orderRepository.findAllByUserId(userId, pageable)
-                .map(orderMapper::toResponse);
+    public CursorResponse<OrderResponse> getOrders(Long userId, Long cursor, String period, int size) {
+        List<Order> orders = orderRepository.findByUserIdWithCursor(
+                userId,
+                cursor == null ? 0L : cursor,
+                periodToDateTime(period),
+                PageRequest.of(0, size + 1)
+        );
+
+        boolean hasNext = orders.size() > size;
+        if (hasNext) orders = orders.subList(0, size);
+
+        Long nextCursor = hasNext ? orders.get(orders.size() - 1).getId() : null;
+        return CursorResponse.of(orders.stream().map(orderMapper::toResponse).toList(), nextCursor, hasNext);
     }
 
     @Override
@@ -179,6 +191,16 @@ public class OrderServiceImpl implements OrderService {
             }
             return discount;
         }
+    }
+
+    private LocalDateTime periodToDateTime(String period) {
+        if (period == null) return null;
+        return switch (period) {
+            case "1m" -> LocalDateTime.now().minusMonths(1);
+            case "3m" -> LocalDateTime.now().minusMonths(3);
+            case "6m" -> LocalDateTime.now().minusMonths(6);
+            default   -> null; // all
+        };
     }
 
     private Order getOrderOwnedByUser(Long userId, Long orderId) {

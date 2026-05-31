@@ -12,7 +12,9 @@ import com.web.ecommerce.domain.wishlist.exception.WishlistErrorCode;
 import com.web.ecommerce.domain.wishlist.mapper.WishlistMapper;
 import com.web.ecommerce.domain.wishlist.repository.WishlistRepository;
 import com.web.ecommerce.global.exception.CustomException;
+import com.web.ecommerce.global.response.CursorResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,10 +31,18 @@ public class WishlistServiceImpl implements WishlistService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<WishlistResponse> getWishlist(Long userId) {
-        return wishlistRepository.findAllByUserId(userId).stream()
-                .map(wishlistMapper::toResponse)
-                .toList();
+    public CursorResponse<WishlistResponse> getWishlist(Long userId, Long cursor, int size) {
+        List<Wishlist> wishlists = wishlistRepository.findByUserIdWithCursor(
+                userId,
+                cursor == null ? 0L : cursor,
+                PageRequest.of(0, size + 1)
+        );
+
+        boolean hasNext = wishlists.size() > size;
+        if (hasNext) wishlists = wishlists.subList(0, size);
+
+        Long nextCursor = hasNext ? wishlists.get(wishlists.size() - 1).getId() : null;
+        return CursorResponse.of(wishlists.stream().map(wishlistMapper::toResponse).toList(), nextCursor, hasNext);
     }
 
     @Override

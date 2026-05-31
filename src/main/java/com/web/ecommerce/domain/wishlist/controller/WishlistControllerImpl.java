@@ -3,14 +3,13 @@ package com.web.ecommerce.domain.wishlist.controller;
 import com.web.ecommerce.domain.wishlist.dto.response.WishlistResponse;
 import com.web.ecommerce.domain.wishlist.service.WishlistService;
 import com.web.ecommerce.global.response.BaseResponse;
+import com.web.ecommerce.global.response.CursorResponse;
 import com.web.ecommerce.global.security.UserPrincipal;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/wishlist")
@@ -21,9 +20,12 @@ public class WishlistControllerImpl implements WishlistController {
 
     @Override
     @GetMapping
-    public ResponseEntity<BaseResponse<List<WishlistResponse>>> getWishlist(
-            @AuthenticationPrincipal UserPrincipal userPrincipal) {
-        return ResponseEntity.ok(BaseResponse.success(wishlistService.getWishlist(userPrincipal.id())));
+    public ResponseEntity<BaseResponse<CursorResponse<WishlistResponse>>> getWishlist(
+            @AuthenticationPrincipal UserPrincipal userPrincipal,
+            @RequestParam(required = false) Long cursor,
+            @RequestParam(defaultValue = "10") int size) {
+        return ResponseEntity.ok(BaseResponse.success(
+                wishlistService.getWishlist(userPrincipal.id(), cursor, size)));
     }
 
     @Override

@@ -4,14 +4,12 @@ import com.web.ecommerce.domain.admin.dto.response.AdminDashboardResponse;
 import com.web.ecommerce.domain.admin.service.AdminDashboardService;
 import com.web.ecommerce.domain.cart.dto.response.CartResponse;
 import com.web.ecommerce.domain.order.dto.response.OrderResponse;
+import com.web.ecommerce.domain.wishlist.dto.response.WishlistResponse;
 import com.web.ecommerce.global.response.BaseResponse;
+import com.web.ecommerce.global.response.CursorResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/admin")
@@ -28,18 +26,32 @@ public class AdminDashboardControllerImpl implements AdminDashboardController {
 
     @Override
     @GetMapping("/users/{userId}/orders")
-    public ResponseEntity<BaseResponse<Page<OrderResponse>>> getUserOrders(
+    public ResponseEntity<BaseResponse<CursorResponse<OrderResponse>>> getUserOrders(
             @PathVariable Long userId,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
+            @RequestParam(required = false) Long cursor,
+            @RequestParam(defaultValue = "all") String period,
+            @RequestParam(defaultValue = "6") int size) {
         return ResponseEntity.ok(BaseResponse.success(
-                adminDashboardService.getUserOrders(userId, PageRequest.of(page, size))));
+                adminDashboardService.getUserOrders(userId, cursor, period, size)));
     }
 
     @Override
     @GetMapping("/users/{userId}/cart")
-    public ResponseEntity<BaseResponse<List<CartResponse>>> getUserCart(
-            @PathVariable Long userId) {
-        return ResponseEntity.ok(BaseResponse.success(adminDashboardService.getUserCart(userId)));
+    public ResponseEntity<BaseResponse<CursorResponse<CartResponse>>> getUserCart(
+            @PathVariable Long userId,
+            @RequestParam(required = false) Long cursor,
+            @RequestParam(defaultValue = "6") int size) {
+        return ResponseEntity.ok(BaseResponse.success(
+                adminDashboardService.getUserCart(userId, cursor, size)));
+    }
+
+    @Override
+    @GetMapping("/users/{userId}/wishlist")
+    public ResponseEntity<BaseResponse<CursorResponse<WishlistResponse>>> getUserWishlist(
+            @PathVariable Long userId,
+            @RequestParam(required = false) Long cursor,
+            @RequestParam(defaultValue = "6") int size) {
+        return ResponseEntity.ok(BaseResponse.success(
+                adminDashboardService.getUserWishlist(userId, cursor, size)));
     }
 }

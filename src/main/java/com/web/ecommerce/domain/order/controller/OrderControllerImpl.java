@@ -4,11 +4,10 @@ import com.web.ecommerce.domain.order.dto.request.CreateOrderRequest;
 import com.web.ecommerce.domain.order.dto.response.OrderResponse;
 import com.web.ecommerce.domain.order.service.OrderService;
 import com.web.ecommerce.global.response.BaseResponse;
+import com.web.ecommerce.global.response.CursorResponse;
 import com.web.ecommerce.global.security.UserPrincipal;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -23,12 +22,13 @@ public class OrderControllerImpl implements OrderController {
 
     @Override
     @GetMapping
-    public ResponseEntity<BaseResponse<Page<OrderResponse>>> getOrders(
+    public ResponseEntity<BaseResponse<CursorResponse<OrderResponse>>> getOrders(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
-            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(required = false) Long cursor,
+            @RequestParam(defaultValue = "all") String period,
             @RequestParam(defaultValue = "10") int size) {
         return ResponseEntity.ok(BaseResponse.success(
-                orderService.getOrders(userPrincipal.id(), PageRequest.of(page, size))));
+                orderService.getOrders(userPrincipal.id(), cursor, period, size)));
     }
 
     @Override
