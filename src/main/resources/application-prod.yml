@@ -22,7 +22,6 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: false
-        auto_quote_keyword: true
     show-sql: false
 
 server:
