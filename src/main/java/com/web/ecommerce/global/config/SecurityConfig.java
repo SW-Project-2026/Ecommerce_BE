@@ -77,6 +77,18 @@ public class SecurityConfig {
         .requestMatchers(HttpMethod.GET, "/api/users/me/coupons").hasRole("USER")
         .requestMatchers(HttpMethod.PATCH, "/api/users/me/coupons/*/use").hasRole("USER")
 
+        // 배송지
+        .requestMatchers("/api/addresses", "/api/addresses/**").hasRole("USER")
+
+        // 장바구니
+        .requestMatchers("/api/cart", "/api/cart/**").hasRole("USER")
+
+        // 찜
+        .requestMatchers("/api/wishlist", "/api/wishlist/**").hasRole("USER")
+
+        // 주문
+        .requestMatchers("/api/orders", "/api/orders/**").hasRole("USER")
+
         // 관리자만 가능
         .requestMatchers(HttpMethod.POST, "/api/products/**").hasRole("ADMIN")
         .requestMatchers(HttpMethod.PUT, "/api/products/**").hasRole("ADMIN")

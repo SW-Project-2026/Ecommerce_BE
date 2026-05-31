@@ -22,7 +22,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "users")
+@Table(name = "user")
 public class User  extends BaseTimeEntity {
 
   @Id
@@ -50,6 +50,11 @@ public class User  extends BaseTimeEntity {
   @Builder.Default
   private Role role = Role.USER;
 
+  @Enumerated(EnumType.STRING)
+  @Column(name = "grade", nullable = false, length = 10)
+  @Builder.Default
+  private UserGrade grade = UserGrade.NEW;
+
   @Column(name = "is_active")
   private Integer isActive;
 
@@ -63,6 +68,10 @@ public class User  extends BaseTimeEntity {
 
   public void updatePassword(String encodedPassword) {
     this.password = encodedPassword;
+  }
+
+  public void updateGrade(UserGrade grade) {
+    this.grade = grade;
   }
 
   public void withdraw() {
