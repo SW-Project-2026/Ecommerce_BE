@@ -29,9 +29,7 @@ Page<UserCouponResponse> getUserCoupons(Long userId, String status, Pageable pag
 
   CursorResponse<CouponSelectResponse> getCouponSelectList(Long cursor, int size);
 
-  List<DownloadableCouponResponse> getDownloadableCoupons(Long userId);
-
-  UserCouponResponse downloadCoupon(Long couponId, Long userId);
+UserCouponResponse downloadCoupon(Long couponId, Long userId);
 
   UserCouponResponse claimCouponByToken(String token);
 }

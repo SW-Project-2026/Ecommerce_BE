@@ -26,4 +26,12 @@ public class SyncResultResponse {
                 .syncStatus("정상")
                 .build();
     }
+
+    public static SyncResultResponse ofStatus(long totalCount, LocalDateTime lastSyncedAt) {
+        return SyncResultResponse.builder()
+                .savedCount((int) totalCount)
+                .lastSyncedAt(lastSyncedAt)
+                .syncStatus(lastSyncedAt != null ? "정상" : "미수집")
+                .build();
+    }
 }

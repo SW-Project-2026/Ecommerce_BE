@@ -16,6 +16,7 @@ import com.web.ecommerce.global.response.BaseResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Pageable;
@@ -82,6 +83,14 @@ public class ProductController {
     public ResponseEntity<BaseResponse<Void>> deleteProduct(@PathVariable Long productId) {
         productService.deleteProduct(productId);
         return ResponseEntity.ok(BaseResponse.success(null));
+    }
+
+    @Operation(summary = "수동 수집 현황 조회", description = "마지막 수집 시각 및 전체 상품 수 조회")
+    @GetMapping("/sync/status")
+    public ResponseEntity<BaseResponse<SyncResultResponse>> getSyncStatus() {
+        long totalCount = productService.countProducts();
+        LocalDateTime lastSyncedAt = productService.getLastSyncedAt();
+        return ResponseEntity.ok(BaseResponse.success(SyncResultResponse.ofStatus(totalCount, lastSyncedAt)));
     }
 
     @Operation(summary = "상품 수동 수집", description = "네이버 쇼핑 API를 즉시 호출하여 DB에 상품 데이터를 저장하는 API")
