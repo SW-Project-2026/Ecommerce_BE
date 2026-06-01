@@ -21,6 +21,9 @@ public interface OrderController {
     @Operation(summary = "주문 생성")
     ResponseEntity<BaseResponse<OrderResponse>> createOrder(UserPrincipal userPrincipal, CreateOrderRequest request);
 
+    @Operation(summary = "결제", description = "PENDING 상태의 주문만 결제 가능")
+    ResponseEntity<BaseResponse<OrderResponse>> payOrder(UserPrincipal userPrincipal, Long orderId);
+
     @Operation(summary = "주문 취소", description = "PENDING 상태의 주문만 취소 가능")
     ResponseEntity<Void> cancelOrder(UserPrincipal userPrincipal, Long orderId);
 }
