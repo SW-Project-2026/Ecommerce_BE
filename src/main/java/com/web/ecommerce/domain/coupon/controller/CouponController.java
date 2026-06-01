@@ -41,10 +41,7 @@ public interface CouponController {
   @Operation(summary = "쿠폰 선택 목록 조회 (캠페인 생성용)", description = "cursor 기반 무한스크롤. cursor=0 또는 미입력 시 처음부터 조회.")
   ResponseEntity<BaseResponse<CursorResponse<CouponSelectResponse>>> getCouponSelectList(Long cursor, int size);
 
-  @Operation(summary = "다운로드 가능 쿠폰 목록 조회", description = "마이페이지에 다운로드 가능한 쿠폰 목록. 이미 발급받은 쿠폰 및 수량 초과 쿠폰은 제외됩니다.")
-  ResponseEntity<BaseResponse<List<DownloadableCouponResponse>>> getDownloadableCoupons();
-
-  @Operation(summary = "쿠폰 다운로드 발급", description = "사용자가 팝업에서 쿠폰 다운로드 버튼 클릭 시 호출.")
+@Operation(summary = "쿠폰 다운로드 발급", description = "사용자가 팝업에서 쿠폰 다운로드 버튼 클릭 시 호출.")
   ResponseEntity<BaseResponse<UserCouponResponse>> downloadCoupon(Long couponId);
 
   @Operation(summary = "SMS 링크 쿠폰 수령", description = "SMS 링크 클릭 시 토큰으로 쿠폰 자동 발급. 인증 불필요.")

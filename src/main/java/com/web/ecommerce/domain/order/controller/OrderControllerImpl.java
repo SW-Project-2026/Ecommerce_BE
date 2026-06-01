@@ -49,6 +49,14 @@ public class OrderControllerImpl implements OrderController {
     }
 
     @Override
+    @PatchMapping("/{orderId}/pay")
+    public ResponseEntity<BaseResponse<OrderResponse>> payOrder(
+            @AuthenticationPrincipal UserPrincipal userPrincipal,
+            @PathVariable Long orderId) {
+        return ResponseEntity.ok(BaseResponse.success(orderService.payOrder(userPrincipal.id(), orderId)));
+    }
+
+    @Override
     @PatchMapping("/{orderId}/cancel")
     public ResponseEntity<Void> cancelOrder(
             @AuthenticationPrincipal UserPrincipal userPrincipal,

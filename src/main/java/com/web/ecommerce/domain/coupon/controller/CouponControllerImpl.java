@@ -93,14 +93,7 @@ public class CouponControllerImpl implements CouponController {
     return ResponseEntity.ok(BaseResponse.success(couponService.getCouponSelectList(cursor, size)));
   }
 
-  @Override
-  @GetMapping("/api/coupons/downloadable")
-  public ResponseEntity<BaseResponse<List<DownloadableCouponResponse>>> getDownloadableCoupons() {
-    Long currentUserId = ((UserPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).id();
-    return ResponseEntity.ok(BaseResponse.success(couponService.getDownloadableCoupons(currentUserId)));
-  }
-
-  @Override
+@Override
   @PostMapping("/api/coupons/{couponId}/download")
   public ResponseEntity<BaseResponse<UserCouponResponse>> downloadCoupon(@PathVariable Long couponId) {
     Long currentUserId = ((UserPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).id();

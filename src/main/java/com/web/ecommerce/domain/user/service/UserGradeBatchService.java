@@ -21,6 +21,7 @@ public class UserGradeBatchService {
 
     private static final int VIP_THRESHOLD = 300_000;   // 30만원
     private static final int NEW_DAYS = 30;             // 가입 30일 이내
+    private static final int DORMANT_MONTHS = 6;        // 마지막 로그인 6개월 이상
 
     private final UserRepository userRepository;
     private final OrderRepository orderRepository;
@@ -46,6 +47,13 @@ public class UserGradeBatchService {
     }
 
     private UserGrade calculateGrade(User user) {
+        // 휴면: 마지막 로그인이 6개월 이상 지난 경우
+        if (user.getLastLoginAt() != null &&
+                user.getLastLoginAt().isBefore(LocalDateTime.now().minusMonths(DORMANT_MONTHS))) {
+            return UserGrade.DORMANT;
+        }
+
+        // 신규: 가입 30일 이내
         if (user.getCreatedAt() != null &&
                 user.getCreatedAt().isAfter(LocalDateTime.now().minusDays(NEW_DAYS))) {
             return UserGrade.NEW;

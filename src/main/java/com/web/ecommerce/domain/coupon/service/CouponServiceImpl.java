@@ -205,42 +205,7 @@ public class CouponServiceImpl implements CouponService {
         .map(couponMapper::toUserCouponResponse);
   }
 
-  @Override
-  @Transactional(readOnly = true)
-  public List<DownloadableCouponResponse> getDownloadableCoupons(Long userId) {
-    List<Campaign> campaigns = campaignRepository.findActiveDownloadCampaigns(
-        IssuanceMethod.DOWNLOAD, LocalDateTime.now());
-
-    List<DownloadableCouponResponse> result = new ArrayList<>();
-    for (Campaign campaign : campaigns) {
-      Coupon coupon = campaign.getCoupon();
-
-      if (userCouponRepository.existsByUserIdAndCouponId(userId, coupon.getId())) {
-        continue;
-      }
-
-      if (coupon.getIssueLimit() != null) {
-        long issuedCount = userCouponRepository.countByCouponIdAndIsDuplicateFalse(coupon.getId());
-        if (issuedCount >= coupon.getIssueLimit()) {
-          continue;
-        }
-      }
-
-      result.add(DownloadableCouponResponse.builder()
-          .couponId(coupon.getId())
-          .name(coupon.getName())
-          .discountType(coupon.getDiscountType().name())
-          .discountAmount(coupon.getDiscountAmount())
-          .minOrderAmount(coupon.getMinOrderAmount())
-          .maxDiscountAmount(coupon.getMaxDiscountAmount())
-          .expiredAt(coupon.getExpiredAt())
-          .build());
-    }
-
-    return result;
-  }
-
-  @Override
+@Override
   @Transactional
   public UserCouponResponse downloadCoupon(Long couponId, Long userId) {
     return issueCoupon(couponId, userId);

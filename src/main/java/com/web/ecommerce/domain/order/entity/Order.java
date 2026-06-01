@@ -13,7 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name = "order s")
+@Table(name = "orders")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
@@ -57,6 +57,10 @@ public class Order extends BaseTimeEntity {
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
     @Builder.Default
     private List<OrderDetail> orderDetails = new ArrayList<>();
+
+    public void pay() {
+        this.status = OrderStatus.PAID;
+    }
 
     public void cancel() {
         this.status = OrderStatus.CANCELLED;
