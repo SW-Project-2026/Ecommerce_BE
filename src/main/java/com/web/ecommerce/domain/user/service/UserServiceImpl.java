@@ -62,6 +62,7 @@ public class UserServiceImpl implements UserService {
             throw new CustomException(UserErrorCode.INVALID_PASSWORD);
         }
 
+        user.updateLastLoginAt();
         log.info("로그인 성공 - id={}, loginId={}", user.getId(), user.getLoginId());
         return toAuthResult(user);
     }

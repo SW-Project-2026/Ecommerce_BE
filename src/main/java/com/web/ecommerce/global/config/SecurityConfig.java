@@ -72,8 +72,7 @@ public class SecurityConfig {
         .requestMatchers(HttpMethod.PATCH, "/api/ads/*/click").hasRole("USER")
 
         // 일반 유저 쿠폰 관련 (본인 쿠폰만)
-        .requestMatchers(HttpMethod.GET, "/api/coupons/downloadable").hasRole("USER")
-        .requestMatchers(HttpMethod.POST, "/api/coupons/*/download").hasRole("USER")
+.requestMatchers(HttpMethod.POST, "/api/coupons/*/download").hasRole("USER")
         .requestMatchers(HttpMethod.GET, "/api/users/me/coupons").hasRole("USER")
         .requestMatchers(HttpMethod.PATCH, "/api/users/me/coupons/*/use").hasRole("USER")
 

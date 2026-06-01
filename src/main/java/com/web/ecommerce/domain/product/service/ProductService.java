@@ -21,6 +21,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
 
@@ -116,6 +117,16 @@ public class ProductService {
         );
 
         return ProductDetailResponse.from(product);
+    }
+
+    @Transactional(readOnly = true)
+    public long countProducts() {
+        return productRepository.count();
+    }
+
+    @Transactional(readOnly = true)
+    public LocalDateTime getLastSyncedAt() {
+        return productRepository.findLastSyncedAt().orElse(null);
     }
 
     @Transactional
