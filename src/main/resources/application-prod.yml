@@ -46,6 +46,7 @@ jwt:
 
 app:
   base-url: https://api.daon.site
+  frontend-url: https://daon.site
 
 cors:
   allowed-origins: https://daon.site,https://www.daon.site,https://astounding-dango-6fd6b5.netlify.app,https://api.daon.site,http://localhost:5173

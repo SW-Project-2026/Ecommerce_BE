@@ -77,6 +77,9 @@ public class CampaignServiceImpl implements CampaignService {
   @Value("${app.base-url}")
   private String baseUrl;
 
+  @Value("${app.frontend-url}")
+  private String frontendUrl;
+
   @Override
   @Transactional
   public CampaignResponse createCampaign(Long adminId, CreateCampaignRequest request) {
@@ -260,7 +263,7 @@ public class CampaignServiceImpl implements CampaignService {
       String content = request.getContent();
       if (hasCoupon) {
         String token = jwtProvider.generateCouponClaimToken(target.getUser().getId(), campaign.getCoupon().getId());
-        content += "\n쿠폰 받기: " + baseUrl + "/api/coupons/claim?token=" + token;
+        content += "\n쿠폰 받기: " + frontendUrl + "/coupon/claim?token=" + token;
       }
       boolean sent = smsService.sendCustomMessage(
           target.getUser().getPhone(),
@@ -392,7 +395,7 @@ public class CampaignServiceImpl implements CampaignService {
       String content = campaign.getMessageContent();
       if (hasCoupon) {
         String token = jwtProvider.generateCouponClaimToken(target.getUser().getId(), campaign.getCoupon().getId());
-        content += "\n쿠폰 받기: " + baseUrl + "/api/coupons/claim?token=" + token;
+        content += "\n쿠폰 받기: " + frontendUrl + "/coupon/claim?token=" + token;
       }
       boolean sent = smsService.sendCustomMessage(
           target.getUser().getPhone(),
