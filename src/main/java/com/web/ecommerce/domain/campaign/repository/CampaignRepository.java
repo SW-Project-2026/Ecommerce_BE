@@ -11,6 +11,7 @@ import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -37,4 +38,8 @@ public interface CampaignRepository extends JpaRepository<Campaign, Long> {
   @Query("SELECT c FROM Campaign c WHERE c.collectionType = 'BATCH' AND c.status = 'IN_PROGRESS' " +
       "AND c.startedAt <= :now AND c.endedAt >= :now AND c.messageContent IS NOT NULL")
   List<Campaign> findSchedulableBatchCampaigns(@Param("now") LocalDateTime now);
+
+  @Modifying
+  @Query("UPDATE Campaign c SET c.status = 'ENDED' WHERE c.status = 'IN_PROGRESS' AND c.endedAt < :now")
+  int expireCampaigns(@Param("now") LocalDateTime now);
 }
