@@ -37,6 +37,7 @@ admin:
 
 app:
   base-url: http://localhost:8080
+  frontend-url: http://localhost:5173
 
 solapi:
   api-key: dummy
