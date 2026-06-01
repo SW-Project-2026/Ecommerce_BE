@@ -15,8 +15,6 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     @Query("SELECT o FROM Order o JOIN FETCH o.address WHERE o.user.id = :userId AND o.orderDate >= :from")
     Page<Order> findAllByUserId(Long userId, LocalDateTime from, Pageable pageable);
 
-    @Query("SELECT o FROM Order o JOIN FETCH o.address WHERE o.orderDate >= :from")
-    Page<Order> findAllByPeriod(LocalDateTime from, Pageable pageable);
 
     // 관리자용 커서 기반 (최신순)
     @Query("SELECT o FROM Order o JOIN FETCH o.address WHERE o.user.id = :userId AND (:cursor = 0 OR o.id < :cursor) AND o.orderDate >= :from ORDER BY o.id DESC")
