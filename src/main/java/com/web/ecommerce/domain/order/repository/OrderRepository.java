@@ -2,6 +2,7 @@ package com.web.ecommerce.domain.order.repository;
 
 import com.web.ecommerce.domain.order.entity.Order;
 import com.web.ecommerce.domain.order.enums.OrderStatus;
+import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
