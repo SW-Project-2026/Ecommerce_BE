@@ -2,6 +2,7 @@ package com.web.ecommerce.domain.user.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.web.ecommerce.global.common.BaseTimeEntity;
+import java.time.LocalDateTime;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -55,6 +56,9 @@ public class User  extends BaseTimeEntity {
   @Builder.Default
   private UserGrade grade = UserGrade.NEW;
 
+  @Column(name = "last_login_at")
+  private LocalDateTime lastLoginAt;
+
   @Column(name = "is_active")
   private Integer isActive;
 
@@ -72,6 +76,10 @@ public class User  extends BaseTimeEntity {
 
   public void updateGrade(UserGrade grade) {
     this.grade = grade;
+  }
+
+  public void updateLastLoginAt() {
+    this.lastLoginAt = LocalDateTime.now();
   }
 
   public void withdraw() {
