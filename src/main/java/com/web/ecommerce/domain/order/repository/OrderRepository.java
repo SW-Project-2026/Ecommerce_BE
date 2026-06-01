@@ -12,14 +12,14 @@ import java.time.LocalDateTime;
 
 public interface OrderRepository extends JpaRepository<Order, Long> {
 
-    @Query("SELECT o FROM Order o JOIN FETCH o.address WHERE o.user.id = :userId AND (:from IS NULL OR o.orderDate >= :from)")
+    @Query("SELECT o FROM Order o JOIN FETCH o.address WHERE o.user.id = :userId AND o.orderDate >= :from")
     Page<Order> findAllByUserId(Long userId, LocalDateTime from, Pageable pageable);
 
-    @Query("SELECT o FROM Order o JOIN FETCH o.address WHERE (:from IS NULL OR o.orderDate >= :from)")
+    @Query("SELECT o FROM Order o JOIN FETCH o.address WHERE o.orderDate >= :from")
     Page<Order> findAllByPeriod(LocalDateTime from, Pageable pageable);
 
     // 관리자용 커서 기반 (최신순)
-    @Query("SELECT o FROM Order o JOIN FETCH o.address WHERE o.user.id = :userId AND (:cursor = 0 OR o.id < :cursor) AND (:from IS NULL OR o.orderDate >= :from) ORDER BY o.id DESC")
+    @Query("SELECT o FROM Order o JOIN FETCH o.address WHERE o.user.id = :userId AND (:cursor = 0 OR o.id < :cursor) AND o.orderDate >= :from ORDER BY o.id DESC")
     List<Order> findByUserIdWithCursor(Long userId, Long cursor, LocalDateTime from, Pageable pageable);
 
     @Query("SELECT COALESCE(SUM(o.finalAmount), 0) FROM Order o WHERE o.user.id = :userId AND o.status <> :excludedStatus")

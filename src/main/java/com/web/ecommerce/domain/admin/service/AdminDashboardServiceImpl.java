@@ -107,12 +107,12 @@ public class AdminDashboardServiceImpl implements AdminDashboardService {
     }
 
     private LocalDateTime periodToDateTime(String period) {
-        if (period == null) return null;
+        if (period == null) return LocalDateTime.of(2000, 1, 1, 0, 0);
         return switch (period) {
             case "1m" -> LocalDateTime.now().minusMonths(1);
             case "3m" -> LocalDateTime.now().minusMonths(3);
             case "6m" -> LocalDateTime.now().minusMonths(6);
-            default   -> null;
+            default   -> LocalDateTime.of(2000, 1, 1, 0, 0);
         };
     }
 }
