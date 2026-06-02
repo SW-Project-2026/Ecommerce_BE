@@ -48,6 +48,8 @@ public class DataInitializer implements ApplicationRunner {
         Event review        = save("review_submit_click",   "사용자가 리뷰 작성 후 등록 버튼을 클릭할 때 발생하는 이벤트",             true);
         Event pointEarned   = save("point_earned",          "사용자에게 포인트가 적립될 때 발생하는 이벤트",                           true);
         Event pointUsed     = save("point_used",            "사용자가 결제 시 포인트를 차감하여 사용할 때 발생하는 이벤트",            false);
+        Event login         = save("login",                 "사용자가 로그인할 때 발생하는 이벤트",                                     true);
+        Event logout        = save("logout",                "사용자가 로그아웃할 때 발생하는 이벤트",                                    true);
 
         eventFieldRepository.saveAll(List.of(
             field(purchase, "approvedAmount", FieldType.NUMBER,   true,  "결제 승인된 최종 금액 (원 단위)"),
@@ -93,10 +95,16 @@ public class DataInitializer implements ApplicationRunner {
             field(pointEarned, "eventTimestamp", FieldType.DATETIME, true, "해당 이벤트 발생 시간"),
 
             field(pointUsed, "usedPoints",     FieldType.NUMBER,   true, "이번 거래에서 사용된 포인트 수"),
-            field(pointUsed, "eventTimestamp", FieldType.DATETIME, true, "해당 이벤트 발생 시간")
+            field(pointUsed, "eventTimestamp", FieldType.DATETIME, true, "해당 이벤트 발생 시간"),
+
+            field(login,  "user_login_id",  FieldType.STRING,   true, "사용자 로그인 ID"),
+            field(login,  "eventTimestamp", FieldType.DATETIME, true, "로그인 완료 시간"),
+
+            field(logout, "user_login_id",  FieldType.STRING,   true, "사용자 로그인 ID"),
+            field(logout, "eventTimestamp", FieldType.DATETIME, true, "로그아웃 완료 시간")
         ));
 
-        log.info("이벤트 데이터 초기 삽입 완료 (이벤트 11개, 필드 34개)");
+        log.info("이벤트 데이터 초기 삽입 완료 (이벤트 13개, 필드 38개)");
     }
 
     private Event save(String name, String description, boolean isActive) {

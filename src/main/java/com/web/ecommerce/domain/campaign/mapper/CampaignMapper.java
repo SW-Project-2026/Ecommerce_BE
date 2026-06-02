@@ -50,6 +50,9 @@ public class CampaignMapper {
         .couponName(campaign.getCoupon() != null ? campaign.getCoupon().getName() : null)
         .adId(campaign.getAd() != null ? campaign.getAd().getAdId() : null)
         .adName(campaign.getAd() != null ? campaign.getAd().getAdName() : null)
+        .messageType(campaign.getMessageType())
+        .messageSubject("LMS".equals(campaign.getMessageType()) ? campaign.getMessageSubject() : null)
+        .messageContent(campaign.getMessageContent())
         .filters(filters.stream().map(this::toCampaignFilterResponse).toList())
         .build();
   }
