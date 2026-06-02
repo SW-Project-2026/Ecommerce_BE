@@ -32,10 +32,12 @@ public class UserMapper {
     }
 
     public UserProfileResponse toProfileResponse(User user) {
-        return new UserProfileResponse(user.getId(), user.getName(), user.getLoginId(), user.getEmail(), user.getPhone(), user.isMarketingAgreed());
+        return new UserProfileResponse(user.getId(), user.getName(), user.getLoginId(), user.getEmail(), user.getPhone(), user.isMarketingAgreed(),
+                user.getGrade() != null ? user.getGrade().name() : null);
     }
 
     public UserAdminResponse toAdminResponse(User user) {
-        return new UserAdminResponse(user.getId(), user.getName(), user.getLoginId(), user.getEmail(), user.getPhone(), user.getRole().name(), user.getIsActive());
+        return new UserAdminResponse(user.getId(), user.getName(), user.getLoginId(), user.getEmail(), user.getPhone(), user.getRole().name(),
+                user.getGrade() != null ? user.getGrade().name() : null, user.getIsActive());
     }
 }

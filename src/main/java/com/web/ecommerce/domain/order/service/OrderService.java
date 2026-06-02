@@ -12,7 +12,5 @@ public interface OrderService {
 
     OrderResponse createOrder(Long userId, CreateOrderRequest request);
 
-    OrderResponse payOrder(Long userId, Long orderId);
-
     void cancelOrder(Long userId, Long orderId);
 }

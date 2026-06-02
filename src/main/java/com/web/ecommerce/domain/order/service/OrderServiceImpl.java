@@ -149,20 +149,9 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional
-    public OrderResponse payOrder(Long userId, Long orderId) {
-        Order order = getOrderOwnedByUser(userId, orderId);
-        if (order.getStatus() != OrderStatus.PENDING) {
-            throw new CustomException(OrderErrorCode.ORDER_CANNOT_PAY);
-        }
-        order.pay();
-        return orderMapper.toResponse(order);
-    }
-
-    @Override
-    @Transactional
     public void cancelOrder(Long userId, Long orderId) {
         Order order = getOrderOwnedByUser(userId, orderId);
-        if (order.getStatus() != OrderStatus.PENDING) {
+        if (order.getStatus() != OrderStatus.PENDING && order.getStatus() != OrderStatus.SHIPPING) {
             throw new CustomException(OrderErrorCode.ORDER_CANNOT_CANCEL);
         }
 
