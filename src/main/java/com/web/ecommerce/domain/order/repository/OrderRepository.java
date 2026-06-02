@@ -23,6 +23,9 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     @Query("SELECT COALESCE(SUM(o.finalAmount), 0) FROM Order o WHERE o.user.id = :userId AND o.status <> :excludedStatus")
     int sumFinalAmountByUserIdExcludingStatus(Long userId, OrderStatus excludedStatus);
 
+    @Query("SELECT o FROM Order o WHERE o.status = :status AND o.updatedAt <= :before")
+    List<Order> findByStatusAndUpdatedAtBefore(OrderStatus status, LocalDateTime before);
+
     @Query("SELECT COUNT(o) FROM Order o WHERE o.status <> :excludedStatus")
     long countExcludingStatus(OrderStatus excludedStatus);
 

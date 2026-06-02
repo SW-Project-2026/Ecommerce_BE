@@ -62,6 +62,14 @@ public class Order extends BaseTimeEntity {
         this.status = OrderStatus.PAID;
     }
 
+    public void ship() {
+        this.status = OrderStatus.SHIPPING;
+    }
+
+    public void deliver() {
+        this.status = OrderStatus.DELIVERED;
+    }
+
     public void cancel() {
         this.status = OrderStatus.CANCELLED;
     }
