@@ -14,8 +14,7 @@ import java.util.Map;
 public class OrderMapper {
 
     private static final Map<OrderStatus, String> STATUS_LABELS = Map.of(
-            OrderStatus.PENDING,   "주문 대기",
-            OrderStatus.PAID,      "결제 완료",
+            OrderStatus.PENDING,   "주문 완료",
             OrderStatus.SHIPPING,  "배송 중",
             OrderStatus.DELIVERED, "배송 완료",
             OrderStatus.CANCELLED, "주문 취소"

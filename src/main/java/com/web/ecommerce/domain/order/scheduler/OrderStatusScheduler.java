@@ -26,12 +26,12 @@ public class OrderStatusScheduler {
         LocalDateTime oneHourAgo = LocalDateTime.now().minusHours(1);
         LocalDateTime threeDaysAgo = LocalDateTime.now().minusDays(3);
 
-        // PAID → SHIPPING (결제 후 1시간 경과)
+        // PENDING → SHIPPING (주문 완료 후 1시간 경과)
         List<Order> paidOrders = orderRepository.findByStatusAndUpdatedAtBefore(
-                OrderStatus.PAID, oneHourAgo);
+                OrderStatus.PENDING, oneHourAgo);
         paidOrders.forEach(order -> {
             order.ship();
-            log.info("[주문 배치] PAID → SHIPPING. orderId={}", order.getId());
+            log.info("[주문 배치] PENDING → SHIPPING. orderId={}", order.getId());
         });
 
         // SHIPPING → DELIVERED (배송 시작 후 3일 경과)

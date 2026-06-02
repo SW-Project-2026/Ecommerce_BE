@@ -58,10 +58,6 @@ public class Order extends BaseTimeEntity {
     @Builder.Default
     private List<OrderDetail> orderDetails = new ArrayList<>();
 
-    public void pay() {
-        this.status = OrderStatus.PAID;
-    }
-
     public void ship() {
         this.status = OrderStatus.SHIPPING;
     }

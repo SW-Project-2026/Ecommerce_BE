@@ -17,10 +17,10 @@ public class OrderResponse {
     @Schema(description = "주문 일시", example = "2026-06-01T14:30:00")
     private String orderDate;
 
-    @Schema(description = "주문 상태 (PENDING/PAID/SHIPPING/DELIVERED/CANCELLED)", example = "PAID")
+    @Schema(description = "주문 상태 (PENDING/SHIPPING/DELIVERED/CANCELLED)", example = "PENDING")
     private String status;
 
-    @Schema(description = "주문 상태 한국어", example = "결제 완료")
+    @Schema(description = "주문 상태 한국어", example = "주문 완료")
     private String statusLabel;
 
     @Schema(description = "주문 총액 (할인 전)", example = "50000")
