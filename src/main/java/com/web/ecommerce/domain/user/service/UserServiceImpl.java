@@ -5,7 +5,6 @@ import com.web.ecommerce.domain.user.dto.request.UserSignupRequest;
 import com.web.ecommerce.domain.user.dto.request.UserUpdateRequest;
 import com.web.ecommerce.domain.user.dto.response.AuthResult;
 import com.web.ecommerce.domain.user.dto.response.UserAdminResponse;
-import com.web.ecommerce.domain.user.dto.response.UserLoginResponse;
 import com.web.ecommerce.domain.user.dto.response.UserProfileResponse;
 import com.web.ecommerce.domain.user.entity.Role;
 import com.web.ecommerce.domain.user.entity.User;
@@ -122,7 +121,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserLoginResponse refreshAccessToken(String refreshToken) {
+    public String refreshAccessToken(String refreshToken) {
         try {
             jwtProvider.validateToken(refreshToken);
         } catch (RuntimeException e) {
@@ -131,14 +130,12 @@ public class UserServiceImpl implements UserService {
         Long userId = jwtProvider.getUserId(refreshToken);
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new CustomException(UserErrorCode.USER_NOT_FOUND));
-        String newAccessToken = jwtProvider.generateAccessToken(user.getId(), user.getLoginId(), user.getRole().name());
-        return userMapper.toLoginResponse(user, newAccessToken);
+        return jwtProvider.generateAccessToken(user.getId(), user.getLoginId(), user.getRole().name());
     }
 
     private AuthResult toAuthResult(User user) {
         String accessToken = jwtProvider.generateAccessToken(user.getId(), user.getLoginId(), user.getRole().name());
         String refreshToken = jwtProvider.generateRefreshToken(user.getId());
-        UserLoginResponse response = userMapper.toLoginResponse(user, accessToken);
-        return new AuthResult(response, refreshToken);
+        return new AuthResult(userMapper.toLoginResponse(user), accessToken, refreshToken);
     }
 }

@@ -3,6 +3,7 @@ package com.web.ecommerce.global.security;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -47,11 +48,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     filterChain.doFilter(request, response);
   }
 
-  // Authorization 헤더에서 Bearer 토큰 추출
   private String resolveToken(HttpServletRequest request) {
-    String bearer = request.getHeader("Authorization");
-    if (bearer != null && bearer.startsWith("Bearer ")) {
-      return bearer.substring(7);
+    if (request.getCookies() == null) return null;
+    for (Cookie cookie : request.getCookies()) {
+      if ("accessToken".equals(cookie.getName())) {
+        return cookie.getValue();
+      }
     }
     return null;
   }
