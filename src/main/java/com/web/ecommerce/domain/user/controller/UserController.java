@@ -14,6 +14,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.web.bind.annotation.PostMapping;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
@@ -119,6 +120,10 @@ public interface UserController {
     @Operation(summary = "특정 회원 조회", description = "관리자 전용")
     ResponseEntity<BaseResponse<UserAdminResponse>> getUserDetail(Long userId);
 
-    @Operation(summary = "액세스 토큰 재발급", description = "refreshToken 쿠키로 새 accessToken 발급")
-    ResponseEntity<BaseResponse<UserLoginResponse>> refresh(HttpServletRequest request);
+    @Operation(summary = "액세스 토큰 재발급", description = "refreshToken 쿠키로 새 accessToken 쿠키 재발급")
+    ResponseEntity<BaseResponse<Void>> refresh(HttpServletRequest request, HttpServletResponse response);
+
+    @Operation(summary = "로그아웃", description = "accessToken, refreshToken 쿠키 삭제")
+    @PostMapping("/logout")
+    ResponseEntity<Void> logout(HttpServletResponse response);
 }

@@ -52,7 +52,7 @@ public class SecurityConfig {
         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
         // 누구나 접근 가능
-        .requestMatchers("/api/users/signup", "/api/users/login", "/api/users/admin/signup", "/api/users/refresh")
+        .requestMatchers("/api/users/signup", "/api/users/login", "/api/users/admin/signup", "/api/users/refresh", "/api/users/logout")
         .permitAll()
 
         .requestMatchers(HttpMethod.GET, "/api/products/**")

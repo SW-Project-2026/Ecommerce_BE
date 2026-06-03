@@ -23,6 +23,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.ResponseCookie;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -45,6 +46,15 @@ public class UserControllerImpl implements UserController {
     @Value("${admin.secret-key}")
     private String adminSecretKey;
 
+    @Value("${jwt.access-token-expiry}")
+    private long accessTokenExpiry;
+
+    @Value("${jwt.refresh-token-expiry}")
+    private long refreshTokenExpiry;
+
+    @Value("${app.cookie.secure}")
+    private boolean cookieSecure;
+
     @Override
     @PostMapping("/signup")
     public ResponseEntity<BaseResponse<UserLoginResponse>> signup(
@@ -52,7 +62,7 @@ public class UserControllerImpl implements UserController {
             HttpServletResponse response
     ) {
         AuthResult result = userService.signup(request, Role.USER);
-        setRefreshTokenCookie(response, result.refreshToken());
+        addTokenCookies(response, result.accessToken(), result.refreshToken());
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(BaseResponse.success(201, "회원가입이 완료되었습니다.", result.loginResponse()));
     }
@@ -64,7 +74,7 @@ public class UserControllerImpl implements UserController {
             HttpServletResponse response
     ) {
         AuthResult result = userService.loginById(request.getLoginId(), request.getPassword());
-        setRefreshTokenCookie(response, result.refreshToken());
+        addTokenCookies(response, result.accessToken(), result.refreshToken());
         return ResponseEntity.ok(BaseResponse.success(result.loginResponse()));
     }
 
@@ -79,7 +89,7 @@ public class UserControllerImpl implements UserController {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
         AuthResult result = userService.signup(request, Role.ADMIN);
-        setRefreshTokenCookie(response, result.refreshToken());
+        addTokenCookies(response, result.accessToken(), result.refreshToken());
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(BaseResponse.success(201, "관리자 계정이 생성되었습니다.", result.loginResponse()));
     }
@@ -139,7 +149,7 @@ public class UserControllerImpl implements UserController {
 
     @Override
     @PostMapping("/refresh")
-    public ResponseEntity<BaseResponse<UserLoginResponse>> refresh(HttpServletRequest request) {
+    public ResponseEntity<BaseResponse<Void>> refresh(HttpServletRequest request, HttpServletResponse response) {
         String refreshToken = null;
         if (request.getCookies() != null) {
             for (Cookie cookie : request.getCookies()) {
@@ -152,15 +162,43 @@ public class UserControllerImpl implements UserController {
         if (refreshToken == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
-        return ResponseEntity.ok(BaseResponse.success(userService.refreshAccessToken(refreshToken)));
+        String newAccessToken = userService.refreshAccessToken(refreshToken);
+        addCookie(response, "accessToken", newAccessToken, (int) (accessTokenExpiry / 1000));
+        return ResponseEntity.ok(BaseResponse.success(null));
     }
 
-    private void setRefreshTokenCookie(HttpServletResponse response, String refreshToken) {
-        Cookie cookie = new Cookie("refreshToken", refreshToken);
-        cookie.setHttpOnly(true);
-        cookie.setSecure(true);
-        cookie.setPath("/");
-        cookie.setMaxAge(7 * 24 * 60 * 60);
-        response.addCookie(cookie);
+    @Override
+    @PostMapping("/logout")
+    public ResponseEntity<Void> logout(HttpServletResponse response) {
+        clearCookie(response, "accessToken");
+        clearCookie(response, "refreshToken");
+        return ResponseEntity.ok().build();
+    }
+
+    private void addTokenCookies(HttpServletResponse response, String accessToken, String refreshToken) {
+        addCookie(response, "accessToken", accessToken, (int) (accessTokenExpiry / 1000));
+        addCookie(response, "refreshToken", refreshToken, (int) (refreshTokenExpiry / 1000));
+    }
+
+    private void addCookie(HttpServletResponse response, String name, String value, int maxAgeSeconds) {
+        ResponseCookie cookie = ResponseCookie.from(name, value)
+                .httpOnly(true)
+                .secure(cookieSecure)
+                .sameSite("Lax")
+                .path("/")
+                .maxAge(maxAgeSeconds)
+                .build();
+        response.addHeader("Set-Cookie", cookie.toString());
+    }
+
+    private void clearCookie(HttpServletResponse response, String name) {
+        ResponseCookie cookie = ResponseCookie.from(name, "")
+                .httpOnly(true)
+                .secure(cookieSecure)
+                .sameSite("Lax")
+                .path("/")
+                .maxAge(0)
+                .build();
+        response.addHeader("Set-Cookie", cookie.toString());
     }
 }

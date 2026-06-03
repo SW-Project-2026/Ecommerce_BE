@@ -5,7 +5,6 @@ import com.web.ecommerce.domain.user.dto.request.UserSignupRequest;
 import com.web.ecommerce.domain.user.dto.request.UserUpdateRequest;
 import com.web.ecommerce.domain.user.dto.response.AuthResult;
 import com.web.ecommerce.domain.user.dto.response.UserAdminResponse;
-import com.web.ecommerce.domain.user.dto.response.UserLoginResponse;
 import com.web.ecommerce.domain.user.dto.response.UserProfileResponse;
 import com.web.ecommerce.domain.user.entity.Role;
 import com.web.ecommerce.global.page.response.PageResponse;
@@ -70,5 +69,5 @@ public interface UserService {
      */
     UserAdminResponse getUserDetail(Long userId);
 
-    UserLoginResponse refreshAccessToken(String refreshToken);
+    String refreshAccessToken(String refreshToken);
 }

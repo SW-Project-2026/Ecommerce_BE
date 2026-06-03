@@ -24,9 +24,8 @@ public class UserMapper {
                 .build();
     }
 
-    public UserLoginResponse toLoginResponse(User user, String accessToken) {
+    public UserLoginResponse toLoginResponse(User user) {
         return UserLoginResponse.builder()
-                .accessToken(accessToken)
                 .role(user.getRole().name())
                 .build();
     }
