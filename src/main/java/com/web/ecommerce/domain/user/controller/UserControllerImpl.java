@@ -52,7 +52,7 @@ public class UserControllerImpl implements UserController {
     @Value("${jwt.refresh-token-expiry}")
     private long refreshTokenExpiry;
 
-    @Value("${app.cookie.secure}")
+    @Value("${app.cookie.secure:false}")
     private boolean cookieSecure;
 
     @Override
