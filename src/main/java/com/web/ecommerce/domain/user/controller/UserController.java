@@ -4,6 +4,7 @@ import com.web.ecommerce.domain.user.dto.request.UserLoginRequest;
 import com.web.ecommerce.domain.user.dto.request.UserPasswordUpdateRequest;
 import com.web.ecommerce.domain.user.dto.request.UserSignupRequest;
 import com.web.ecommerce.domain.user.dto.request.UserUpdateRequest;
+import com.web.ecommerce.domain.user.dto.request.WithdrawRequest;
 import com.web.ecommerce.domain.user.dto.response.UserAdminResponse;
 import com.web.ecommerce.domain.user.dto.response.UserLoginResponse;
 import com.web.ecommerce.domain.user.dto.response.UserProfileResponse;
@@ -100,7 +101,8 @@ public interface UserController {
      */
     @Operation(summary = "회원 탈퇴")
     ResponseEntity<BaseResponse<Void>> withdraw(
-            @AuthenticationPrincipal UserPrincipal userDetails
+            @AuthenticationPrincipal UserPrincipal userDetails,
+            @Valid @RequestBody WithdrawRequest request
     );
 
     /**
