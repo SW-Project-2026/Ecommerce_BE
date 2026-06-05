@@ -12,7 +12,6 @@ import com.web.ecommerce.domain.dashboard.dto.AdminDashboardResponse.MonthlyChur
 import com.web.ecommerce.domain.dashboard.dto.AdminDashboardResponse.MonthlySignup;
 import com.web.ecommerce.domain.dashboard.dto.AdminDashboardResponse.TopCategory;
 import com.web.ecommerce.domain.dashboard.dto.AdminDashboardResponse.TopProduct;
-import com.web.ecommerce.domain.dashboard.dto.CartItemResponse;
 import com.web.ecommerce.domain.dashboard.dto.CustomerDashboardResponse;
 import com.web.ecommerce.domain.dashboard.dto.CustomerDashboardResponse.AccessTimeSlot;
 import com.web.ecommerce.domain.dashboard.dto.CustomerDashboardResponse.AdConversionStats;
@@ -22,15 +21,12 @@ import com.web.ecommerce.domain.dashboard.dto.CustomerDashboardResponse.Customer
 import com.web.ecommerce.domain.dashboard.dto.CustomerDashboardResponse.Tags;
 import com.web.ecommerce.domain.dashboard.dto.DashboardShared.AdStats;
 import com.web.ecommerce.domain.dashboard.dto.DashboardShared.CouponStats;
-import com.web.ecommerce.domain.dashboard.dto.OrderHistoryResponse;
-import com.web.ecommerce.domain.dashboard.dto.UserDashboardResponse;
 import com.web.ecommerce.domain.dashboard.dto.UserDashboardResponse.TimeSlotCount;
 import com.web.ecommerce.domain.dashboard.dto.UserSummaryResponse;
 import com.web.ecommerce.domain.dashboard.repository.EventLogRepository;
 import com.web.ecommerce.domain.dashboard.repository.EventLogRepository.AdStatRow;
 import com.web.ecommerce.domain.dashboard.repository.EventLogRepository.CategoryCount;
 import com.web.ecommerce.domain.order.entity.Order;
-import com.web.ecommerce.domain.order.entity.OrderDetail;
 import com.web.ecommerce.domain.order.enums.OrderStatus;
 import com.web.ecommerce.domain.order.repository.OrderDetailRepository;
 import com.web.ecommerce.domain.order.repository.OrderRepository;
@@ -257,93 +253,6 @@ public class DashboardService {
         boolean hasNext = items.size() > size;
         List<CustomerDashboardResponse.OrderItem> content = hasNext ? items.subList(0, size) : items;
         Long nextCursor = hasNext ? content.get(content.size() - 1).orderItemId() : null;
-        return CursorResponse.of(content, nextCursor, hasNext);
-    }
-
-    // ──────────────── User (본인) ────────────────
-
-    public UserDashboardResponse getUserDashboard(Long userId) {
-        User user = userRepository.findByIdAndIsActive(userId, 1)
-                .orElseThrow(() -> new CustomException(GlobalErrorCode.RESOURCE_NOT_FOUND));
-
-        LocalDateTime thirtyDaysAgo = LocalDateTime.now().minusDays(30);
-
-        Order lastOrder = orderRepository
-                .findTopByUserIdAndStatusNotOrderByOrderDateDesc(userId, OrderStatus.CANCELLED)
-                .orElse(null);
-        long recentPurchaseCount = orderRepository.countByUserIdAndOrderDateAfterAndStatusNot(
-                userId, thirtyDaysAgo, OrderStatus.CANCELLED);
-
-        long couponSent = userCouponRepository.countByUserIdAndIsDuplicateFalse(userId);
-        long couponUsed = userCouponRepository.countByUserIdAndStatusAndIsDuplicateFalse(userId, CouponStatus.USED);
-
-        boolean withdrawalVisited = eventLogRepository.hasWithdrawalPageVisit(userId, 30);
-        AdStats adStats = eventLogRepository.findAdStats(userId);
-        double conversionRate = eventLogRepository.findAdConversionRate(userId);
-        List<String> recentKeywords = eventLogRepository.findRecentKeywords(userId, 5);
-        List<String> topCategories = eventLogRepository.findTopCategoriesByUser(userId, 3)
-                .stream().map(CategoryCount::category).toList();
-        List<TimeSlotCount> peakHours = eventLogRepository.findPeakHours(userId);
-
-        boolean loginOld = user.getLastLoginAt() == null ||
-                user.getLastLoginAt().isBefore(thirtyDaysAgo);
-        String churnRisk = (loginOld || withdrawalVisited) ? "높음" : "낮음";
-        double couponUsageRate = couponSent > 0 ? (double) couponUsed / couponSent * 100 : 0;
-
-        return new UserDashboardResponse(
-                user.getLastLoginAt() != null ? user.getLastLoginAt().toString() : null,
-                lastOrder != null ? lastOrder.getOrderDate().toString() : null,
-                withdrawalVisited,
-                user.getGrade().name(),
-                toPurchaseFrequency(recentPurchaseCount),
-                churnRisk,
-                adStats,
-                new CouponStats(couponSent, couponUsed, couponUsageRate),
-                Math.round(conversionRate * 100.0) / 100.0,
-                recentKeywords,
-                topCategories,
-                peakHours
-        );
-    }
-
-    public CursorResponse<CartItemResponse> getUserCart(Long userId, Long cursor, int size) {
-        Pageable pageable = PageRequest.of(0, size + 1);
-        List<CartItemResponse> items = cartRepository.findByUserIdWithCursor(userId, cursor == null ? 0L : cursor, pageable)
-                .stream().map(c -> new CartItemResponse(
-                        c.getId(),
-                        c.getProduct().getProductId(),
-                        c.getProduct().getName(),
-                        c.getProduct().getImageUrl(),
-                        c.getProduct().getMinPrice(),
-                        c.getQuantity(),
-                        c.getProduct().getMinPrice() * c.getQuantity()
-                )).toList();
-
-        boolean hasNext = items.size() > size;
-        List<CartItemResponse> content = hasNext ? items.subList(0, size) : items;
-        Long nextCursor = hasNext ? content.get(content.size() - 1).cartId() : null;
-        return CursorResponse.of(content, nextCursor, hasNext);
-    }
-
-    public CursorResponse<OrderHistoryResponse> getUserOrders(Long userId, Long cursor, int size) {
-        Pageable pageable = PageRequest.of(0, size + 1);
-        List<OrderHistoryResponse> items = orderRepository
-                .findByUserIdWithCursorForDashboard(userId, cursor == null ? 0L : cursor, pageable)
-                .stream().map(o -> new OrderHistoryResponse(
-                        o.getId(),
-                        o.getOrderDate().toString(),
-                        o.getStatus().name(),
-                        o.getFinalAmount(),
-                        o.getOrderDetails().stream().map(d -> new OrderHistoryResponse.OrderItem(
-                                d.getProduct().getName(),
-                                d.getQuantity(),
-                                d.getUnitPrice()
-                        )).toList()
-                )).toList();
-
-        boolean hasNext = items.size() > size;
-        List<OrderHistoryResponse> content = hasNext ? items.subList(0, size) : items;
-        Long nextCursor = hasNext ? content.get(content.size() - 1).orderId() : null;
         return CursorResponse.of(content, nextCursor, hasNext);
     }
 
