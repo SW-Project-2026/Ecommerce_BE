@@ -4,6 +4,7 @@ import com.web.ecommerce.domain.user.dto.request.UserLoginRequest;
 import com.web.ecommerce.domain.user.dto.request.UserPasswordUpdateRequest;
 import com.web.ecommerce.domain.user.dto.request.UserSignupRequest;
 import com.web.ecommerce.domain.user.dto.request.UserUpdateRequest;
+import com.web.ecommerce.domain.user.dto.request.WithdrawRequest;
 import com.web.ecommerce.domain.user.dto.response.AuthResult;
 import com.web.ecommerce.domain.user.dto.response.UserAdminResponse;
 import com.web.ecommerce.domain.user.dto.response.UserLoginResponse;
@@ -125,9 +126,10 @@ public class UserControllerImpl implements UserController {
     @Override
     @DeleteMapping("/me")
     public ResponseEntity<BaseResponse<Void>> withdraw(
-            @AuthenticationPrincipal UserPrincipal userDetails
+            @AuthenticationPrincipal UserPrincipal userDetails,
+            @Valid @RequestBody WithdrawRequest request
     ) {
-        userService.withdraw(userDetails.id());
+        userService.withdraw(userDetails.id(), request.password());
         return ResponseEntity.ok(BaseResponse.success(200, "탈퇴가 완료되었습니다.", null));
     }
 

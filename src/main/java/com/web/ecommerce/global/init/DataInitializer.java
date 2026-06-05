@@ -47,20 +47,21 @@ public class DataInitializer implements ApplicationRunner {
         Event productView   = save("product_detail_view",   "사용자가 특정 상품의 상세 페이지로 이동할 때 발생하는 이벤트",            true);
         Event review        = save("review_submit_click",   "사용자가 리뷰 작성 후 등록 버튼을 클릭할 때 발생하는 이벤트",             true);
         Event pointEarned   = save("point_earned",          "사용자에게 포인트가 적립될 때 발생하는 이벤트",                           true);
-        Event pointUsed     = save("point_used",            "사용자가 결제 시 포인트를 차감하여 사용할 때 발생하는 이벤트",            false);
         Event login         = save("login",                 "사용자가 로그인할 때 발생하는 이벤트",                                     true);
         Event logout        = save("logout",                "사용자가 로그아웃할 때 발생하는 이벤트",                                    true);
 
         eventFieldRepository.saveAll(List.of(
-            field(purchase, "approvedAmount", FieldType.NUMBER,   true,  "결제 승인된 최종 금액 (원 단위)"),
+            field(purchase, "approvedAmount",  FieldType.NUMBER,   true,  "결제 승인된 최종 금액 (원 단위)"),
             field(purchase, "productName",    FieldType.STRING,   true,  "구매한 상품의 이름"),
             field(purchase, "productId",      FieldType.STRING,   true,  "상품 고유 식별자"),
             field(purchase, "eventTimestamp", FieldType.DATETIME, true,  "해당 이벤트 발생 시간"),
+            field(purchase, "productCategory",FieldType.STRING,   true,  "구매한 상품의 카테고리"),
 
             field(wishlist, "productName",    FieldType.STRING,   true,  "찜/장바구니 대상 상품명"),
             field(wishlist, "productId",      FieldType.STRING,   true,  "상품 고유 식별자"),
             field(wishlist, "actionType",     FieldType.STRING,   true,  "add / remove 구분값"),
             field(wishlist, "eventTimestamp", FieldType.DATETIME, true,  "해당 이벤트 발생 시간"),
+            field(wishlist, "productCategory",FieldType.STRING,   true,  "찜/장바구니 대상 상품 카테고리"),
 
             field(couponReceive, "couponCode",     FieldType.STRING,   true,  "발급된 쿠폰의 고유 코드"),
             field(couponReceive, "discountAmount", FieldType.NUMBER,   true,  "쿠폰 적용 시 할인되는 금액 (원 단위)"),
@@ -71,9 +72,10 @@ public class DataInitializer implements ApplicationRunner {
             field(couponUsed, "discountAmount", FieldType.NUMBER,   true, "실제 적용된 할인 금액 (원 단위)"),
             field(couponUsed, "eventTimestamp", FieldType.DATETIME, true, "해당 이벤트 발생 시간"),
 
-            field(adClick, "productName",    FieldType.STRING,   true, "광고된 상품명"),
-            field(adClick, "productId",      FieldType.STRING,   true, "광고 상품 고유 식별자"),
-            field(adClick, "eventTimestamp", FieldType.DATETIME, true, "해당 이벤트 발생 시간"),
+            field(adClick, "productName",     FieldType.STRING,   true, "광고된 상품명"),
+            field(adClick, "productId",       FieldType.STRING,   true, "광고 상품 고유 식별자"),
+            field(adClick, "eventTimestamp",  FieldType.DATETIME, true, "해당 이벤트 발생 시간"),
+            field(adClick, "productCategory", FieldType.STRING,   true, "광고된 상품 카테고리"),
 
             field(search, "searchKeyword",  FieldType.STRING,   true, "사용자가 입력한 검색어"),
             field(search, "eventTimestamp", FieldType.DATETIME, true, "해당 이벤트 발생 시간"),
@@ -82,10 +84,11 @@ public class DataInitializer implements ApplicationRunner {
             field(pageView, "dwellTime",      FieldType.TIME,     true, "페이지 체류시간 (초 단위)"),
             field(pageView, "eventTimestamp", FieldType.DATETIME, true, "해당 이벤트 발생 시간"),
 
-            field(productView, "productName",    FieldType.STRING,   true, "조회한 상품명"),
-            field(productView, "productId",      FieldType.STRING,   true, "상품 고유 식별자"),
-            field(productView, "dwellTime",      FieldType.TIME,     true, "상세 페이지 체류시간 (초 단위)"),
-            field(productView, "eventTimestamp", FieldType.DATETIME, true, "해당 이벤트 발생 시간"),
+            field(productView, "productName",     FieldType.STRING,   true, "조회한 상품명"),
+            field(productView, "productId",       FieldType.STRING,   true, "상품 고유 식별자"),
+            field(productView, "dwellTime",       FieldType.TIME,     true, "상세 페이지 체류시간 (초 단위)"),
+            field(productView, "eventTimestamp",  FieldType.DATETIME, true, "해당 이벤트 발생 시간"),
+            field(productView, "productCategory", FieldType.STRING,   true, "조회한 상품 카테고리"),
 
             field(review, "reviewRating",   FieldType.NUMBER,   true, "사용자가 부여한 별점 (1~5 정수)"),
             field(review, "eventTimestamp", FieldType.DATETIME, true, "해당 이벤트 발생 시간"),
@@ -94,9 +97,6 @@ public class DataInitializer implements ApplicationRunner {
             field(pointEarned, "earnReason",     FieldType.STRING,   true, "적립 원인 (구매완료 / 리뷰작성 / 출석 등)"),
             field(pointEarned, "eventTimestamp", FieldType.DATETIME, true, "해당 이벤트 발생 시간"),
 
-            field(pointUsed, "usedPoints",     FieldType.NUMBER,   true, "이번 거래에서 사용된 포인트 수"),
-            field(pointUsed, "eventTimestamp", FieldType.DATETIME, true, "해당 이벤트 발생 시간"),
-
             field(login,  "user_login_id",  FieldType.STRING,   true, "사용자 로그인 ID"),
             field(login,  "eventTimestamp", FieldType.DATETIME, true, "로그인 완료 시간"),
 
@@ -104,7 +104,7 @@ public class DataInitializer implements ApplicationRunner {
             field(logout, "eventTimestamp", FieldType.DATETIME, true, "로그아웃 완료 시간")
         ));
 
-        log.info("이벤트 데이터 초기 삽입 완료 (이벤트 13개, 필드 38개)");
+        log.info("이벤트 데이터 초기 삽입 완료 (이벤트 12개, 필드 40개)");
     }
 
     private Event save(String name, String description, boolean isActive) {

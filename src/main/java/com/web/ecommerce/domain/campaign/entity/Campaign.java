@@ -80,7 +80,7 @@ public class Campaign extends BaseTimeEntity {
   @Column(name = "batch_cycle")
   private BatchCycle batchCycle;
 
-  @Column(name = "batch_time")
+  @Column(name = "batch_time", columnDefinition = "time")
   private LocalTime batchTime;
 
   @Enumerated(EnumType.STRING)

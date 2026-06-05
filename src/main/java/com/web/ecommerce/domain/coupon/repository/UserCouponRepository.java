@@ -26,4 +26,15 @@ public interface UserCouponRepository extends JpaRepository<UserCoupon, Long> {
   @Query("SELECT uc FROM UserCoupon uc WHERE uc.status = 'AVAILABLE' AND uc.isDuplicate = false " +
       "AND uc.coupon.expiredAt IS NOT NULL")
   List<UserCoupon> findAvailableWithExpiry();
+
+  long countByUserIdAndIsDuplicateFalse(Long userId);
+
+  long countByUserIdAndStatusAndIsDuplicateFalse(Long userId, CouponStatus status);
+
+  long countByIsDuplicateFalse();
+
+  long countByStatusAndIsDuplicateFalse(CouponStatus status);
+
+  @Query(value = "SELECT user_id, COUNT(*) AS sent, COUNT(CASE WHEN status = 'USED' THEN 1 END) AS used FROM user_coupon WHERE user_id IN :userIds AND is_duplicate = false GROUP BY user_id", nativeQuery = true)
+  List<Object[]> findCouponStatsByUserIds(@Param("userIds") List<Long> userIds);
 }

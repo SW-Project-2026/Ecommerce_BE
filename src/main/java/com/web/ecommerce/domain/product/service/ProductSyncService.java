@@ -10,8 +10,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestClient;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @Slf4j
 @Service
@@ -20,6 +22,7 @@ public class ProductSyncService {
 
     private final RestClient naverRestClient;
     private final ProductRepository productRepository;
+    private final ProductSaveHelper productSaveHelper;
 
     // 카테고리명 → 네이버 검색 키워드 목록
     private static final Map<String, List<String>> CATEGORY_QUERIES = Map.of(
@@ -46,6 +49,7 @@ public class ProductSyncService {
 
     @Transactional
     public int sync() {
+        Set<String> existingIds = new HashSet<>(productRepository.findAllNaverProductIds());
         int totalSaved = 0;
 
         for (Map.Entry<String, List<String>> entry : CATEGORY_QUERIES.entrySet()) {
@@ -58,7 +62,7 @@ public class ProductSyncService {
                         if (response == null || response.getItems() == null || response.getItems().isEmpty()) {
                             break;
                         }
-                        int saved = saveProducts(response.getItems(), category);
+                        int saved = saveProducts(response.getItems(), category, existingIds);
                         totalSaved += saved;
                         log.info("category={}, query={}, page={}, 저장={}개", category, query, page, saved);
                     } catch (Exception e) {
@@ -84,10 +88,10 @@ public class ProductSyncService {
                 .body(NaverSearchResponse.class);
     }
 
-    private int saveProducts(List<NaverProductItem> items, String keyword) {
+    private int saveProducts(List<NaverProductItem> items, String keyword, Set<String> existingIds) {
         int count = 0;
         for (NaverProductItem item : items) {
-            if (item.getProductId() == null || productRepository.existsByNaverProductId(item.getProductId())) {
+            if (item.getProductId() == null || existingIds.contains(item.getProductId())) {
                 continue;
             }
             String title = item.getTitle().replaceAll("<[^>]*>", "");
@@ -120,8 +124,13 @@ public class ProductSyncService {
                     .mallName(item.getMallName())
                     .build();
 
-            productRepository.save(product);
-            count++;
+            try {
+                productSaveHelper.save(product);
+                existingIds.add(item.getProductId());
+                count++;
+            } catch (Exception e) {
+                log.warn("상품 저장 실패 (중복 또는 제약 조건 위반): naverProductId={}", item.getProductId());
+            }
         }
         return count;
     }

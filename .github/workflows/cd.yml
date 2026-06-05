@@ -44,6 +44,10 @@ jobs:
           SOLAPI_API_KEY: ${{ secrets.SOLAPI_API_KEY }}
           SOLAPI_SECRET_KEY: ${{ secrets.SOLAPI_SECRET_KEY }}
           SOLAPI_FROM: ${{ secrets.SOLAPI_FROM }}
+          KAFKA_DB_HOST: ${{ secrets.KAFKA_DB_HOST }}
+          KAFKA_DB_NAME: ${{ secrets.KAFKA_DB_NAME }}
+          KAFKA_DB_USERNAME: ${{ secrets.KAFKA_DB_USERNAME }}
+          KAFKA_DB_PASSWORD: ${{ secrets.KAFKA_DB_PASSWORD }}
         run: |
           {
             echo "DB_NAME=ecommerce"
@@ -56,6 +60,10 @@ jobs:
             echo "SOLAPI_API_KEY=$SOLAPI_API_KEY"
             echo "SOLAPI_SECRET_KEY=$SOLAPI_SECRET_KEY"
             echo "SOLAPI_FROM=$SOLAPI_FROM"
+            echo "KAFKA_DB_HOST=$KAFKA_DB_HOST"
+            echo "KAFKA_DB_NAME=$KAFKA_DB_NAME"
+            echo "KAFKA_DB_USERNAME=$KAFKA_DB_USERNAME"
+            echo "KAFKA_DB_PASSWORD=$KAFKA_DB_PASSWORD"
           } > /tmp/.env
           scp /tmp/.env ubuntu@3.94.195.37:/home/ubuntu/app/.env
 
