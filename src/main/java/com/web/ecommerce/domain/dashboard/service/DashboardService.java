@@ -4,20 +4,12 @@ import com.web.ecommerce.domain.ad.repository.AdExposureRepository;
 import com.web.ecommerce.domain.cart.repository.CartRepository;
 import com.web.ecommerce.domain.coupon.enums.CouponStatus;
 import com.web.ecommerce.domain.coupon.repository.UserCouponRepository;
-import com.web.ecommerce.domain.dashboard.dto.AdminDashboardResponse;
 import com.web.ecommerce.domain.dashboard.dto.CustomerListResponse;
 import com.web.ecommerce.domain.dashboard.dto.CustomerListResponse.CustomerItem;
 import com.web.ecommerce.domain.dashboard.dto.DashboardSummaryResponse;
 import com.web.ecommerce.domain.dashboard.dto.MonthlyStatsResponse;
 import com.web.ecommerce.domain.dashboard.dto.MonthlyStatsResponse.MonthlyStat;
 import com.web.ecommerce.domain.dashboard.repository.EventLogRepository.MonthlyChurnRow;
-import com.web.ecommerce.domain.dashboard.dto.AdminDashboardResponse.DailySales;
-import com.web.ecommerce.domain.dashboard.dto.AdminDashboardResponse.DailyUsers;
-import com.web.ecommerce.domain.dashboard.dto.AdminDashboardResponse.EventCount;
-import com.web.ecommerce.domain.dashboard.dto.AdminDashboardResponse.MonthlyChurn;
-import com.web.ecommerce.domain.dashboard.dto.AdminDashboardResponse.MonthlySignup;
-import com.web.ecommerce.domain.dashboard.dto.AdminDashboardResponse.TopCategory;
-import com.web.ecommerce.domain.dashboard.dto.AdminDashboardResponse.TopProduct;
 import com.web.ecommerce.domain.dashboard.dto.CustomerDashboardResponse;
 import com.web.ecommerce.domain.dashboard.dto.CustomerDashboardResponse.AccessTimeSlot;
 import com.web.ecommerce.domain.dashboard.dto.CustomerDashboardResponse.AdConversionStats;
@@ -25,12 +17,8 @@ import com.web.ecommerce.domain.dashboard.dto.CustomerDashboardResponse.CtrStats
 import com.web.ecommerce.domain.dashboard.dto.CustomerDashboardResponse.CouponUsageStats;
 import com.web.ecommerce.domain.dashboard.dto.CustomerDashboardResponse.CustomerInfo;
 import com.web.ecommerce.domain.dashboard.dto.CustomerDashboardResponse.Tags;
-import com.web.ecommerce.domain.dashboard.dto.DashboardShared.AdStats;
-import com.web.ecommerce.domain.dashboard.dto.DashboardShared.CouponStats;
 import com.web.ecommerce.domain.dashboard.dto.UserDashboardResponse.TimeSlotCount;
-import com.web.ecommerce.domain.dashboard.dto.UserSummaryResponse;
 import com.web.ecommerce.domain.dashboard.repository.EventLogRepository;
-import com.web.ecommerce.domain.dashboard.repository.EventLogRepository.AdStatRow;
 import com.web.ecommerce.domain.dashboard.repository.EventLogRepository.CategoryCount;
 import com.web.ecommerce.domain.order.entity.Order;
 import com.web.ecommerce.domain.order.enums.OrderStatus;
@@ -41,8 +29,8 @@ import com.web.ecommerce.domain.user.entity.User;
 import com.web.ecommerce.domain.user.repository.UserRepository;
 import com.web.ecommerce.global.exception.CustomException;
 import com.web.ecommerce.global.exception.GlobalErrorCode;
-import com.web.ecommerce.global.response.CursorResponse;
 import com.web.ecommerce.domain.user.entity.UserGrade;
+import com.web.ecommerce.global.response.CursorResponse;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
@@ -195,88 +183,6 @@ public class DashboardService {
                         size
                 )
         );
-    }
-
-    // ──────────────── Admin ────────────────
-
-    public AdminDashboardResponse getAdminDashboard(int days) {
-        LocalDateTime twelveMonthsAgo = LocalDateTime.now().minusMonths(12);
-
-        AdStats adStats = eventLogRepository.findAdStatsAll();
-
-        long couponSent = userCouponRepository.countByIsDuplicateFalse();
-        long couponUsed = userCouponRepository.countByStatusAndIsDuplicateFalse(CouponStatus.USED);
-        double couponUsageRate = couponSent > 0 ? (double) couponUsed / couponSent * 100 : 0;
-
-        List<MonthlySignup> monthlySignups = userRepository.countMonthlySignups(twelveMonthsAgo)
-                .stream().map(row -> new MonthlySignup((String) row[0], ((Number) row[1]).longValue()))
-                .toList();
-
-        List<MonthlyChurn> monthlyChurnRates = userRepository.countMonthlyChurn(twelveMonthsAgo)
-                .stream().map(row -> {
-                    long withdrawn = ((Number) row[1]).longValue();
-                    long total = ((Number) row[2]).longValue();
-                    double rate = total > 0 ? (double) withdrawn / total * 100 : 0;
-                    return new MonthlyChurn((String) row[0], withdrawn, total, rate);
-                }).toList();
-
-        return new AdminDashboardResponse(
-                eventLogRepository.findDailySales(days),
-                eventLogRepository.findDau(days),
-                eventLogRepository.findTopProducts(5),
-                eventLogRepository.findTopCategories(5),
-                eventLogRepository.findTodayEventCounts(),
-                adStats,
-                new CouponStats(couponSent, couponUsed, couponUsageRate),
-                monthlySignups,
-                monthlyChurnRates
-        );
-    }
-
-    public Page<UserSummaryResponse> getAdminUserList(int page, int size) {
-        Page<User> users = userRepository.findAllByRole(
-                Role.USER, PageRequest.of(page, size, Sort.by("id").descending()));
-        List<Long> userIds = users.getContent().stream().map(User::getId).toList();
-
-        LocalDateTime thirtyDaysAgo = LocalDateTime.now().minusDays(30);
-
-        Map<Long, Long> purchaseCounts = orderRepository
-                .countPurchasesByUserIds(userIds, thirtyDaysAgo, OrderStatus.CANCELLED.name())
-                .stream().collect(Collectors.toMap(
-                        row -> ((Number) row[0]).longValue(),
-                        row -> ((Number) row[1]).longValue()
-                ));
-
-        Map<Long, long[]> couponStats = userCouponRepository.findCouponStatsByUserIds(userIds)
-                .stream().collect(Collectors.toMap(
-                        row -> ((Number) row[0]).longValue(),
-                        row -> new long[]{((Number) row[1]).longValue(), ((Number) row[2]).longValue()}
-                ));
-
-        Map<Long, AdStatRow> adStats = eventLogRepository.findAdStatsByUserIds(userIds);
-
-        return users.map(user -> {
-            Long userId = user.getId();
-            long purchaseCount = purchaseCounts.getOrDefault(userId, 0L);
-            long[] coupon = couponStats.getOrDefault(userId, new long[]{0, 0});
-            AdStatRow ad = adStats.getOrDefault(userId, new AdStatRow(0, 0));
-
-            double ctr = ad.impressions() > 0 ? (double) ad.clicks() / ad.impressions() * 100 : 0;
-            double couponUsageRate = coupon[0] > 0 ? (double) coupon[1] / coupon[0] * 100 : 0;
-            boolean loginOld = user.getLastLoginAt() == null ||
-                    user.getLastLoginAt().isBefore(LocalDateTime.now().minusDays(30));
-
-            return new UserSummaryResponse(
-                    userId,
-                    user.getLoginId(),
-                    user.getGrade().name(),
-                    user.getLastLoginAt() != null ? user.getLastLoginAt().toString() : null,
-                    toPurchaseFrequency(purchaseCount),
-                    loginOld ? "높음" : "낮음",
-                    Math.round(ctr * 100.0) / 100.0,
-                    Math.round(couponUsageRate * 100.0) / 100.0
-            );
-        });
     }
 
     // ──────────────── Customer Dashboard (Admin → 특정 유저 조회) ────────────────
