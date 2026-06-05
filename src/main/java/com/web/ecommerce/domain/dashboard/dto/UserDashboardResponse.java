@@ -1,5 +1,7 @@
 package com.web.ecommerce.domain.dashboard.dto;
 
+import com.web.ecommerce.domain.dashboard.dto.DashboardShared.AdStats;
+import com.web.ecommerce.domain.dashboard.dto.DashboardShared.CouponStats;
 import java.util.List;
 
 public record UserDashboardResponse(
@@ -16,7 +18,5 @@ public record UserDashboardResponse(
         List<String> topCategories,
         List<TimeSlotCount> peakHours
 ) {
-    public record AdStats(long impressions, long clicks, double ctr) {}
-    public record CouponStats(long sent, long used, double usageRate) {}
     public record TimeSlotCount(String slot, long count) {}
 }

@@ -1,8 +1,12 @@
 package com.web.ecommerce.domain.dashboard.repository;
 
-import com.web.ecommerce.domain.dashboard.dto.AdminDashboardResponse.*;
-import com.web.ecommerce.domain.dashboard.dto.UserDashboardResponse.*;
-import com.web.ecommerce.domain.dashboard.dto.UserDashboardResponse.AdStats;
+import com.web.ecommerce.domain.dashboard.dto.AdminDashboardResponse.DailySales;
+import com.web.ecommerce.domain.dashboard.dto.AdminDashboardResponse.DailyUsers;
+import com.web.ecommerce.domain.dashboard.dto.AdminDashboardResponse.EventCount;
+import com.web.ecommerce.domain.dashboard.dto.AdminDashboardResponse.TopCategory;
+import com.web.ecommerce.domain.dashboard.dto.AdminDashboardResponse.TopProduct;
+import com.web.ecommerce.domain.dashboard.dto.DashboardShared.AdStats;
+import com.web.ecommerce.domain.dashboard.dto.UserDashboardResponse.TimeSlotCount;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -61,8 +65,8 @@ public class EventLogRepository {
     public List<TopProduct> findTopProducts(int limit) {
         String sql = """
                 SELECT product_name,
-                       product_category                AS category,
-                       COUNT(*)                        AS count,
+                       product_category                  AS category,
+                       COUNT(*)                          AS count,
                        COALESCE(SUM(approved_amount), 0) AS total_amount
                 FROM event_log
                 WHERE event_name = 'purchase_button_click'
@@ -121,8 +125,7 @@ public class EventLogRepository {
         return jdbc.queryForObject(sql, (rs, i) -> {
             long impressions = rs.getLong("impressions");
             long clicks = rs.getLong("clicks");
-            double ctr = impressions > 0 ? (double) clicks / impressions * 100 : 0;
-            return new AdStats(impressions, clicks, ctr);
+            return new AdStats(impressions, clicks, impressions > 0 ? (double) clicks / impressions * 100 : 0);
         });
     }
 
@@ -149,8 +152,7 @@ public class EventLogRepository {
         return jdbc.queryForObject(sql, (rs, i) -> {
             long impressions = rs.getLong("impressions");
             long clicks = rs.getLong("clicks");
-            double ctr = impressions > 0 ? (double) clicks / impressions * 100 : 0;
-            return new AdStats(impressions, clicks, ctr);
+            return new AdStats(impressions, clicks, impressions > 0 ? (double) clicks / impressions * 100 : 0);
         }, userId);
     }
 
@@ -164,7 +166,7 @@ public class EventLogRepository {
         return jdbc.queryForObject(sql, (rs, i) -> {
             long clicks = rs.getLong("clicks");
             long purchases = rs.getLong("purchases");
-            return clicks > 0 ? (double) purchases / clicks * 100 : 0;
+            return clicks > 0 ? (double) purchases / clicks * 100 : 0.0;
         }, userId);
     }
 
@@ -225,6 +227,8 @@ public class EventLogRepository {
                 rs.getLong("count")
         ), userId, limit);
     }
+
+    public record CategoryCount(String category, long count) {}
 
     // ──────────────── Admin User List (batch) ────────────────
 

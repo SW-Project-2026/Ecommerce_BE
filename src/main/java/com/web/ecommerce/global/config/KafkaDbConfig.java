@@ -2,7 +2,6 @@ package com.web.ecommerce.global.config;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
-import javax.sql.DataSource;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -21,8 +20,7 @@ public class KafkaDbConfig {
     @Value("${kafka-db.datasource.password}")
     private String password;
 
-    @Bean("kafkaDataSource")
-    public DataSource kafkaDataSource() {
+    private HikariDataSource buildDataSource() {
         HikariConfig config = new HikariConfig();
         config.setJdbcUrl(url);
         config.setUsername(username);
@@ -35,11 +33,11 @@ public class KafkaDbConfig {
 
     @Bean("kafkaJdbcTemplate")
     public JdbcTemplate kafkaJdbcTemplate() {
-        return new JdbcTemplate(kafkaDataSource());
+        return new JdbcTemplate(buildDataSource());
     }
 
     @Bean("kafkaNamedJdbcTemplate")
     public NamedParameterJdbcTemplate kafkaNamedJdbcTemplate() {
-        return new NamedParameterJdbcTemplate(kafkaDataSource());
+        return new NamedParameterJdbcTemplate(buildDataSource());
     }
 }
