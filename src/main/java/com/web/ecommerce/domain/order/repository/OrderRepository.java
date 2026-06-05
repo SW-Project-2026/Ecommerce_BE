@@ -2,13 +2,14 @@ package com.web.ecommerce.domain.order.repository;
 
 import com.web.ecommerce.domain.order.entity.Order;
 import com.web.ecommerce.domain.order.enums.OrderStatus;
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
-
-import java.time.LocalDateTime;
+import org.springframework.data.repository.query.Param;
 
 public interface OrderRepository extends JpaRepository<Order, Long> {
 
@@ -22,6 +23,16 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
 
     @Query("SELECT COALESCE(SUM(o.finalAmount), 0) FROM Order o WHERE o.user.id = :userId AND o.status <> :excludedStatus")
     int sumFinalAmountByUserIdExcludingStatus(Long userId, OrderStatus excludedStatus);
+
+    Optional<Order> findTopByUserIdAndStatusNotOrderByOrderDateDesc(Long userId, OrderStatus status);
+
+    long countByUserIdAndOrderDateAfterAndStatusNot(Long userId, LocalDateTime from, OrderStatus status);
+
+    @Query("SELECT o FROM Order o JOIN FETCH o.orderDetails od JOIN FETCH od.product WHERE o.user.id = :userId AND (:cursor = 0 OR o.id < :cursor) ORDER BY o.id DESC")
+    List<Order> findByUserIdWithCursorForDashboard(Long userId, Long cursor, Pageable pageable);
+
+    @Query(value = "SELECT o.user_id, COUNT(o.order_id) FROM orders o WHERE o.user_id IN :userIds AND o.order_date >= :from AND o.status != :status GROUP BY o.user_id", nativeQuery = true)
+    List<Object[]> countPurchasesByUserIds(@Param("userIds") List<Long> userIds, @Param("from") LocalDateTime from, @Param("status") String status);
 
     @Query("SELECT o FROM Order o WHERE o.status = :status AND o.updatedAt <= :before")
     List<Order> findByStatusAndUpdatedAtBefore(OrderStatus status, LocalDateTime before);

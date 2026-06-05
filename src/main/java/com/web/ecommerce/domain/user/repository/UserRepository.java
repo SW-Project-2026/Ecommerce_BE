@@ -35,4 +35,10 @@ public interface UserRepository extends JpaRepository<User, Long> {
   long countByRoleAndIsActiveAndCreatedAtAfter(Role role, int isActive, LocalDateTime after);
 
   long countByRoleAndIsActiveAndGrade(Role role, int isActive, UserGrade grade);
+
+  @Query(value = "SELECT TO_CHAR(created_at, 'YYYY-MM') AS month, COUNT(*) AS count FROM users WHERE role = 'USER' AND created_at >= :from GROUP BY TO_CHAR(created_at, 'YYYY-MM') ORDER BY month", nativeQuery = true)
+  List<Object[]> countMonthlySignups(@Param("from") LocalDateTime from);
+
+  @Query(value = "SELECT TO_CHAR(updated_at, 'YYYY-MM') AS month, COUNT(*) AS withdrawn, (SELECT COUNT(*) FROM users u2 WHERE u2.role = 'USER' AND TO_CHAR(u2.created_at, 'YYYY-MM') = TO_CHAR(u.updated_at, 'YYYY-MM')) AS total FROM users u WHERE u.role = 'USER' AND u.is_active = 0 AND u.updated_at >= :from GROUP BY TO_CHAR(u.updated_at, 'YYYY-MM') ORDER BY month", nativeQuery = true)
+  List<Object[]> countMonthlyChurn(@Param("from") LocalDateTime from);
 }
