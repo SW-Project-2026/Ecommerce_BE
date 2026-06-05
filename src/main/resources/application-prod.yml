@@ -59,6 +59,12 @@ solapi:
   secret-key: ${SOLAPI_SECRET_KEY}
   from: ${SOLAPI_FROM}
 
+kafka-db:
+  datasource:
+    url: jdbc:postgresql://${KAFKA_DB_HOST}:5432/${KAFKA_DB_NAME}
+    username: ${KAFKA_DB_USERNAME}
+    password: ${KAFKA_DB_PASSWORD}
+
 swagger:
   server:
     profile: https://api.daon.site

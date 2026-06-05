@@ -35,4 +35,25 @@ public interface UserRepository extends JpaRepository<User, Long> {
   long countByRoleAndIsActiveAndCreatedAtAfter(Role role, int isActive, LocalDateTime after);
 
   long countByRoleAndIsActiveAndGrade(Role role, int isActive, UserGrade grade);
+
+  @Query(value = "SELECT TO_CHAR(created_at, 'YYYY-MM') AS month, COUNT(*) AS count FROM users WHERE role = 'USER' AND created_at >= :from GROUP BY TO_CHAR(created_at, 'YYYY-MM') ORDER BY month", nativeQuery = true)
+  List<Object[]> countMonthlySignups(@Param("from") LocalDateTime from);
+
+  @Query("SELECT u FROM User u WHERE u.role = com.web.ecommerce.domain.user.entity.Role.USER AND u.isActive = 1 " +
+         "AND (:search = '' OR u.loginId LIKE CONCAT('%', :search, '%')) " +
+         "AND (:grade IS NULL OR u.grade = :grade) " +
+         "AND (:loginBefore IS NULL OR u.lastLoginAt IS NULL OR u.lastLoginAt < :loginBefore) " +
+         "AND (:loginAfter IS NULL OR (u.lastLoginAt IS NOT NULL AND u.lastLoginAt >= :loginAfter)) " +
+         "AND (:createdAfter IS NULL OR u.createdAt >= :createdAfter)")
+  Page<User> findCustomersWithFilter(
+          @Param("search") String search,
+          @Param("grade") UserGrade grade,
+          @Param("loginBefore") LocalDateTime loginBefore,
+          @Param("loginAfter") LocalDateTime loginAfter,
+          @Param("createdAfter") LocalDateTime createdAfter,
+          Pageable pageable
+  );
+
+  @Query(value = "SELECT TO_CHAR(updated_at, 'YYYY-MM') AS month, COUNT(*) AS withdrawn, (SELECT COUNT(*) FROM users u2 WHERE u2.role = 'USER' AND TO_CHAR(u2.created_at, 'YYYY-MM') = TO_CHAR(u.updated_at, 'YYYY-MM')) AS total FROM users u WHERE u.role = 'USER' AND u.is_active = 0 AND u.updated_at >= :from GROUP BY TO_CHAR(u.updated_at, 'YYYY-MM') ORDER BY month", nativeQuery = true)
+  List<Object[]> countMonthlyChurn(@Param("from") LocalDateTime from);
 }

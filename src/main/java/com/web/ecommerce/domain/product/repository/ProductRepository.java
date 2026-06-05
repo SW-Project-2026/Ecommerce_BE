@@ -13,6 +13,9 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
     boolean existsByNaverProductId(String naverProductId);
 
+    @Query("SELECT p.naverProductId FROM Product p WHERE p.naverProductId IS NOT NULL")
+    java.util.List<String> findAllNaverProductIds();
+
     @Query("SELECT MAX(p.createdAt) FROM Product p")
     Optional<LocalDateTime> findLastSyncedAt();
 

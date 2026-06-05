@@ -5,15 +5,15 @@ import java.util.Set;
 
 public enum Operator {
 
-  EQUALS(Set.of(FieldType.STRING, FieldType.NUMBER, FieldType.DATETIME)),
-  NOT_EQUALS(Set.of(FieldType.STRING, FieldType.NUMBER, FieldType.DATETIME)),
+  EQUALS(Set.of(FieldType.STRING, FieldType.NUMBER, FieldType.DATETIME, FieldType.DATE, FieldType.TIME)),
+  NOT_EQUALS(Set.of(FieldType.STRING, FieldType.NUMBER, FieldType.DATETIME, FieldType.DATE, FieldType.TIME)),
   CONTAINS(Set.of(FieldType.STRING)),
   NOT_CONTAINS(Set.of(FieldType.STRING)),
-  GT(Set.of(FieldType.NUMBER, FieldType.DATETIME)),
-  GTE(Set.of(FieldType.NUMBER, FieldType.DATETIME)),
-  LT(Set.of(FieldType.NUMBER, FieldType.DATETIME)),
-  LTE(Set.of(FieldType.NUMBER, FieldType.DATETIME)),
-  BETWEEN(Set.of(FieldType.NUMBER, FieldType.DATETIME));
+  GT(Set.of(FieldType.NUMBER, FieldType.DATETIME, FieldType.DATE, FieldType.TIME)),
+  GTE(Set.of(FieldType.NUMBER, FieldType.DATETIME, FieldType.DATE, FieldType.TIME)),
+  LT(Set.of(FieldType.NUMBER, FieldType.DATETIME, FieldType.DATE, FieldType.TIME)),
+  LTE(Set.of(FieldType.NUMBER, FieldType.DATETIME, FieldType.DATE, FieldType.TIME)),
+  BETWEEN(Set.of(FieldType.NUMBER, FieldType.DATETIME, FieldType.DATE, FieldType.TIME));
 
   private final Set<FieldType> supportedTypes;
 

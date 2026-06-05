@@ -36,5 +36,15 @@ public class CampaignResponse {
   private String couponName;
   private Long adId;
   private String adName;
+
+  @Schema(description = "메시지 타입 (SMS/LMS)")
+  private String messageType;
+
+  @Schema(description = "메시지 제목 (LMS 전용)")
+  private String messageSubject;
+
+  @Schema(description = "메시지 내용")
+  private String messageContent;
+
   private List<CampaignFilterResponse> filters;
 }
