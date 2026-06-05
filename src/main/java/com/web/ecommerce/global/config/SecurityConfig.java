@@ -102,8 +102,7 @@ public class SecurityConfig {
         .requestMatchers(HttpMethod.GET, "/api/users/*/ads").hasRole("ADMIN")
         .requestMatchers(HttpMethod.GET, "/api/ads", "/api/ads/**").hasRole("ADMIN")
         // 대시보드
-        .requestMatchers("/api/dashboard/admin", "/api/dashboard/admin/**").hasRole("ADMIN")
-        .requestMatchers("/api/dashboard/customers/**").hasRole("ADMIN")
+        .requestMatchers("/api/dashboard/**").hasRole("ADMIN")
 
         // 나머지는 로그인 필요
         .anyRequest().authenticated()

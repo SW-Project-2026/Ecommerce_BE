@@ -230,6 +230,27 @@ public class EventLogRepository {
 
     public record CategoryCount(String category, long count) {}
 
+    // ──────────────── Monthly Churn (Server B) ────────────────
+
+    public record MonthlyChurnRow(String month, long churnVisitors) {}
+
+    public List<MonthlyChurnRow> findMonthlyChurnVisitors() {
+        String sql = """
+                SELECT TO_CHAR((json_log::jsonb->>'eventTimestamp')::timestamp, 'YYYY-MM') AS month,
+                       COUNT(DISTINCT json_log::jsonb->>'user_login_id')                    AS churn_visitors
+                FROM event_log
+                WHERE json_log::jsonb->>'event_name' = 'page_view'
+                  AND json_log::jsonb->>'pageName' = '탈퇴'
+                  AND (json_log::jsonb->>'eventTimestamp')::timestamp >= NOW() - INTERVAL '12 months'
+                GROUP BY TO_CHAR((json_log::jsonb->>'eventTimestamp')::timestamp, 'YYYY-MM')
+                ORDER BY month
+                """;
+        return jdbc.query(sql, (rs, i) -> new MonthlyChurnRow(
+                rs.getString("month"),
+                rs.getLong("churn_visitors")
+        ));
+    }
+
     // ──────────────── Admin User List (batch) ────────────────
 
     public record AdStatRow(long impressions, long clicks) {}

@@ -2,6 +2,9 @@ package com.web.ecommerce.domain.dashboard.controller;
 
 import com.web.ecommerce.domain.dashboard.dto.AdminDashboardResponse;
 import com.web.ecommerce.domain.dashboard.dto.CustomerDashboardResponse;
+import com.web.ecommerce.domain.dashboard.dto.CustomerListResponse;
+import com.web.ecommerce.domain.dashboard.dto.DashboardSummaryResponse;
+import com.web.ecommerce.domain.dashboard.dto.MonthlyStatsResponse;
 import com.web.ecommerce.domain.dashboard.dto.UserSummaryResponse;
 import com.web.ecommerce.domain.dashboard.service.DashboardService;
 import com.web.ecommerce.global.response.BaseResponse;
@@ -26,6 +29,29 @@ public class DashboardController {
     private final DashboardService dashboardService;
 
     // ──────────────── Admin ────────────────
+
+    @Operation(summary = "전체 요약 지표", description = "총 고객수 / CTR / 쿠폰 사용률")
+    @GetMapping("/summary")
+    public ResponseEntity<BaseResponse<DashboardSummaryResponse>> getSummary() {
+        return ResponseEntity.ok(BaseResponse.success(dashboardService.getSummary()));
+    }
+
+    @Operation(summary = "월별 신규 가입·탈퇴율", description = "최근 12개월 기준")
+    @GetMapping("/monthly-stats")
+    public ResponseEntity<BaseResponse<MonthlyStatsResponse>> getMonthlyStats() {
+        return ResponseEntity.ok(BaseResponse.success(dashboardService.getMonthlyStats()));
+    }
+
+    @Operation(summary = "고객 목록", description = "페이지네이션 + 검색 + 필터")
+    @GetMapping("/customers")
+    public ResponseEntity<BaseResponse<CustomerListResponse>> getCustomers(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) String filter
+    ) {
+        return ResponseEntity.ok(BaseResponse.success(dashboardService.getCustomers(page, size, search, filter)));
+    }
 
     @Operation(summary = "전체 대시보드 조회", description = "관리자 전용 - 매출/DAU/인기상품/카테고리/이벤트/광고/쿠폰/가입·탈퇴 통계")
     @GetMapping("/admin")
