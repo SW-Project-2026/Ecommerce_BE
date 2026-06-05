@@ -1,5 +1,6 @@
 package com.web.ecommerce.domain.dashboard.service;
 
+import com.web.ecommerce.domain.ad.repository.AdExposureRepository;
 import com.web.ecommerce.domain.cart.repository.CartRepository;
 import com.web.ecommerce.domain.coupon.enums.CouponStatus;
 import com.web.ecommerce.domain.coupon.repository.UserCouponRepository;
@@ -12,6 +13,13 @@ import com.web.ecommerce.domain.dashboard.dto.AdminDashboardResponse.MonthlySign
 import com.web.ecommerce.domain.dashboard.dto.AdminDashboardResponse.TopCategory;
 import com.web.ecommerce.domain.dashboard.dto.AdminDashboardResponse.TopProduct;
 import com.web.ecommerce.domain.dashboard.dto.CartItemResponse;
+import com.web.ecommerce.domain.dashboard.dto.CustomerDashboardResponse;
+import com.web.ecommerce.domain.dashboard.dto.CustomerDashboardResponse.AccessTimeSlot;
+import com.web.ecommerce.domain.dashboard.dto.CustomerDashboardResponse.AdConversionStats;
+import com.web.ecommerce.domain.dashboard.dto.CustomerDashboardResponse.CtrStats;
+import com.web.ecommerce.domain.dashboard.dto.CustomerDashboardResponse.CouponUsageStats;
+import com.web.ecommerce.domain.dashboard.dto.CustomerDashboardResponse.CustomerInfo;
+import com.web.ecommerce.domain.dashboard.dto.CustomerDashboardResponse.Tags;
 import com.web.ecommerce.domain.dashboard.dto.DashboardShared.AdStats;
 import com.web.ecommerce.domain.dashboard.dto.DashboardShared.CouponStats;
 import com.web.ecommerce.domain.dashboard.dto.OrderHistoryResponse;
@@ -22,7 +30,9 @@ import com.web.ecommerce.domain.dashboard.repository.EventLogRepository;
 import com.web.ecommerce.domain.dashboard.repository.EventLogRepository.AdStatRow;
 import com.web.ecommerce.domain.dashboard.repository.EventLogRepository.CategoryCount;
 import com.web.ecommerce.domain.order.entity.Order;
+import com.web.ecommerce.domain.order.entity.OrderDetail;
 import com.web.ecommerce.domain.order.enums.OrderStatus;
+import com.web.ecommerce.domain.order.repository.OrderDetailRepository;
 import com.web.ecommerce.domain.order.repository.OrderRepository;
 import com.web.ecommerce.domain.user.entity.Role;
 import com.web.ecommerce.domain.user.entity.User;
@@ -30,8 +40,12 @@ import com.web.ecommerce.domain.user.repository.UserRepository;
 import com.web.ecommerce.global.exception.CustomException;
 import com.web.ecommerce.global.exception.GlobalErrorCode;
 import com.web.ecommerce.global.response.CursorResponse;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -47,11 +61,16 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(readOnly = true)
 public class DashboardService {
 
+    private static final List<String> ALL_TIME_SLOTS =
+            List.of("00-03", "03-06", "06-09", "09-12", "12-15", "15-18", "18-21", "21-24");
+
     private final EventLogRepository eventLogRepository;
     private final UserRepository userRepository;
     private final OrderRepository orderRepository;
+    private final OrderDetailRepository orderDetailRepository;
     private final CartRepository cartRepository;
     private final UserCouponRepository userCouponRepository;
+    private final AdExposureRepository adExposureRepository;
 
     // ──────────────── Admin ────────────────
 
@@ -120,7 +139,7 @@ public class DashboardService {
             double ctr = ad.impressions() > 0 ? (double) ad.clicks() / ad.impressions() * 100 : 0;
             double couponUsageRate = coupon[0] > 0 ? (double) coupon[1] / coupon[0] * 100 : 0;
             boolean loginOld = user.getLastLoginAt() == null ||
-                    user.getLastLoginAt().isBefore(LocalDateTime.now().minusDays(14));
+                    user.getLastLoginAt().isBefore(LocalDateTime.now().minusDays(30));
 
             return new UserSummaryResponse(
                     userId,
@@ -135,7 +154,113 @@ public class DashboardService {
         });
     }
 
-    // ──────────────── User ────────────────
+    // ──────────────── Customer Dashboard (Admin → 특정 유저 조회) ────────────────
+
+    public CustomerDashboardResponse getCustomerDashboard(Long userId) {
+        User user = userRepository.findByIdAndIsActive(userId, 1)
+                .orElseThrow(() -> new CustomException(GlobalErrorCode.RESOURCE_NOT_FOUND));
+
+        LocalDateTime thirtyDaysAgo = LocalDateTime.now().minusDays(30);
+
+        // 최근 구매일 → N일 전
+        Order lastOrder = orderRepository
+                .findTopByUserIdAndStatusNotOrderByOrderDateDesc(userId, OrderStatus.CANCELLED)
+                .orElse(null);
+        long lastPurchaseDaysAgo = lastOrder != null
+                ? ChronoUnit.DAYS.between(lastOrder.getOrderDate().toLocalDate(), LocalDate.now()) : 0;
+
+        // 구매빈도
+        long recentPurchaseCount = orderRepository.countByUserIdAndOrderDateAfterAndStatusNot(
+                userId, thirtyDaysAgo, OrderStatus.CANCELLED);
+
+        // 탈퇴 페이지 방문
+        boolean churnPageVisited = eventLogRepository.hasWithdrawalPageVisit(userId, 30);
+
+        // 이탈위험 (30일 기준)
+        boolean loginOld = user.getLastLoginAt() == null ||
+                user.getLastLoginAt().isBefore(thirtyDaysAgo);
+        String churnRisk = (loginOld || churnPageVisited) ? "높음" : "낮음";
+
+        // CTR (Server A - ad_exposure)
+        long impressions = adExposureRepository.countByUser_Id(userId);
+        long clicks = adExposureRepository.countByUser_IdAndClicked(userId, true);
+        double ctrRate = impressions > 0 ? Math.round((double) clicks / impressions * 10000.0) / 100.0 : 0;
+
+        // 쿠폰 (Server A - user_coupon)
+        long couponReceived = userCouponRepository.countByUserIdAndIsDuplicateFalse(userId);
+        long couponUsed = userCouponRepository.countByUserIdAndStatusAndIsDuplicateFalse(userId, CouponStatus.USED);
+        long couponUnused = couponReceived - couponUsed;
+        double couponRate = couponReceived > 0
+                ? Math.round((double) couponUsed / couponReceived * 1000.0) / 10.0 : 0;
+
+        // 광고→구매 전환율 (Server A)
+        long totalPurchases = orderRepository.countByUserIdAndStatusNot(userId, OrderStatus.CANCELLED);
+        double conversionRate = impressions > 0
+                ? Math.round((double) totalPurchases / impressions * 10000.0) / 100.0 : 0;
+
+        // 관심 카테고리 (event_log 유지)
+        List<String> interestedCategories = eventLogRepository.findTopCategoriesByUser(userId, 5)
+                .stream().map(CategoryCount::category).toList();
+
+        // 주 접속 시간대 (event_log 유지, 빈 슬롯 채우기)
+        List<AccessTimeSlot> accessTimeSlots = fillAllTimeSlots(
+                eventLogRepository.findPeakHours(userId));
+
+        CustomerInfo customerInfo = new CustomerInfo(
+                user.getName(),
+                user.getGrade().name(),
+                user.getCreatedAt().toLocalDate().toString(),
+                formatLastLogin(user.getLastLoginAt()),
+                lastPurchaseDaysAgo,
+                churnPageVisited,
+                new Tags(toPurchaseFrequency(recentPurchaseCount), churnRisk)
+        );
+
+        return new CustomerDashboardResponse(
+                customerInfo,
+                new CtrStats(clicks, impressions, ctrRate),
+                new CouponUsageStats(couponReceived, couponUsed, couponUnused, couponRate),
+                new AdConversionStats(totalPurchases, impressions, conversionRate),
+                interestedCategories,
+                accessTimeSlots
+        );
+    }
+
+    public CursorResponse<CustomerDashboardResponse.CartItem> getCustomerCart(Long userId, Long cursor, int size) {
+        Pageable pageable = PageRequest.of(0, size + 1);
+        List<CustomerDashboardResponse.CartItem> items =
+                cartRepository.findByUserIdWithCursorDesc(userId, cursor == null ? 0L : cursor, pageable)
+                        .stream().map(c -> new CustomerDashboardResponse.CartItem(
+                                c.getId(),
+                                c.getProduct().getName(),
+                                c.getProduct().getSubCategory() != null ? c.getProduct().getSubCategory() : "",
+                                c.getProduct().getMaxPrice()
+                        )).toList();
+
+        boolean hasNext = items.size() > size;
+        List<CustomerDashboardResponse.CartItem> content = hasNext ? items.subList(0, size) : items;
+        Long nextCursor = hasNext ? content.get(content.size() - 1).cartId() : null;
+        return CursorResponse.of(content, nextCursor, hasNext);
+    }
+
+    public CursorResponse<CustomerDashboardResponse.OrderItem> getCustomerOrders(Long userId, Long cursor, int size) {
+        Pageable pageable = PageRequest.of(0, size + 1);
+        List<CustomerDashboardResponse.OrderItem> items =
+                orderDetailRepository.findByUserIdWithCursor(userId, cursor == null ? 0L : cursor, pageable)
+                        .stream().map(od -> new CustomerDashboardResponse.OrderItem(
+                                od.getId(),
+                                od.getProduct().getName(),
+                                od.getProduct().getSubCategory() != null ? od.getProduct().getSubCategory() : "",
+                                od.getUnitPrice()
+                        )).toList();
+
+        boolean hasNext = items.size() > size;
+        List<CustomerDashboardResponse.OrderItem> content = hasNext ? items.subList(0, size) : items;
+        Long nextCursor = hasNext ? content.get(content.size() - 1).orderItemId() : null;
+        return CursorResponse.of(content, nextCursor, hasNext);
+    }
+
+    // ──────────────── User (본인) ────────────────
 
     public UserDashboardResponse getUserDashboard(Long userId) {
         User user = userRepository.findByIdAndIsActive(userId, 1)
@@ -160,9 +285,8 @@ public class DashboardService {
                 .stream().map(CategoryCount::category).toList();
         List<TimeSlotCount> peakHours = eventLogRepository.findPeakHours(userId);
 
-        String purchaseFrequency = toPurchaseFrequency(recentPurchaseCount);
         boolean loginOld = user.getLastLoginAt() == null ||
-                user.getLastLoginAt().isBefore(LocalDateTime.now().minusDays(14));
+                user.getLastLoginAt().isBefore(thirtyDaysAgo);
         String churnRisk = (loginOld || withdrawalVisited) ? "높음" : "낮음";
         double couponUsageRate = couponSent > 0 ? (double) couponUsed / couponSent * 100 : 0;
 
@@ -171,7 +295,7 @@ public class DashboardService {
                 lastOrder != null ? lastOrder.getOrderDate().toString() : null,
                 withdrawalVisited,
                 user.getGrade().name(),
-                purchaseFrequency,
+                toPurchaseFrequency(recentPurchaseCount),
                 churnRisk,
                 adStats,
                 new CouponStats(couponSent, couponUsed, couponUsageRate),
@@ -184,7 +308,7 @@ public class DashboardService {
 
     public CursorResponse<CartItemResponse> getUserCart(Long userId, Long cursor, int size) {
         Pageable pageable = PageRequest.of(0, size + 1);
-        List<CartItemResponse> items = cartRepository.findByUserIdWithCursor(userId, cursor, pageable)
+        List<CartItemResponse> items = cartRepository.findByUserIdWithCursor(userId, cursor == null ? 0L : cursor, pageable)
                 .stream().map(c -> new CartItemResponse(
                         c.getId(),
                         c.getProduct().getProductId(),
@@ -204,7 +328,7 @@ public class DashboardService {
     public CursorResponse<OrderHistoryResponse> getUserOrders(Long userId, Long cursor, int size) {
         Pageable pageable = PageRequest.of(0, size + 1);
         List<OrderHistoryResponse> items = orderRepository
-                .findByUserIdWithCursorForDashboard(userId, cursor, pageable)
+                .findByUserIdWithCursorForDashboard(userId, cursor == null ? 0L : cursor, pageable)
                 .stream().map(o -> new OrderHistoryResponse(
                         o.getId(),
                         o.getOrderDate().toString(),
@@ -226,8 +350,26 @@ public class DashboardService {
     // ──────────────── helpers ────────────────
 
     private String toPurchaseFrequency(long count) {
-        if (count >= 5) return "HIGH";
-        if (count >= 1) return "MID";
+        if (count >= 10) return "HIGH";
+        if (count >= 5) return "MID";
         return "LOW";
+    }
+
+    private String formatLastLogin(LocalDateTime lastLoginAt) {
+        if (lastLoginAt == null) return "";
+        LocalDate today = LocalDate.now();
+        LocalDate loginDate = lastLoginAt.toLocalDate();
+        String time = lastLoginAt.format(DateTimeFormatter.ofPattern("a h:mm", Locale.KOREAN));
+        if (loginDate.equals(today)) return "오늘 " + time;
+        if (loginDate.equals(today.minusDays(1))) return "어제 " + time;
+        return lastLoginAt.format(DateTimeFormatter.ofPattern("yyyy년 M월 d일", Locale.KOREAN));
+    }
+
+    private List<AccessTimeSlot> fillAllTimeSlots(List<TimeSlotCount> data) {
+        Map<String, Long> map = data.stream()
+                .collect(Collectors.toMap(TimeSlotCount::slot, TimeSlotCount::count));
+        return ALL_TIME_SLOTS.stream()
+                .map(slot -> new AccessTimeSlot(slot, map.getOrDefault(slot, 0L)))
+                .toList();
     }
 }

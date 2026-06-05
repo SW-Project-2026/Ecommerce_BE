@@ -11,4 +11,8 @@ public interface AdExposureRepository extends JpaRepository<AdExposure, Long> {
   Page<AdExposure> findByUser_Id(Long userId, Pageable pageable);
 
   Optional<AdExposure> findTopByAd_AdIdAndUser_IdOrderByExposedAtDesc(Long adId, Long userId);
+
+  long countByUser_Id(Long userId);
+
+  long countByUser_IdAndClicked(Long userId, boolean clicked);
 }

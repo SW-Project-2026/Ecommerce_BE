@@ -26,6 +26,8 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
 
     Optional<Order> findTopByUserIdAndStatusNotOrderByOrderDateDesc(Long userId, OrderStatus status);
 
+    long countByUserIdAndStatusNot(Long userId, OrderStatus status);
+
     long countByUserIdAndOrderDateAfterAndStatusNot(Long userId, LocalDateTime from, OrderStatus status);
 
     @Query("SELECT o FROM Order o JOIN FETCH o.orderDetails od JOIN FETCH od.product WHERE o.user.id = :userId AND (:cursor = 0 OR o.id < :cursor) ORDER BY o.id DESC")
