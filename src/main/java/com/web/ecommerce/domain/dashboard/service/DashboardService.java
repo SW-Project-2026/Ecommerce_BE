@@ -211,17 +211,12 @@ public class DashboardService {
 
         LocalDateTime thirtyDaysAgo = LocalDateTime.now().minusDays(30);
 
-        // 최근 구매일 → N일 전 (Order 없으면 event_log fallback)
+        // 최근 구매일 (Order 없으면 event_log fallback)
         LocalDateTime lastPurchaseAt = orderRepository
-                .findLastOrdersByUserId(userId, OrderStatus.CANCELLED, PageRequest.of(0, 1))
-                .stream().findFirst()
+                .findLastOrderByUserId(userId)
                 .map(Order::getOrderDate)
                 .orElseGet(() -> eventLogRepository.findLastPurchaseByUserId(userId).orElse(null));
-        String lastPurchase = "";
-        if (lastPurchaseAt != null) {
-            long days = ChronoUnit.DAYS.between(lastPurchaseAt.toLocalDate(), LocalDate.now());
-            lastPurchase = days == 0 ? "오늘" : days + "일 전";
-        }
+        String lastPurchase = formatLastLogin(lastPurchaseAt);
 
         // 구매빈도
         long recentPurchaseCount = orderRepository.countByUserIdAndOrderDateAfterAndStatusNot(

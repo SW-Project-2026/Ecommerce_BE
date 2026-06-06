@@ -120,6 +120,22 @@ public class ProductService {
     }
 
     @Transactional(readOnly = true)
+    public List<ProductDetailResponse> getRelatedProducts(Long productId, int limit) {
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new CustomException(ProductErrorCode.PRODUCT_NOT_FOUND));
+
+        if (product.getProductCategory() == null || product.getProductCategory().isBlank()) {
+            return List.of();
+        }
+
+        return productRepository.findRelatedProducts(
+                        product.getProductCategory(), productId, PageRequest.of(0, limit))
+                .stream()
+                .map(ProductDetailResponse::from)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
     public long countProducts() {
         return productRepository.count();
     }

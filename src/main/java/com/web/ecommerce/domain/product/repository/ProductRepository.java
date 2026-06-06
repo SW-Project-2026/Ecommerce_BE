@@ -27,6 +27,9 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
     Page<Product> findByIsActiveAndNameContainingIgnoreCase(int isActive, String name, Pageable pageable);
 
+    @Query("SELECT p FROM Product p WHERE p.productCategory = :category AND p.productId <> :excludeId AND p.isActive = 1 ORDER BY p.createdAt DESC")
+    List<Product> findRelatedProducts(@Param("category") String category, @Param("excludeId") Long excludeId, Pageable pageable);
+
     @Query("SELECT p FROM Product p WHERE p.isActive = 1 AND (p.subCategory IN :categories OR p.productCategory IN :categories) ORDER BY p.createdAt DESC")
     List<Product> findByInterestCategoriesAndIsActive(@Param("categories") List<String> categories, Pageable pageable);
 
