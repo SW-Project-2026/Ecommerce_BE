@@ -5,6 +5,7 @@ import com.web.ecommerce.domain.order.enums.OrderStatus;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -24,8 +25,8 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     @Query("SELECT COALESCE(SUM(o.finalAmount), 0) FROM Order o WHERE o.user.id = :userId AND o.status <> :excludedStatus")
     int sumFinalAmountByUserIdExcludingStatus(Long userId, OrderStatus excludedStatus);
 
-    @Query("SELECT o FROM Order o WHERE o.user.id = :userId AND o.status <> :status ORDER BY o.orderDate DESC LIMIT 1")
-    Optional<Order> findLastOrderByUserId(@Param("userId") Long userId, @Param("status") OrderStatus status);
+    @Query("SELECT o FROM Order o WHERE o.user.id = :userId AND o.status <> :status ORDER BY o.orderDate DESC")
+    List<Order> findLastOrdersByUserId(@Param("userId") Long userId, @Param("status") OrderStatus status, Pageable pageable);
 
     long countByUserIdAndStatusNot(Long userId, OrderStatus status);
 

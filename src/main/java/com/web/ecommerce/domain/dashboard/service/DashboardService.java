@@ -213,7 +213,8 @@ public class DashboardService {
 
         // 최근 구매일 → N일 전 (Order 없으면 event_log fallback)
         LocalDateTime lastPurchaseAt = orderRepository
-                .findLastOrderByUserId(userId, OrderStatus.CANCELLED)
+                .findLastOrdersByUserId(userId, OrderStatus.CANCELLED, PageRequest.of(0, 1))
+                .stream().findFirst()
                 .map(Order::getOrderDate)
                 .orElseGet(() -> eventLogRepository.findLastPurchaseByUserId(userId).orElse(null));
         String lastPurchase = "";
