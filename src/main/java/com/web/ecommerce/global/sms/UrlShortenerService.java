@@ -1,5 +1,7 @@
 package com.web.ecommerce.global.sms;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import lombok.extern.slf4j.Slf4j;
@@ -26,8 +28,9 @@ public class UrlShortenerService {
 
     private String shorten(String url) {
         try {
+            String encoded = URLEncoder.encode(url, StandardCharsets.UTF_8);
             String result = restClient.get()
-                    .uri("https://tinyurl.com/api-create.php?url=" + url)
+                    .uri("https://tinyurl.com/api-create.php?url=" + encoded)
                     .retrieve()
                     .body(String.class);
             return (result != null && result.startsWith("https://tinyurl.com")) ? result : url;

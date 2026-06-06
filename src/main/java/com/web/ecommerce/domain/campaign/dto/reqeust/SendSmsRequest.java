@@ -28,4 +28,5 @@ public class SendSmsRequest {
     @NotNull
     @Schema(description = "중복 발송 정책 (CHECK: N일 내 발송 이력 있으면 스킵 / IGNORE: 이력 무시하고 발송)", example = "CHECK")
     private DuplicatePolicy duplicatePolicy;
+
 }
