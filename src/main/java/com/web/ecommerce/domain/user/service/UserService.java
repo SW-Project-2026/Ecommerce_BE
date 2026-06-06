@@ -52,8 +52,9 @@ public interface UserService {
     /**
      * 회원 탈퇴 (soft delete)
      * @param userId 로그인한 사용자 ID
+     * @param password 비밀번호 (검증용)
      */
-    void withdraw(Long userId);
+    void withdraw(Long userId, String password);
 
     /**
      * 전체 회원 목록 조회 (관리자 전용)

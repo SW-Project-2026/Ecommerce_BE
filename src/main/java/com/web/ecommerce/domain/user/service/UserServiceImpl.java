@@ -98,9 +98,12 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public void withdraw(Long userId) {
+    public void withdraw(Long userId, String password) {
         User user = userRepository.findByIdAndIsActive(userId, 1)
                 .orElseThrow(() -> new CustomException(UserErrorCode.USER_NOT_FOUND));
+        if (!passwordEncoder.matches(password, user.getPassword())) {
+            throw new CustomException(UserErrorCode.INVALID_PASSWORD);
+        }
         user.withdraw();
     }
 

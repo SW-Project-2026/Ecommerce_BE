@@ -46,3 +46,9 @@ solapi:
 
 cors:
   allowed-origins: http://localhost:3000
+
+kafka-db:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/ecommerce
+    username: admin
+    password: admin1234

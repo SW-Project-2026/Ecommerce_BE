@@ -28,6 +28,10 @@ services:
       SOLAPI_API_KEY: ${SOLAPI_API_KEY}
       SOLAPI_SECRET_KEY: ${SOLAPI_SECRET_KEY}
       SOLAPI_FROM: ${SOLAPI_FROM}
+      KAFKA_DB_HOST: ${KAFKA_DB_HOST}
+      KAFKA_DB_NAME: ${KAFKA_DB_NAME:-postgres}
+      KAFKA_DB_USERNAME: ${KAFKA_DB_USERNAME}
+      KAFKA_DB_PASSWORD: ${KAFKA_DB_PASSWORD}
     depends_on:
       - db
     restart: always
