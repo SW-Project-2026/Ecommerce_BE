@@ -224,10 +224,11 @@ public class DashboardService {
         double couponRate = couponReceived > 0
                 ? Math.round((double) couponUsed / couponReceived * 1000.0) / 10.0 : 0;
 
-        // 광고→구매 전환율 (Server A)
-        long totalPurchases = orderRepository.countByUserIdAndStatusNot(userId, OrderStatus.CANCELLED);
+        // 광고→구매 전환율 - 광고 클릭 후 3일 내 구매한 건수
+        long adLinkedPurchases = impressions > 0
+                ? orderRepository.countPurchasesAfterAdClick(userId, OrderStatus.CANCELLED.name()) : 0;
         double conversionRate = impressions > 0
-                ? Math.round((double) totalPurchases / impressions * 10000.0) / 100.0 : 0;
+                ? Math.round((double) adLinkedPurchases / impressions * 10000.0) / 100.0 : 0;
 
         // 관심 카테고리 (event_log 유지)
         List<String> interestedCategories = eventLogRepository.findTopCategoriesByUser(userId, 5)
@@ -251,7 +252,7 @@ public class DashboardService {
                 customerInfo,
                 new CtrStats(clicks, impressions, ctrRate),
                 new CouponUsageStats(couponReceived, couponUsed, couponUnused, couponRate),
-                new AdConversionStats(totalPurchases, impressions, conversionRate),
+                new AdConversionStats(adLinkedPurchases, impressions, conversionRate),
                 interestedCategories,
                 accessTimeSlots
         );

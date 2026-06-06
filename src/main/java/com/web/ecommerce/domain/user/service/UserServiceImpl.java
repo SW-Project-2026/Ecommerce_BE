@@ -52,7 +52,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    @Transactional(readOnly = true)
+    @Transactional
     public AuthResult loginById(String loginId, String password) {
         User user = userRepository.findByLoginIdAndIsActive(loginId, 1)
                 .orElseThrow(() -> new CustomException(UserErrorCode.USER_NOT_FOUND));

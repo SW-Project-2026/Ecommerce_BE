@@ -28,6 +28,19 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
 
     long countByUserIdAndStatusNot(Long userId, OrderStatus status);
 
+    @Query(value = """
+            SELECT COUNT(DISTINCT od.order_item_id)
+            FROM order_detail od
+            JOIN orders o ON o.order_id = od.order_id
+            JOIN ad_exposure ae ON ae.user_id = o.user_id
+            JOIN ad a ON a.ad_id = ae.ad_id
+            WHERE o.user_id = :userId
+              AND ae.clicked = true
+              AND od.product_id = a.product_id
+              AND o.status != :status
+            """, nativeQuery = true)
+    long countPurchasesAfterAdClick(@Param("userId") Long userId, @Param("status") String status);
+
     long countByUserIdAndOrderDateAfterAndStatusNot(Long userId, LocalDateTime from, OrderStatus status);
 
     @Query("SELECT o FROM Order o JOIN FETCH o.orderDetails od JOIN FETCH od.product WHERE o.user.id = :userId AND (:cursor = 0 OR o.id < :cursor) ORDER BY o.id DESC")
