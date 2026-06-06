@@ -135,7 +135,8 @@ public class EventLogRepository {
         String sql = """
                 SELECT COUNT(*) FROM event_log
                 WHERE user_id = ?
-                  AND event_name = 'withdrawal_page_visit'
+                  AND event_name = 'page_view'
+                  AND page_name = '탈퇴'
                   AND event_timestamp >= NOW() - MAKE_INTERVAL(days => ?)
                 """;
         Long count = jdbc.queryForObject(sql, Long.class, userId, days);
@@ -236,13 +237,13 @@ public class EventLogRepository {
 
     public List<MonthlyChurnRow> findMonthlyChurnVisitors() {
         String sql = """
-                SELECT TO_CHAR((json_log::jsonb->>'eventTimestamp')::timestamp, 'YYYY-MM') AS month,
-                       COUNT(DISTINCT json_log::jsonb->>'user_login_id')                    AS churn_visitors
+                SELECT TO_CHAR(event_timestamp, 'YYYY-MM') AS month,
+                       COUNT(DISTINCT login_id)             AS churn_visitors
                 FROM event_log
-                WHERE json_log::jsonb->>'event_name' = 'page_view'
-                  AND json_log::jsonb->>'pageName' = '탈퇴'
-                  AND (json_log::jsonb->>'eventTimestamp')::timestamp >= NOW() - INTERVAL '12 months'
-                GROUP BY TO_CHAR((json_log::jsonb->>'eventTimestamp')::timestamp, 'YYYY-MM')
+                WHERE event_name = 'page_view'
+                  AND page_name = '탈퇴'
+                  AND event_timestamp >= NOW() - INTERVAL '12 months'
+                GROUP BY TO_CHAR(event_timestamp, 'YYYY-MM')
                 ORDER BY month
                 """;
         return jdbc.query(sql, (rs, i) -> new MonthlyChurnRow(

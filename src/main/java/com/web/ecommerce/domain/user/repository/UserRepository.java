@@ -39,15 +39,28 @@ public interface UserRepository extends JpaRepository<User, Long> {
   @Query(value = "SELECT TO_CHAR(created_at, 'YYYY-MM') AS month, COUNT(*) AS count FROM users WHERE role = 'USER' AND created_at >= :from GROUP BY TO_CHAR(created_at, 'YYYY-MM') ORDER BY month", nativeQuery = true)
   List<Object[]> countMonthlySignups(@Param("from") LocalDateTime from);
 
-  @Query("SELECT u FROM User u WHERE u.role = com.web.ecommerce.domain.user.entity.Role.USER AND u.isActive = 1 " +
-         "AND (:search = '' OR u.loginId LIKE CONCAT('%', :search, '%')) " +
-         "AND (:grade IS NULL OR u.grade = :grade) " +
-         "AND (:loginBefore IS NULL OR u.lastLoginAt IS NULL OR u.lastLoginAt < :loginBefore) " +
-         "AND (:loginAfter IS NULL OR (u.lastLoginAt IS NOT NULL AND u.lastLoginAt >= :loginAfter)) " +
-         "AND (:createdAfter IS NULL OR u.createdAt >= :createdAfter)")
+  @Query(value = """
+          SELECT * FROM users
+          WHERE role = 'USER' AND is_active = 1
+          AND (:search = '' OR login_id LIKE CONCAT('%', :search, '%'))
+          AND (:grade::varchar IS NULL OR grade = :grade::varchar)
+          AND (:loginBefore::timestamp IS NULL OR last_login_at IS NULL OR last_login_at < :loginBefore::timestamp)
+          AND (:loginAfter::timestamp IS NULL OR (last_login_at IS NOT NULL AND last_login_at >= :loginAfter::timestamp))
+          AND (:createdAfter::timestamp IS NULL OR created_at >= :createdAfter::timestamp)
+          """,
+         countQuery = """
+          SELECT COUNT(*) FROM users
+          WHERE role = 'USER' AND is_active = 1
+          AND (:search = '' OR login_id LIKE CONCAT('%', :search, '%'))
+          AND (:grade::varchar IS NULL OR grade = :grade::varchar)
+          AND (:loginBefore::timestamp IS NULL OR last_login_at IS NULL OR last_login_at < :loginBefore::timestamp)
+          AND (:loginAfter::timestamp IS NULL OR (last_login_at IS NOT NULL AND last_login_at >= :loginAfter::timestamp))
+          AND (:createdAfter::timestamp IS NULL OR created_at >= :createdAfter::timestamp)
+          """,
+         nativeQuery = true)
   Page<User> findCustomersWithFilter(
           @Param("search") String search,
-          @Param("grade") UserGrade grade,
+          @Param("grade") String grade,
           @Param("loginBefore") LocalDateTime loginBefore,
           @Param("loginAfter") LocalDateTime loginAfter,
           @Param("createdAfter") LocalDateTime createdAfter,

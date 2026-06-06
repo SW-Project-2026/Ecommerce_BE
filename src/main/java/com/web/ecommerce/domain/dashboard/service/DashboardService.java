@@ -114,14 +114,14 @@ public class DashboardService {
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime thirtyDaysAgo = now.minusDays(30);
 
-        UserGrade grade = null;
+        String grade = null;
         LocalDateTime loginBefore = null;
         LocalDateTime loginAfter = null;
         LocalDateTime createdAfter = null;
 
         if (filter != null) {
             switch (filter) {
-                case "VIP"      -> grade = UserGrade.VIP;
+                case "VIP"      -> grade = UserGrade.VIP.name();
                 case "이탈위험높음" -> loginBefore = thirtyDaysAgo;
                 case "이탈위험낮음" -> loginAfter = thirtyDaysAgo;
                 case "신규"     -> createdAfter = thirtyDaysAgo;
