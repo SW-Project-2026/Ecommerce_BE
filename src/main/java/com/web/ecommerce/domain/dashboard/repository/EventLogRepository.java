@@ -270,6 +270,17 @@ public class EventLogRepository {
         return new java.util.HashSet<>(namedJdbc.queryForList(sql, Map.of("userIds", userIds), Long.class));
     }
 
+    public Optional<LocalDateTime> findLastPurchaseByUserId(Long userId) {
+        String sql = """
+                SELECT MAX(event_timestamp)
+                FROM event_log
+                WHERE user_id = ?
+                  AND event_name = 'purchase_button_click'
+                  AND approved_amount IS NOT NULL
+                """;
+        return Optional.ofNullable(jdbc.queryForObject(sql, LocalDateTime.class, userId));
+    }
+
     public Optional<LocalDateTime> findLastLoginByUserId(Long userId) {
         String sql = """
                 SELECT MAX(event_timestamp)

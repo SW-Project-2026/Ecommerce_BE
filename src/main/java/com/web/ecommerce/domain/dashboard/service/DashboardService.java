@@ -16,6 +16,7 @@ import com.web.ecommerce.domain.dashboard.dto.CustomerDashboardResponse.CtrStats
 import com.web.ecommerce.domain.dashboard.dto.CustomerDashboardResponse.CouponUsageStats;
 import com.web.ecommerce.domain.dashboard.dto.CustomerDashboardResponse.CustomerInfo;
 import com.web.ecommerce.domain.dashboard.dto.CustomerDashboardResponse.Tags;
+import com.web.ecommerce.domain.dashboard.dto.DashboardShared;
 import com.web.ecommerce.domain.dashboard.dto.UserDashboardResponse.TimeSlotCount;
 import com.web.ecommerce.domain.dashboard.repository.EventLogRepository;
 import com.web.ecommerce.domain.dashboard.repository.EventLogRepository.CategoryCount;
@@ -96,7 +97,9 @@ public class DashboardService {
                 ));
 
         Map<String, Long> churnMap = userRepository.countMonthlyChurn(twelveMonthsAgo)
-                .stream().collect(Collectors.toMap(
+                .stream()
+                .filter(row -> row[0] != null)
+                .collect(Collectors.toMap(
                         row -> (String) row[0],
                         row -> ((Number) row[1]).longValue()
                 ));
@@ -144,6 +147,11 @@ public class DashboardService {
         }
 
         List<Long> userIds = userPage.getContent().stream().map(User::getId).toList();
+        if (userIds.isEmpty()) {
+            return new CustomerListResponse(List.of(),
+                    new CustomerListResponse.Pagination(
+                            userPage.getNumber(), userPage.getTotalPages(), userPage.getTotalElements(), size));
+        }
 
         Map<Long, Long> purchaseCounts = orderRepository
                 .countPurchasesByUserIds(userIds, thirtyDaysAgo, OrderStatus.CANCELLED.name())
@@ -152,11 +160,7 @@ public class DashboardService {
                         row -> ((Number) row[1]).longValue()
                 ));
 
-        Map<Long, long[]> adStats = adExposureRepository.findAdStatsByUserIds(userIds)
-                .stream().collect(Collectors.toMap(
-                        row -> ((Number) row[0]).longValue(),
-                        row -> new long[]{((Number) row[1]).longValue(), ((Number) row[2]).longValue()}
-                ));
+        Map<Long, EventLogRepository.AdStatRow> adStats = eventLogRepository.findAdStatsByUserIds(userIds);
 
         Map<Long, long[]> couponStats = userCouponRepository.findCouponStatsByUserIds(userIds)
                 .stream().collect(Collectors.toMap(
@@ -170,10 +174,10 @@ public class DashboardService {
         List<CustomerItem> customers = userPage.getContent().stream().map(user -> {
             Long userId = user.getId();
             long purchaseCount = purchaseCounts.getOrDefault(userId, 0L);
-            long[] ad = adStats.getOrDefault(userId, new long[]{0, 0});
+            EventLogRepository.AdStatRow ad = adStats.getOrDefault(userId, new EventLogRepository.AdStatRow(0, 0));
             long[] coupon = couponStats.getOrDefault(userId, new long[]{0, 0});
 
-            double ctr = ad[0] > 0 ? Math.round((double) ad[1] / ad[0] * 10000.0) / 100.0 : 0;
+            double ctr = ad.impressions() > 0 ? Math.round((double) ad.clicks() / ad.impressions() * 10000.0) / 100.0 : 0;
             double couponRate = coupon[0] > 0 ? Math.round((double) coupon[1] / coupon[0] * 1000.0) / 10.0 : 0;
 
             LocalDateTime lastLoginAt = lastLoginMap.get(userId);
@@ -209,13 +213,14 @@ public class DashboardService {
 
         LocalDateTime thirtyDaysAgo = LocalDateTime.now().minusDays(30);
 
-        // 최근 구매일 → N일 전
-        Order lastOrder = orderRepository
+        // 최근 구매일 → N일 전 (Order 없으면 event_log fallback)
+        LocalDateTime lastPurchaseAt = orderRepository
                 .findTopByUserIdAndStatusNotOrderByOrderDateDesc(userId, OrderStatus.CANCELLED)
-                .orElse(null);
+                .map(Order::getOrderDate)
+                .orElseGet(() -> eventLogRepository.findLastPurchaseByUserId(userId).orElse(null));
         String lastPurchase = "";
-        if (lastOrder != null) {
-            long days = ChronoUnit.DAYS.between(lastOrder.getOrderDate().toLocalDate(), LocalDate.now());
+        if (lastPurchaseAt != null) {
+            long days = ChronoUnit.DAYS.between(lastPurchaseAt.toLocalDate(), LocalDate.now());
             lastPurchase = days == 0 ? "오늘" : days + "일 전";
         }
 
@@ -234,9 +239,10 @@ public class DashboardService {
         boolean loginOld = lastLoginAt == null || lastLoginAt.isBefore(thirtyDaysAgo);
         String churnRisk = (loginOld || churnPageVisited) ? "높음" : "낮음";
 
-        // CTR (Server A - ad_exposure)
-        long impressions = adExposureRepository.countByUser_Id(userId);
-        long clicks = adExposureRepository.countByUser_IdAndClicked(userId, true);
+        // CTR (event_log)
+        DashboardShared.AdStats adEventStats = eventLogRepository.findAdStats(userId);
+        long impressions = adEventStats.impressions();
+        long clicks = adEventStats.clicks();
         double ctrRate = impressions > 0 ? Math.round((double) clicks / impressions * 10000.0) / 100.0 : 0;
 
         // 쿠폰 (Server A - user_coupon)
