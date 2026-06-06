@@ -22,15 +22,18 @@ public class SmsService {
     private final String secretKey;
     private final String from;
     private final RestClient restClient;
+    private final UrlShortenerService urlShortener;
 
     public SmsService(
             @Value("${solapi.api-key}") String apiKey,
             @Value("${solapi.secret-key}") String secretKey,
-            @Value("${solapi.from}") String from) {
+            @Value("${solapi.from}") String from,
+            UrlShortenerService urlShortener) {
         this.apiKey = apiKey;
         this.secretKey = secretKey;
         this.from = from;
         this.restClient = RestClient.create();
+        this.urlShortener = urlShortener;
     }
 
     public boolean sendCustomMessage(String to, String messageType, String subject, String content) {
@@ -38,7 +41,13 @@ public class SmsService {
             return false;
         }
         try {
-            send(to, content, messageType, subject);
+            // SMS 초과 시 URL 단축 시도
+            String text = content;
+            if (text.getBytes(StandardCharsets.UTF_8).length > 90) {
+                text = urlShortener.shortenUrlsInText(text);
+            }
+            String type = resolveType(text);
+            send(to, text, type, subject);
             return true;
         } catch (Exception e) {
             log.error("SMS 발송 실패. to={}", to, e);
