@@ -40,6 +40,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -153,6 +154,8 @@ public class DashboardService {
                         row -> new long[]{((Number) row[1]).longValue(), ((Number) row[2]).longValue()}
                 ));
 
+        Set<Long> withdrawalVisitors = eventLogRepository.findUsersWithWithdrawalPageVisit(userIds);
+
         List<CustomerItem> customers = userPage.getContent().stream().map(user -> {
             Long userId = user.getId();
             long purchaseCount = purchaseCounts.getOrDefault(userId, 0L);
@@ -168,7 +171,7 @@ public class DashboardService {
                     user.getGrade().name(),
                     formatLastLoginForList(user.getLastLoginAt()),
                     toPurchaseFrequency(purchaseCount),
-                    toChurnRisk(user.getLastLoginAt()),
+                    toChurnRisk(user.getLastLoginAt(), withdrawalVisitors.contains(userId)),
                     ctr,
                     couponRate
             );
@@ -219,7 +222,7 @@ public class DashboardService {
 
         // 쿠폰 (Server A - user_coupon)
         long couponReceived = userCouponRepository.countByUserIdAndIsDuplicateFalse(userId);
-        long couponUsed = userCouponRepository.countByUserIdAndStatusAndIsDuplicateFalse(userId, CouponStatus.USED);
+        long couponUsed = userCouponRepository.countUsedByUserId(userId, CouponStatus.USED);
         long couponUnused = couponReceived - couponUsed;
         double couponRate = couponReceived > 0
                 ? Math.round((double) couponUsed / couponReceived * 1000.0) / 10.0 : 0;
@@ -300,7 +303,8 @@ public class DashboardService {
         return "LOW";
     }
 
-    private String toChurnRisk(LocalDateTime lastLoginAt) {
+    private String toChurnRisk(LocalDateTime lastLoginAt, boolean withdrawalVisited) {
+        if (withdrawalVisited) return "높음";
         if (lastLoginAt == null) return "높음";
         long days = ChronoUnit.DAYS.between(lastLoginAt.toLocalDate(), LocalDate.now());
         if (days >= 30) return "높음";

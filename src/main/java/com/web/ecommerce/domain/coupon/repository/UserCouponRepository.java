@@ -29,7 +29,8 @@ public interface UserCouponRepository extends JpaRepository<UserCoupon, Long> {
 
   long countByUserIdAndIsDuplicateFalse(Long userId);
 
-  long countByUserIdAndStatusAndIsDuplicateFalse(Long userId, CouponStatus status);
+  @Query("SELECT COUNT(uc) FROM UserCoupon uc WHERE uc.user.id = :userId AND uc.status = :status AND uc.isDuplicate = false")
+  long countUsedByUserId(@Param("userId") Long userId, @Param("status") CouponStatus status);
 
   long countByIsDuplicateFalse();
 

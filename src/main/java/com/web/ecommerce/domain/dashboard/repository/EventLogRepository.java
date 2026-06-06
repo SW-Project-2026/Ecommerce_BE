@@ -231,6 +231,19 @@ public class EventLogRepository {
 
     public record CategoryCount(String category, long count) {}
 
+    public Set<Long> findUsersWithWithdrawalPageVisit(List<Long> userIds) {
+        if (userIds.isEmpty()) return Set.of();
+        String sql = """
+                SELECT DISTINCT user_id
+                FROM event_log
+                WHERE user_id IN (:userIds)
+                  AND event_name = 'page_view'
+                  AND page_name = '탈퇴'
+                  AND event_timestamp >= NOW() - INTERVAL '30 days'
+                """;
+        return new java.util.HashSet<>(namedJdbc.queryForList(sql, Map.of("userIds", userIds), Long.class));
+    }
+
     // ──────────────── Monthly Churn (Server B) ────────────────
 
     public record MonthlyChurnRow(String month, long churnVisitors) {}
