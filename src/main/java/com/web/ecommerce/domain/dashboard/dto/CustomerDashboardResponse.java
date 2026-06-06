@@ -15,7 +15,7 @@ public record CustomerDashboardResponse(
             String grade,
             String joinDate,
             String lastLogin,
-            long lastPurchaseDaysAgo,
+            String lastPurchase,
             boolean churnPageVisited,
             Tags tags
     ) {}

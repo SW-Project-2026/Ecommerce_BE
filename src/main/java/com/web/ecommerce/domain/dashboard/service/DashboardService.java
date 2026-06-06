@@ -200,8 +200,11 @@ public class DashboardService {
         Order lastOrder = orderRepository
                 .findTopByUserIdAndStatusNotOrderByOrderDateDesc(userId, OrderStatus.CANCELLED)
                 .orElse(null);
-        long lastPurchaseDaysAgo = lastOrder != null
-                ? ChronoUnit.DAYS.between(lastOrder.getOrderDate().toLocalDate(), LocalDate.now()) : 0;
+        String lastPurchase = "";
+        if (lastOrder != null) {
+            long days = ChronoUnit.DAYS.between(lastOrder.getOrderDate().toLocalDate(), LocalDate.now());
+            lastPurchase = days == 0 ? "오늘" : days + "일 전";
+        }
 
         // 구매빈도
         long recentPurchaseCount = orderRepository.countByUserIdAndOrderDateAfterAndStatusNot(
@@ -246,7 +249,7 @@ public class DashboardService {
                 user.getGrade().name(),
                 user.getCreatedAt().toLocalDate().toString(),
                 formatLastLogin(user.getLastLoginAt()),
-                lastPurchaseDaysAgo,
+                lastPurchase,
                 churnPageVisited,
                 new Tags(toPurchaseFrequency(recentPurchaseCount), churnRisk)
         );
