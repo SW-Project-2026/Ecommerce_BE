@@ -43,19 +43,19 @@ public interface UserRepository extends JpaRepository<User, Long> {
           SELECT * FROM users
           WHERE role = 'USER' AND is_active = 1
           AND (:search = '' OR login_id LIKE CONCAT('%', :search, '%'))
-          AND (:grade::varchar IS NULL OR grade = :grade::varchar)
-          AND (:loginBefore::timestamp IS NULL OR last_login_at IS NULL OR last_login_at < :loginBefore::timestamp)
-          AND (:loginAfter::timestamp IS NULL OR (last_login_at IS NOT NULL AND last_login_at >= :loginAfter::timestamp))
-          AND (:createdAfter::timestamp IS NULL OR created_at >= :createdAfter::timestamp)
+          AND (CAST(:grade AS varchar) IS NULL OR grade = CAST(:grade AS varchar))
+          AND (CAST(:loginBefore AS timestamp) IS NULL OR last_login_at IS NULL OR last_login_at < CAST(:loginBefore AS timestamp))
+          AND (CAST(:loginAfter AS timestamp) IS NULL OR (last_login_at IS NOT NULL AND last_login_at >= CAST(:loginAfter AS timestamp)))
+          AND (CAST(:createdAfter AS timestamp) IS NULL OR created_at >= CAST(:createdAfter AS timestamp))
           """,
          countQuery = """
           SELECT COUNT(*) FROM users
           WHERE role = 'USER' AND is_active = 1
           AND (:search = '' OR login_id LIKE CONCAT('%', :search, '%'))
-          AND (:grade::varchar IS NULL OR grade = :grade::varchar)
-          AND (:loginBefore::timestamp IS NULL OR last_login_at IS NULL OR last_login_at < :loginBefore::timestamp)
-          AND (:loginAfter::timestamp IS NULL OR (last_login_at IS NOT NULL AND last_login_at >= :loginAfter::timestamp))
-          AND (:createdAfter::timestamp IS NULL OR created_at >= :createdAfter::timestamp)
+          AND (CAST(:grade AS varchar) IS NULL OR grade = CAST(:grade AS varchar))
+          AND (CAST(:loginBefore AS timestamp) IS NULL OR last_login_at IS NULL OR last_login_at < CAST(:loginBefore AS timestamp))
+          AND (CAST(:loginAfter AS timestamp) IS NULL OR (last_login_at IS NOT NULL AND last_login_at >= CAST(:loginAfter AS timestamp)))
+          AND (CAST(:createdAfter AS timestamp) IS NULL OR created_at >= CAST(:createdAfter AS timestamp))
           """,
          nativeQuery = true)
   Page<User> findCustomersWithFilter(
