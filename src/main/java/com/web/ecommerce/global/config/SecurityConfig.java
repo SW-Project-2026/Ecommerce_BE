@@ -58,6 +58,9 @@ public class SecurityConfig {
         .requestMatchers(HttpMethod.GET, "/api/products/**")
         .permitAll()
 
+        .requestMatchers(HttpMethod.GET, "/api/home", "/api/home/**")
+        .permitAll()
+
         .requestMatchers("/error")
         .permitAll()
 

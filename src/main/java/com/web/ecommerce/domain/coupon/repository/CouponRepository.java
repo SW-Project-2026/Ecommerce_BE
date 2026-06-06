@@ -19,4 +19,7 @@ public interface CouponRepository extends JpaRepository<Coupon, Long> {
 
   @Query("SELECT c FROM Coupon c WHERE c.id > :cursor ORDER BY c.id ASC")
   List<Coupon> findByCursor(Long cursor, Pageable pageable);
+
+  @Query("SELECT c FROM Coupon c ORDER BY c.createdAt DESC")
+  List<Coupon> findRecent(Pageable pageable);
 }
