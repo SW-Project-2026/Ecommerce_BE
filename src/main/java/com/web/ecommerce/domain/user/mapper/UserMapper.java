@@ -6,6 +6,7 @@ import com.web.ecommerce.domain.user.dto.response.UserLoginResponse;
 import com.web.ecommerce.domain.user.dto.response.UserProfileResponse;
 import com.web.ecommerce.domain.user.entity.Role;
 import com.web.ecommerce.domain.user.entity.User;
+import java.time.LocalDateTime;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -21,6 +22,7 @@ public class UserMapper {
                 .role(role)
                 .isActive(1)
                 .marketingAgreed(Boolean.TRUE.equals(request.getMarketingAgreed()))
+                .lastLoginAt(LocalDateTime.now())
                 .build();
     }
 

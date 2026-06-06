@@ -7,8 +7,11 @@ import com.web.ecommerce.domain.dashboard.dto.AdminDashboardResponse.TopCategory
 import com.web.ecommerce.domain.dashboard.dto.AdminDashboardResponse.TopProduct;
 import com.web.ecommerce.domain.dashboard.dto.DashboardShared.AdStats;
 import com.web.ecommerce.domain.dashboard.dto.UserDashboardResponse.TimeSlotCount;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -136,7 +139,7 @@ public class EventLogRepository {
                 SELECT COUNT(*) FROM event_log
                 WHERE user_id = ?
                   AND event_name = 'page_view'
-                  AND page_name = '탈퇴'
+                  AND page_name = '회원탈퇴'
                   AND event_timestamp >= NOW() - MAKE_INTERVAL(days => ?)
                 """;
         Long count = jdbc.queryForObject(sql, Long.class, userId, days);
@@ -214,22 +217,45 @@ public class EventLogRepository {
 
     public List<CategoryCount> findTopCategoriesByUser(Long userId, int limit) {
         String sql = """
-                SELECT product_category AS category, COUNT(*) AS count
-                FROM event_log
-                WHERE user_id = ?
-                  AND event_name = 'purchase_button_click'
-                  AND product_category IS NOT NULL
-                GROUP BY product_category
+                SELECT category, COUNT(*) AS count
+                FROM (
+                    SELECT product_category AS category
+                    FROM event_log
+                    WHERE user_id = ?
+                      AND event_name = 'purchase_button_click'
+                      AND product_category IS NOT NULL
+                    UNION ALL
+                    SELECT search_keyword AS category
+                    FROM event_log
+                    WHERE user_id = ?
+                      AND event_name = 'search_button_click'
+                      AND search_keyword IS NOT NULL
+                ) t
+                GROUP BY category
                 ORDER BY count DESC
                 LIMIT ?
                 """;
         return jdbc.query(sql, (rs, i) -> new CategoryCount(
                 rs.getString("category"),
                 rs.getLong("count")
-        ), userId, limit);
+        ), userId, userId, limit);
     }
 
     public record CategoryCount(String category, long count) {}
+
+    public Map<Long, LocalDateTime> findLastLoginByUserIds(List<Long> userIds) {
+        if (userIds.isEmpty()) return Map.of();
+        String sql = """
+                SELECT user_id, MAX(event_timestamp) AS last_login
+                FROM event_log
+                WHERE user_id IN (:userIds)
+                  AND event_name = 'login'
+                GROUP BY user_id
+                """;
+        return namedJdbc.query(sql, Map.of("userIds", userIds), (rs, i) ->
+                Map.entry(rs.getLong("user_id"), rs.getTimestamp("last_login").toLocalDateTime())
+        ).stream().collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+    }
 
     public Set<Long> findUsersWithWithdrawalPageVisit(List<Long> userIds) {
         if (userIds.isEmpty()) return Set.of();
@@ -238,10 +264,30 @@ public class EventLogRepository {
                 FROM event_log
                 WHERE user_id IN (:userIds)
                   AND event_name = 'page_view'
-                  AND page_name = '탈퇴'
+                  AND page_name = '회원탈퇴'
                   AND event_timestamp >= NOW() - INTERVAL '30 days'
                 """;
         return new java.util.HashSet<>(namedJdbc.queryForList(sql, Map.of("userIds", userIds), Long.class));
+    }
+
+    public Optional<LocalDateTime> findLastLoginByUserId(Long userId) {
+        String sql = """
+                SELECT MAX(event_timestamp)
+                FROM event_log
+                WHERE user_id = ?
+                  AND event_name = 'login'
+                """;
+        return Optional.ofNullable(jdbc.queryForObject(sql, LocalDateTime.class, userId));
+    }
+
+    public List<Long> findUserIdsWithRecentLogin(int days) {
+        String sql = """
+                SELECT DISTINCT user_id
+                FROM event_log
+                WHERE event_name = 'login'
+                  AND event_timestamp >= NOW() - MAKE_INTERVAL(days => ?)
+                """;
+        return jdbc.queryForList(sql, Long.class, days);
     }
 
     // ──────────────── Monthly Churn (Server B) ────────────────
@@ -254,7 +300,7 @@ public class EventLogRepository {
                        COUNT(DISTINCT login_id)             AS churn_visitors
                 FROM event_log
                 WHERE event_name = 'page_view'
-                  AND page_name = '탈퇴'
+                  AND page_name = '회원탈퇴'
                   AND event_timestamp >= NOW() - INTERVAL '12 months'
                 GROUP BY TO_CHAR(event_timestamp, 'YYYY-MM')
                 ORDER BY month

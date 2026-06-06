@@ -9,7 +9,6 @@ import com.web.ecommerce.domain.dashboard.dto.CustomerListResponse.CustomerItem;
 import com.web.ecommerce.domain.dashboard.dto.DashboardSummaryResponse;
 import com.web.ecommerce.domain.dashboard.dto.MonthlyStatsResponse;
 import com.web.ecommerce.domain.dashboard.dto.MonthlyStatsResponse.MonthlyStat;
-import com.web.ecommerce.domain.dashboard.repository.EventLogRepository.MonthlyChurnRow;
 import com.web.ecommerce.domain.dashboard.dto.CustomerDashboardResponse;
 import com.web.ecommerce.domain.dashboard.dto.CustomerDashboardResponse.AccessTimeSlot;
 import com.web.ecommerce.domain.dashboard.dto.CustomerDashboardResponse.AdConversionStats;
@@ -96,8 +95,11 @@ public class DashboardService {
                         row -> ((Number) row[1]).longValue()
                 ));
 
-        Map<String, Long> churnMap = eventLogRepository.findMonthlyChurnVisitors()
-                .stream().collect(Collectors.toMap(MonthlyChurnRow::month, MonthlyChurnRow::churnVisitors));
+        Map<String, Long> churnMap = userRepository.countMonthlyChurn(twelveMonthsAgo)
+                .stream().collect(Collectors.toMap(
+                        row -> (String) row[0],
+                        row -> ((Number) row[1]).longValue()
+                ));
 
         List<MonthlyStat> stats = new ArrayList<>();
         YearMonth current = YearMonth.now();
@@ -117,21 +119,29 @@ public class DashboardService {
 
         String grade = null;
         LocalDateTime loginBefore = null;
-        LocalDateTime loginAfter = null;
         LocalDateTime createdAfter = null;
 
         if (filter != null) {
             switch (filter) {
                 case "VIP"      -> grade = UserGrade.VIP.name();
                 case "이탈위험높음" -> loginBefore = thirtyDaysAgo;
-                case "이탈위험낮음" -> loginAfter = thirtyDaysAgo;
                 case "신규"     -> createdAfter = thirtyDaysAgo;
             }
         }
 
         Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
-        Page<User> userPage = userRepository.findCustomersWithFilter(
-                search != null ? search : "", grade, loginBefore, loginAfter, createdAfter, pageable);
+        Page<User> userPage;
+        if ("이탈위험낮음".equals(filter)) {
+            List<Long> recentLoginIds = eventLogRepository.findUserIdsWithRecentLogin(15);
+            if (recentLoginIds.isEmpty()) {
+                return new CustomerListResponse(List.of(),
+                        new CustomerListResponse.Pagination(0, 0, 0, size));
+            }
+            userPage = userRepository.findCustomersByIds(search != null ? search : "", recentLoginIds, pageable);
+        } else {
+            userPage = userRepository.findCustomersWithFilter(
+                    search != null ? search : "", grade, loginBefore, null, createdAfter, pageable);
+        }
 
         List<Long> userIds = userPage.getContent().stream().map(User::getId).toList();
 
@@ -155,6 +165,7 @@ public class DashboardService {
                 ));
 
         Set<Long> withdrawalVisitors = eventLogRepository.findUsersWithWithdrawalPageVisit(userIds);
+        Map<Long, LocalDateTime> lastLoginMap = eventLogRepository.findLastLoginByUserIds(userIds);
 
         List<CustomerItem> customers = userPage.getContent().stream().map(user -> {
             Long userId = user.getId();
@@ -165,13 +176,15 @@ public class DashboardService {
             double ctr = ad[0] > 0 ? Math.round((double) ad[1] / ad[0] * 10000.0) / 100.0 : 0;
             double couponRate = coupon[0] > 0 ? Math.round((double) coupon[1] / coupon[0] * 1000.0) / 10.0 : 0;
 
+            LocalDateTime lastLoginAt = lastLoginMap.get(userId);
+
             return new CustomerItem(
                     userId,
                     user.getLoginId(),
                     user.getGrade().name(),
-                    formatLastLoginForList(user.getLastLoginAt()),
+                    formatLastLoginForList(lastLoginAt),
                     toPurchaseFrequency(purchaseCount),
-                    toChurnRisk(user.getLastLoginAt(), withdrawalVisitors.contains(userId)),
+                    toChurnRisk(lastLoginAt, withdrawalVisitors.contains(userId)),
                     ctr,
                     couponRate
             );
@@ -213,9 +226,12 @@ public class DashboardService {
         // 탈퇴 페이지 방문
         boolean churnPageVisited = eventLogRepository.hasWithdrawalPageVisit(userId, 30);
 
+        // 최근 접속: event_log 우선, 없으면 User 엔티티 fallback
+        LocalDateTime lastLoginAt = eventLogRepository.findLastLoginByUserId(userId)
+                .orElse(user.getLastLoginAt());
+
         // 이탈위험 (30일 기준)
-        boolean loginOld = user.getLastLoginAt() == null ||
-                user.getLastLoginAt().isBefore(thirtyDaysAgo);
+        boolean loginOld = lastLoginAt == null || lastLoginAt.isBefore(thirtyDaysAgo);
         String churnRisk = (loginOld || churnPageVisited) ? "높음" : "낮음";
 
         // CTR (Server A - ad_exposure)
@@ -248,7 +264,7 @@ public class DashboardService {
                 user.getName(),
                 user.getGrade().name(),
                 user.getCreatedAt().toLocalDate().toString(),
-                formatLastLogin(user.getLastLoginAt()),
+                formatLastLogin(lastLoginAt),
                 lastPurchase,
                 churnPageVisited,
                 new Tags(toPurchaseFrequency(recentPurchaseCount), churnRisk)

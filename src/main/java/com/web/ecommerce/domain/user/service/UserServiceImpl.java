@@ -39,10 +39,10 @@ public class UserServiceImpl implements UserService {
         if (!request.getPassword().equals(request.getPasswordConfirm())) {
             throw new CustomException(UserErrorCode.PASSWORD_CONFIRM_MISMATCH);
         }
-        if (userRepository.existsByLoginId(request.getLoginId())) {
+        if (userRepository.existsByLoginIdAndIsActive(request.getLoginId(), 1)) {
             throw new CustomException(UserErrorCode.USER_ALREADY_EXISTS);
         }
-        if (userRepository.existsByEmail(request.getEmail())) {
+        if (userRepository.existsByEmailAndIsActive(request.getEmail(), 1)) {
             throw new CustomException(UserErrorCode.EMAIL_ALREADY_EXISTS);
         }
 
@@ -62,6 +62,7 @@ public class UserServiceImpl implements UserService {
         }
 
         user.updateLastLoginAt();
+        userRepository.save(user);
         log.info("로그인 성공 - id={}, loginId={}", user.getId(), user.getLoginId());
         return toAuthResult(user);
     }
