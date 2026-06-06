@@ -96,12 +96,10 @@ public class DashboardService {
                         row -> ((Number) row[1]).longValue()
                 ));
 
-        Map<String, Long> churnMap = userRepository.countMonthlyChurn(twelveMonthsAgo)
-                .stream()
-                .filter(row -> row[0] != null)
-                .collect(Collectors.toMap(
-                        row -> (String) row[0],
-                        row -> ((Number) row[1]).longValue()
+        Map<String, Long> churnMap = eventLogRepository.findMonthlyChurnVisitors()
+                .stream().collect(Collectors.toMap(
+                        EventLogRepository.MonthlyChurnRow::month,
+                        EventLogRepository.MonthlyChurnRow::churnVisitors
                 ));
 
         List<MonthlyStat> stats = new ArrayList<>();

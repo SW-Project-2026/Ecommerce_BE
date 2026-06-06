@@ -276,7 +276,6 @@ public class EventLogRepository {
                 FROM event_log
                 WHERE user_id = ?
                   AND event_name = 'purchase_button_click'
-                  AND approved_amount IS NOT NULL
                 """;
         return Optional.ofNullable(jdbc.queryForObject(sql, LocalDateTime.class, userId));
     }
