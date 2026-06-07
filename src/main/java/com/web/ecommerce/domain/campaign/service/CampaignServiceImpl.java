@@ -254,9 +254,9 @@ public class CampaignServiceImpl implements CampaignService {
     int fail = 0;
     int skipped = 0;
     for (CampaignTarget target : campaignTargets) {
-      if (hasCoupon && checkDuplicate && cutoff != null
-          && userCouponRepository.existsByUserIdAndCouponIdAndIsDuplicateFalseAndCreatedAtAfter(
-              target.getUser().getId(), campaign.getCoupon().getId(), cutoff)) {
+      // SMS 발송 이력 기반 중복 체크 (쿠폰 수령 여부와 무관)
+      if (checkDuplicate && target.getStatus() == SendStatus.SENT
+          && (cutoff == null || (target.getSentAt() != null && target.getSentAt().isAfter(cutoff)))) {
         skipped++;
         continue;
       }
