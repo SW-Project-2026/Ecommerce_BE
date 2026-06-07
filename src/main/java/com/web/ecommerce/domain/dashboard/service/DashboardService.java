@@ -43,6 +43,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -50,6 +51,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -212,10 +214,16 @@ public class DashboardService {
         LocalDateTime thirtyDaysAgo = LocalDateTime.now().minusDays(30);
 
         // 최근 구매일 (Order 없으면 event_log fallback)
-        LocalDateTime lastPurchaseAt = orderRepository
-                .findLastOrderDateByUserId(userId, OrderStatus.CANCELLED, PageRequest.of(0, 1))
-                .stream().findFirst()
-                .orElseGet(() -> eventLogRepository.findLastPurchaseByUserId(userId).orElse(null));
+        List<LocalDateTime> orderDates = orderRepository
+                .findLastOrderDateByUserId(userId, OrderStatus.CANCELLED, PageRequest.of(0, 1));
+        log.info("[lastPurchase] userId={}, orderDates={}", userId, orderDates);
+        LocalDateTime lastPurchaseAt = orderDates.stream().findFirst()
+                .orElseGet(() -> {
+                    LocalDateTime fromEvent = eventLogRepository.findLastPurchaseByUserId(userId).orElse(null);
+                    log.info("[lastPurchase] event_log fallback userId={}, result={}", userId, fromEvent);
+                    return fromEvent;
+                });
+        log.info("[lastPurchase] final lastPurchaseAt={}", lastPurchaseAt);
         String lastPurchase = formatLastLogin(lastPurchaseAt);
 
         // 구매빈도
