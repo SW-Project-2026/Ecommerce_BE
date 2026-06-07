@@ -66,7 +66,7 @@ public class DashboardService {
     private final UserCouponRepository userCouponRepository;
     private final AdExposureRepository adExposureRepository;
 
-    // ──────────────── Summary / Monthly / Customer List ────────────────
+    /// ──────────────── Summary / Monthly / Customer List ────────────────
 
     public DashboardSummaryResponse getSummary() {
         long totalCustomers = userRepository.countByRoleAndIsActive(Role.USER, 1);
@@ -213,8 +213,8 @@ public class DashboardService {
 
         // 최근 구매일 (Order 없으면 event_log fallback)
         LocalDateTime lastPurchaseAt = orderRepository
-                .findLastOrderByUserId(userId)
-                .map(Order::getOrderDate)
+                .findLastOrderDateByUserId(userId, OrderStatus.CANCELLED, PageRequest.of(0, 1))
+                .stream().findFirst()
                 .orElseGet(() -> eventLogRepository.findLastPurchaseByUserId(userId).orElse(null));
         String lastPurchase = formatLastLogin(lastPurchaseAt);
 
