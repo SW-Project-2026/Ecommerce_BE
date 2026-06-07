@@ -34,9 +34,20 @@ services:
       KAFKA_DB_NAME: ${KAFKA_DB_NAME:-postgres}
       KAFKA_DB_USERNAME: ${KAFKA_DB_USERNAME}
       KAFKA_DB_PASSWORD: ${KAFKA_DB_PASSWORD}
+      LOGGING_FILE_NAME: /app/logs/application.log
+      LOGGING_LOGBACK_ROLLINGPOLICY_MAX_FILE_SIZE: 500MB
+      LOGGING_LOGBACK_ROLLINGPOLICY_MAX_HISTORY: 7
+      LOGGING_LOGBACK_ROLLINGPOLICY_TOTAL_SIZE_CAP: 3500MB
+    volumes:
+      - ./logs:/app/logs
     depends_on:
       - db
     restart: always
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "7"
 
 volumes:
   pgdata:
