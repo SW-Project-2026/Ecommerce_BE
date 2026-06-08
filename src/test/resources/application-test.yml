@@ -52,3 +52,6 @@ kafka-db:
     url: jdbc:postgresql://localhost:5432/ecommerce
     username: admin
     password: admin1234
+
+webhook:
+  secret: test-webhook-secret

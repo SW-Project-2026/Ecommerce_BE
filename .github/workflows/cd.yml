@@ -48,6 +48,7 @@ jobs:
           KAFKA_DB_NAME: ${{ secrets.KAFKA_DB_NAME }}
           KAFKA_DB_USERNAME: ${{ secrets.KAFKA_DB_USERNAME }}
           KAFKA_DB_PASSWORD: ${{ secrets.KAFKA_DB_PASSWORD }}
+          WEBHOOK_SECRET: ${{ secrets.WEBHOOK_SECRET }}
         run: |
           {
             echo "DB_NAME=ecommerce"
@@ -64,6 +65,7 @@ jobs:
             echo "KAFKA_DB_NAME=$KAFKA_DB_NAME"
             echo "KAFKA_DB_USERNAME=$KAFKA_DB_USERNAME"
             echo "KAFKA_DB_PASSWORD=$KAFKA_DB_PASSWORD"
+            echo "WEBHOOK_SECRET=$WEBHOOK_SECRET"
           } > /tmp/.env
           scp /tmp/.env ubuntu@3.94.195.37:/home/ubuntu/app/.env
 

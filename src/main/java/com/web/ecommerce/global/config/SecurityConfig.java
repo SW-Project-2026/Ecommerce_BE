@@ -70,6 +70,9 @@ public class SecurityConfig {
         .requestMatchers(HttpMethod.GET, "/api/coupons/claim")
         .permitAll()
 
+        // 카프카 이벤트 웹훅 (내부 시크릿 헤더로 인증)
+        .requestMatchers(HttpMethod.POST, "/api/campaigns/*/webhook").permitAll()
+
         // 광고 노출/클릭은 일반 유저 접근 가능
         .requestMatchers(HttpMethod.POST, "/api/ads/*/expose").hasRole("USER")
         .requestMatchers(HttpMethod.PATCH, "/api/ads/*/click").hasRole("USER")

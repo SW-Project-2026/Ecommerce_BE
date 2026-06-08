@@ -44,4 +44,7 @@ public interface CampaignTargetRepository extends JpaRepository<CampaignTarget, 
       Pageable pageable);
 
   void deleteByCampaignId(Long campaignId);
+
+  @Query("SELECT ct FROM CampaignTarget ct JOIN FETCH ct.user WHERE ct.campaign.id = :campaignId AND ct.user.id IN :userIds")
+  List<CampaignTarget> findByCampaignIdAndUserIdInWithUser(@Param("campaignId") Long campaignId, @Param("userIds") List<Long> userIds);
 }

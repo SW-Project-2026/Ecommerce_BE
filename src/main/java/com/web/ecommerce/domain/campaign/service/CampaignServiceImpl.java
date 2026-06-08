@@ -49,8 +49,12 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeParseException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -58,6 +62,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class CampaignServiceImpl implements CampaignService {
@@ -409,6 +414,65 @@ public class CampaignServiceImpl implements CampaignService {
         target.markFailed();
       }
     }
+  }
+
+  @Override
+  @Transactional
+  public SmsSendResponse handleEventWebhook(Long campaignId, List<Long> userIds, String source) {
+    Campaign campaign = campaignRepository.findById(campaignId)
+        .orElseThrow(() -> new CustomException(CampaignErrorCode.CAMPAIGN_NOT_FOUND));
+
+    log.info("[webhook] campaignId={}, source={}, userCount={}", campaignId, source, userIds.size());
+
+    List<CampaignTarget> existingTargets = campaignTargetRepository.findByCampaignIdAndUserIdInWithUser(campaignId, userIds);
+    Set<Long> existingUserIds = existingTargets.stream()
+        .map(ct -> ct.getUser().getId())
+        .collect(Collectors.toSet());
+
+    List<Long> newUserIds = userIds.stream().filter(id -> !existingUserIds.contains(id)).toList();
+    List<User> newUsers = userRepository.findAllById(newUserIds);
+    List<CampaignTarget> newTargets = newUsers.stream()
+        .map(user -> CampaignTarget.builder().campaign(campaign).user(user).build())
+        .toList();
+    campaignTargetRepository.saveAll(newTargets);
+
+    List<CampaignTarget> allTargets = new ArrayList<>(existingTargets);
+    allTargets.addAll(newTargets);
+
+    boolean hasCoupon = campaign.getCoupon() != null;
+    boolean checkDuplicate = campaign.getDuplicatePolicy() == DuplicatePolicy.CHECK;
+    Integer restrictionDays = campaign.getCouponRestrictionDays();
+    LocalDateTime cutoff = (checkDuplicate && restrictionDays != null)
+        ? LocalDateTime.now().minusDays(restrictionDays) : null;
+
+    int success = 0, fail = 0, skipped = 0;
+    for (CampaignTarget target : allTargets) {
+      if (checkDuplicate && target.getStatus() == SendStatus.SENT
+          && (cutoff == null || (target.getSentAt() != null && target.getSentAt().isAfter(cutoff)))) {
+        skipped++;
+        continue;
+      }
+      String content = campaign.getMessageContent();
+      if (hasCoupon) {
+        String token = jwtProvider.generateCouponClaimToken(target.getUser().getId(), campaign.getCoupon().getId());
+        content += "\n쿠폰 받기: " + frontendUrl + "/coupon/claim?token=" + token;
+      }
+      boolean sent = smsService.sendCustomMessage(
+          target.getUser().getPhone(),
+          campaign.getMessageType(),
+          campaign.getMessageSubject(),
+          content
+      );
+      if (sent) { target.markSent(); success++; }
+      else { target.markFailed(); fail++; }
+    }
+
+    return SmsSendResponse.builder()
+        .totalCount(allTargets.size())
+        .successCount(success)
+        .failCount(fail)
+        .skippedCount(skipped)
+        .build();
   }
 
   private List<User> resolveTargetUsers(CustomerSegment segment) {

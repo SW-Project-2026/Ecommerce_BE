@@ -65,6 +65,9 @@ kafka-db:
     username: ${KAFKA_DB_USERNAME}
     password: ${KAFKA_DB_PASSWORD}
 
+webhook:
+  secret: ${WEBHOOK_SECRET}
+
 swagger:
   server:
     profile: https://api.daon.site

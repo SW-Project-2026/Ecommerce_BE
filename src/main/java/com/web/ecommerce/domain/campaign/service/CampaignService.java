@@ -9,6 +9,7 @@ import com.web.ecommerce.domain.campaign.dto.response.CampaignSummaryResponse;
 import com.web.ecommerce.domain.campaign.dto.response.SmsSendResponse;
 import com.web.ecommerce.domain.campaign.dto.response.SmsStatusResponse;
 import com.web.ecommerce.domain.campaign.enums.Status;
+import java.util.List;
 import org.springframework.data.domain.Page;
 
 public interface CampaignService {
@@ -32,4 +33,6 @@ public interface CampaignService {
   void executeBatchSend(Long campaignId);
 
   SmsStatusResponse getSmsStatus(Long campaignId, Long cursor, String date, String time);
+
+  SmsSendResponse handleEventWebhook(Long campaignId, List<Long> userIds, String source);
 }

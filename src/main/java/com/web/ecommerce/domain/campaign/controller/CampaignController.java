@@ -4,6 +4,7 @@ import com.web.ecommerce.domain.campaign.dto.reqeust.CreateCampaignRequest;
 import com.web.ecommerce.domain.campaign.dto.reqeust.GetCampaignsRequest;
 import com.web.ecommerce.domain.campaign.dto.reqeust.SendSmsRequest;
 import com.web.ecommerce.domain.campaign.dto.reqeust.UpdateCampaignRequest;
+import com.web.ecommerce.domain.campaign.dto.reqeust.WebhookSmsRequest;
 import com.web.ecommerce.domain.campaign.dto.response.CampaignResponse;
 import com.web.ecommerce.domain.campaign.dto.response.CampaignSummaryResponse;
 import com.web.ecommerce.domain.campaign.dto.response.SmsSendResponse;
@@ -17,6 +18,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
 
 @Tag(name = "Campaign", description = "캠페인 관리 API")
@@ -56,4 +58,10 @@ public interface CampaignController {
       @RequestParam(required = false) Long cursor,
       @RequestParam(required = false) String date,
       @RequestParam(required = false) String time);
+
+  @Operation(summary = "카프카 이벤트 웹훅 (실시간 SMS 발송)", description = "카프카 서버가 필터링 완료 후 호출하는 내부 웹훅")
+  ResponseEntity<BaseResponse<SmsSendResponse>> handleEventWebhook(
+      @PathVariable Long campaignId,
+      @RequestHeader("X-Webhook-Secret") String secret,
+      @RequestBody WebhookSmsRequest request);
 }
