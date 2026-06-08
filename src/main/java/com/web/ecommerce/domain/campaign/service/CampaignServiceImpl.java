@@ -249,6 +249,7 @@ public class CampaignServiceImpl implements CampaignService {
     List<CampaignTarget> campaignTargets = campaignTargetRepository.findByCampaignIdWithUser(campaignId);
 
     boolean hasCoupon = campaign.getCoupon() != null;
+    log.info("[sendSms] campaignId={}, hasCoupon={}, couponId={}", campaignId, hasCoupon, hasCoupon ? campaign.getCoupon().getId() : null);
     boolean checkDuplicate = request.getDuplicatePolicy() == DuplicatePolicy.CHECK;
     Integer restrictionDays = campaign.getCouponRestrictionDays();
     LocalDateTime cutoff = (checkDuplicate && restrictionDays != null)
