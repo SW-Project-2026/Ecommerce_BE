@@ -35,7 +35,7 @@ public class UrlShortenerService {
                     .body(String.class);
             return (result != null && result.startsWith("https://tinyurl.com")) ? result : url;
         } catch (Exception e) {
-            log.warn("URL 단축 실패, 원본 사용: {}", url);
+            log.warn("URL 단축 실패, 원본 사용: {} | 오류: {}", url, e.getMessage());
             return url;
         }
     }
