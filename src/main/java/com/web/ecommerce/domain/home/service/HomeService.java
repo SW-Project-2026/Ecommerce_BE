@@ -73,7 +73,7 @@ public class HomeService {
     private List<ProductItem> getRecommendedProducts(Long userId, Set<Long> wishedProductIds) {
         List<String> categories = homeEventLogRepository.findInterestCategories(userId, RECENT_DAYS, INTEREST_CATEGORY_LIMIT);
         if (categories.isEmpty()) {
-            return getFallbackProducts(wishedProductIds);
+            return toProductItems(productRepository.findRandomActiveProducts(PRODUCT_LIMIT), wishedProductIds);
         }
         List<Product> products = productRepository.findByInterestCategoriesAndIsActive(
                 categories, PageRequest.of(0, PRODUCT_LIMIT));
@@ -83,7 +83,7 @@ public class HomeService {
     private List<ProductItem> getRecentViewedProducts(Long userId, Set<Long> wishedProductIds) {
         List<Long> productIds = homeEventLogRepository.findRecentViewedProductIds(userId, RECENT_DAYS, PRODUCT_LIMIT);
         if (productIds.isEmpty()) {
-            return getFallbackProducts(wishedProductIds);
+            return toProductItems(productRepository.findRandomActiveProducts(PRODUCT_LIMIT), wishedProductIds);
         }
         List<Product> products = productRepository.findByProductIdInAndIsActive(productIds);
         // Preserve event_log order
@@ -97,7 +97,7 @@ public class HomeService {
     private List<ProductItem> getPurchasedProducts(Long userId, Set<Long> wishedProductIds) {
         List<Product> products = productRepository.findPurchasedProductsByUserId(userId, PRODUCT_LIMIT);
         if (products.isEmpty()) {
-            return getFallbackProducts(wishedProductIds);
+            return toProductItems(productRepository.findRandomActiveProducts(PRODUCT_LIMIT), wishedProductIds);
         }
         return toProductItems(products, wishedProductIds);
     }
