@@ -20,7 +20,7 @@ public class HomeEventLogRepository {
                     SELECT product_category AS category
                     FROM event_log
                     WHERE user_id = ?
-                      AND event_name IN ('product_detail', 'page_view', 'purchase_button_click')
+                      AND event_name IN ('product_detail_view', 'page_view', 'purchase_button_click')
                       AND product_category IS NOT NULL
                       AND event_timestamp >= NOW() - MAKE_INTERVAL(days => ?)
                     UNION ALL
@@ -45,7 +45,7 @@ public class HomeEventLogRepository {
                     SELECT DISTINCT ON (product_id) product_id, event_timestamp
                     FROM event_log
                     WHERE user_id = ?
-                      AND event_name = 'product_detail'
+                      AND event_name = 'product_detail_view'
                       AND product_id IS NOT NULL
                       AND event_timestamp >= NOW() - MAKE_INTERVAL(days => ?)
                     ORDER BY product_id, event_timestamp DESC
