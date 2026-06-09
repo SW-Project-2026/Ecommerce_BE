@@ -44,10 +44,15 @@ public class HomeService {
 
     public HomeResponse getHomeForGuest() {
         List<BestProductItem> best = getBestProducts(BEST_LIMIT_LOGGED_IN, Collections.emptySet());
-        List<ProductItem> fallback = getFallbackProducts(Collections.emptySet());
-        List<CouponItem> promotions = getPromotions(null);
+        List<ProductItem> recommended = getFallbackProducts(Collections.emptySet());
 
-        return new HomeResponse(null, fallback, fallback, fallback, best, promotions);
+        List<Product> randomPool = productRepository.findRandomActiveProducts(PRODUCT_LIMIT * 2);
+        int mid = Math.min(PRODUCT_LIMIT, randomPool.size());
+        List<ProductItem> recentViewed = toProductItems(randomPool.subList(0, mid), Collections.emptySet());
+        List<ProductItem> purchased = toProductItems(randomPool.subList(mid, randomPool.size()), Collections.emptySet());
+
+        List<CouponItem> promotions = getPromotions(null);
+        return new HomeResponse(null, recommended, recentViewed, purchased, best, promotions);
     }
 
     public HomeResponse getHomeForUser(Long userId) {
