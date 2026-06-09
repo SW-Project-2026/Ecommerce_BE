@@ -104,10 +104,13 @@ public class HomeService {
 
     private List<ProductItem> getFallbackProducts(Set<Long> wishedProductIds) {
         List<Product> allBest = productRepository.findBestSellingProducts(RECENT_DAYS, BEST_LIMIT_LOGGED_IN + PRODUCT_LIMIT);
-        List<Product> fallback = allBest.size() > BEST_LIMIT_LOGGED_IN
+        List<Product> afterTop3 = allBest.size() > BEST_LIMIT_LOGGED_IN
                 ? allBest.subList(BEST_LIMIT_LOGGED_IN, allBest.size())
-                : productRepository.findRandomActiveProducts(PRODUCT_LIMIT);
-        return toProductItems(fallback, wishedProductIds);
+                : List.of();
+        if (afterTop3.size() < PRODUCT_LIMIT) {
+            return toProductItems(productRepository.findRandomActiveProducts(PRODUCT_LIMIT), wishedProductIds);
+        }
+        return toProductItems(afterTop3, wishedProductIds);
     }
 
     private List<BestProductItem> getBestProducts(int limit, Set<Long> wishedProductIds) {
