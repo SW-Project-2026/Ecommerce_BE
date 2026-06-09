@@ -45,6 +45,9 @@ public class HomeService {
 
     public HomeResponse getHomeForGuest() {
         List<Product> bestProducts = productRepository.findBestSellingProducts(RECENT_DAYS, BEST_LIMIT_GUEST);
+        if (bestProducts.isEmpty()) {
+            bestProducts = productRepository.findRandomActiveProducts(BEST_LIMIT_GUEST);
+        }
         List<ProductItem> recommended = toProductItems(bestProducts, Collections.emptySet());
         List<BestProductItem> best = toBestProductItems(bestProducts, Collections.emptySet());
         List<CouponItem> promotions = getPromotions(null);
@@ -109,6 +112,9 @@ public class HomeService {
 
     private List<BestProductItem> getBestProducts(int limit, Set<Long> wishedProductIds) {
         List<Product> products = productRepository.findBestSellingProducts(RECENT_DAYS, limit);
+        if (products.isEmpty()) {
+            products = productRepository.findRandomActiveProducts(limit);
+        }
         return toBestProductItems(products, wishedProductIds);
     }
 
