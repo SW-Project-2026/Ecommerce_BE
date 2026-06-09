@@ -72,12 +72,14 @@ public class HomeService {
 
     private List<ProductItem> getRecommendedProducts(Long userId, Set<Long> wishedProductIds) {
         List<String> categories = homeEventLogRepository.findInterestCategories(userId, RECENT_DAYS, INTEREST_CATEGORY_LIMIT);
-        if (categories.isEmpty()) {
-            return toProductItems(productRepository.findRandomActiveProducts(PRODUCT_LIMIT), wishedProductIds);
+        if (!categories.isEmpty()) {
+            List<Product> products = productRepository.findByInterestCategoriesAndIsActive(
+                    categories, PageRequest.of(0, PRODUCT_LIMIT));
+            if (!products.isEmpty()) {
+                return toProductItems(products, wishedProductIds);
+            }
         }
-        List<Product> products = productRepository.findByInterestCategoriesAndIsActive(
-                categories, PageRequest.of(0, PRODUCT_LIMIT));
-        return toProductItems(products, wishedProductIds);
+        return toProductItems(productRepository.findRandomActiveProducts(PRODUCT_LIMIT), wishedProductIds);
     }
 
     private List<ProductItem> getRecentViewedProducts(Long userId, Set<Long> wishedProductIds) {
