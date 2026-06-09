@@ -30,7 +30,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class HomeService {
 
     private static final int INTEREST_CATEGORY_LIMIT = 5;
-    private static final int PRODUCT_LIMIT = 10;
+    private static final int PRODUCT_LIMIT = 12;
     private static final int BEST_LIMIT_LOGGED_IN = 3;
     private static final int PROMOTION_LIMIT = 4;
     private static final int RECENT_DAYS = 30;
