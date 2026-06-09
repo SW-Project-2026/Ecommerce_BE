@@ -238,7 +238,7 @@ public class DashboardService {
                 .orElse(user.getLastLoginAt());
 
         // 이탈위험 (30일 기준)
-        boolean loginOld = lastLoginAt == null || lastLoginAt.isBefore(thirtyDaysAgo);
+        boolean loginOld = lastLoginAt != null && lastLoginAt.isBefore(thirtyDaysAgo);
         String churnRisk = (loginOld || churnPageVisited) ? "높음" : "낮음";
 
         // CTR (event_log)
@@ -332,7 +332,7 @@ public class DashboardService {
 
     private String toChurnRisk(LocalDateTime lastLoginAt, boolean withdrawalVisited) {
         if (withdrawalVisited) return "높음";
-        if (lastLoginAt == null) return "높음";
+        if (lastLoginAt == null) return "낮음";
         long days = ChronoUnit.DAYS.between(lastLoginAt.toLocalDate(), LocalDate.now());
         if (days >= 30) return "높음";
         if (days >= 15) return "보통";
