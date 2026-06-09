@@ -70,8 +70,7 @@ public class HomeService {
     private List<ProductItem> getRecommendedProducts(Long userId, Set<Long> wishedProductIds) {
         List<String> categories = homeEventLogRepository.findInterestCategories(userId, RECENT_DAYS, INTEREST_CATEGORY_LIMIT);
         if (categories.isEmpty()) {
-            List<Product> best = productRepository.findBestSellingProducts(RECENT_DAYS, PRODUCT_LIMIT);
-            return toProductItems(best, wishedProductIds);
+            return getFallbackProducts(wishedProductIds);
         }
         List<Product> products = productRepository.findByInterestCategoriesAndIsActive(
                 categories, PageRequest.of(0, PRODUCT_LIMIT));
@@ -80,7 +79,9 @@ public class HomeService {
 
     private List<ProductItem> getRecentViewedProducts(Long userId, Set<Long> wishedProductIds) {
         List<Long> productIds = homeEventLogRepository.findRecentViewedProductIds(userId, RECENT_DAYS, PRODUCT_LIMIT);
-        if (productIds.isEmpty()) return List.of();
+        if (productIds.isEmpty()) {
+            return getFallbackProducts(wishedProductIds);
+        }
         List<Product> products = productRepository.findByProductIdInAndIsActive(productIds);
         // Preserve event_log order
         List<Product> ordered = new ArrayList<>(productIds.size());
@@ -92,7 +93,18 @@ public class HomeService {
 
     private List<ProductItem> getPurchasedProducts(Long userId, Set<Long> wishedProductIds) {
         List<Product> products = productRepository.findPurchasedProductsByUserId(userId, PRODUCT_LIMIT);
+        if (products.isEmpty()) {
+            return getFallbackProducts(wishedProductIds);
+        }
         return toProductItems(products, wishedProductIds);
+    }
+
+    private List<ProductItem> getFallbackProducts(Set<Long> wishedProductIds) {
+        List<Product> allBest = productRepository.findBestSellingProducts(RECENT_DAYS, BEST_LIMIT_LOGGED_IN + PRODUCT_LIMIT);
+        List<Product> fallback = allBest.size() > BEST_LIMIT_LOGGED_IN
+                ? allBest.subList(BEST_LIMIT_LOGGED_IN, allBest.size())
+                : productRepository.findRandomActiveProducts(PRODUCT_LIMIT);
+        return toProductItems(fallback, wishedProductIds);
     }
 
     private List<BestProductItem> getBestProducts(int limit, Set<Long> wishedProductIds) {
@@ -114,7 +126,7 @@ public class HomeService {
                         LocalDate expiryDate = c.getCreatedAt().plusDays(c.getExpiredAt()).toLocalDate();
                         expiredAt = expiryDate.toString();
                     }
-                    return new CouponItem(c.getId(), c.getName(), c.getDiscountAmount() != null ? c.getDiscountAmount() : 0, expiredAt, hasReceived);
+                    return new CouponItem(c.getId(), c.getName(), c.getDiscountAmount() != null ? c.getDiscountAmount() : 0, c.getDiscountType().name(), expiredAt, hasReceived);
                 })
                 .toList();
     }

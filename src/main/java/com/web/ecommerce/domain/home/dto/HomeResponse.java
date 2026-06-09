@@ -33,6 +33,7 @@ public record HomeResponse(
             Long couponId,
             String couponName,
             int discountAmount,
+            String discountType,
             String expiredAt,
             boolean hasReceived
     ) {}

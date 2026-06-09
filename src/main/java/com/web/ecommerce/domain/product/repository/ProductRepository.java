@@ -52,6 +52,9 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
             """, nativeQuery = true)
     List<Product> findBestSellingProducts(@Param("days") int days, @Param("limit") int limit);
 
+    @Query(value = "SELECT p.* FROM product p WHERE p.is_active = 1 ORDER BY RANDOM() LIMIT :limit", nativeQuery = true)
+    List<Product> findRandomActiveProducts(@Param("limit") int limit);
+
     @Query(value = """
             SELECT product_id, name, description, min_price, max_price,
                    stock_quantity, product_category, is_active, naver_product_id,
