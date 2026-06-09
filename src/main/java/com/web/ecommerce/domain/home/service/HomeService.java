@@ -32,7 +32,6 @@ public class HomeService {
     private static final int INTEREST_CATEGORY_LIMIT = 5;
     private static final int PRODUCT_LIMIT = 10;
     private static final int BEST_LIMIT_LOGGED_IN = 3;
-    private static final int BEST_LIMIT_GUEST = 10;
     private static final int PROMOTION_LIMIT = 4;
     private static final int RECENT_DAYS = 30;
 
@@ -44,15 +43,11 @@ public class HomeService {
     private final HomeEventLogRepository homeEventLogRepository;
 
     public HomeResponse getHomeForGuest() {
-        List<Product> bestProducts = productRepository.findBestSellingProducts(RECENT_DAYS, BEST_LIMIT_GUEST);
-        if (bestProducts.isEmpty()) {
-            bestProducts = productRepository.findRandomActiveProducts(BEST_LIMIT_GUEST);
-        }
-        List<ProductItem> recommended = toProductItems(bestProducts, Collections.emptySet());
-        List<BestProductItem> best = toBestProductItems(bestProducts, Collections.emptySet());
+        List<BestProductItem> best = getBestProducts(BEST_LIMIT_LOGGED_IN, Collections.emptySet());
+        List<ProductItem> fallback = getFallbackProducts(Collections.emptySet());
         List<CouponItem> promotions = getPromotions(null);
 
-        return new HomeResponse(null, recommended, List.of(), List.of(), best, promotions);
+        return new HomeResponse(null, fallback, fallback, fallback, best, promotions);
     }
 
     public HomeResponse getHomeForUser(Long userId) {
