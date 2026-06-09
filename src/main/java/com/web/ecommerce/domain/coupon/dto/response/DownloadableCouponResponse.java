@@ -19,5 +19,6 @@ public class DownloadableCouponResponse {
   private Integer discountAmount;
   private Integer minOrderAmount;
   private Integer maxDiscountAmount;
-  private Integer expiredAt;
+  private String expiredAt;
+  private boolean hasReceived;
 }
