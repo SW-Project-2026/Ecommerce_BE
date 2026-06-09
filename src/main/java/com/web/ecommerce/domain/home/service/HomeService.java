@@ -126,7 +126,7 @@ public class HomeService {
                         LocalDate expiryDate = c.getCreatedAt().plusDays(c.getExpiredAt()).toLocalDate();
                         expiredAt = expiryDate.toString();
                     }
-                    return new CouponItem(c.getId(), c.getName(), c.getDiscountAmount() != null ? c.getDiscountAmount() : 0, c.getDiscountType().name(), expiredAt, hasReceived);
+                    return new CouponItem(c.getId(), c.getName(), c.getDiscountAmount() != null ? c.getDiscountAmount() : 0, c.getDiscountType() != null ? c.getDiscountType().name() : null, expiredAt, hasReceived);
                 })
                 .toList();
     }
