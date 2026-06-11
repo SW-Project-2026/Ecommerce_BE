@@ -18,7 +18,8 @@ public enum CouponErrorCode implements BaseErrorCode {
   INVALID_COUPON_CODE_FORMAT("COUPON007", "쿠폰 코드는 영문 대문자와 숫자만 허용됩니다.", HttpStatus.BAD_REQUEST),
   INVALID_DISCOUNT_AMOUNT("COUPON008", "퍼센트 할인은 1~100 사이의 값이어야 합니다.", HttpStatus.BAD_REQUEST),
   MIN_ORDER_AMOUNT_REQUIRED("COUPON009", "정액 할인은 최소 주문 금액이 필수입니다.", HttpStatus.BAD_REQUEST),
-  COUPON_EXPIRED("COUPON010", "만료된 쿠폰입니다.", HttpStatus.BAD_REQUEST);
+  COUPON_EXPIRED("COUPON010", "만료된 쿠폰입니다.", HttpStatus.BAD_REQUEST),
+  COUPON_IN_USE_BY_CAMPAIGN("COUPON011", "진행 중인 캠페인에서 사용 중인 쿠폰은 삭제할 수 없습니다.", HttpStatus.CONFLICT);
 
   private final String code;
   private final String message;

@@ -40,6 +40,8 @@ public interface CampaignRepository extends JpaRepository<Campaign, Long> {
   List<Campaign> findSchedulableBatchCampaigns(@Param("now") LocalDateTime now);
 
   @Modifying
-  @Query("UPDATE Campaign c SET c.status = 'ENDED' WHERE c.status = 'IN_PROGRESS' AND c.endedAt < :now")
+  @Query("UPDATE Campaign c SET c.status = 'ENDED' WHERE c.status IN ('IN_PROGRESS', 'PAUSED') AND c.endedAt < :now")
   int expireCampaigns(@Param("now") LocalDateTime now);
+
+  boolean existsByCoupon_IdAndStatusIn(Long couponId, List<Status> statuses);
 }

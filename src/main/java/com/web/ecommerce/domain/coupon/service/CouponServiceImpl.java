@@ -1,6 +1,7 @@
 package com.web.ecommerce.domain.coupon.service;
 
 import com.web.ecommerce.domain.campaign.entity.Campaign;
+import com.web.ecommerce.domain.campaign.enums.Status;
 import com.web.ecommerce.domain.campaign.repository.CampaignRepository;
 import com.web.ecommerce.domain.coupon.dto.request.CreateCouponRequest;
 import com.web.ecommerce.domain.coupon.dto.request.UpdateCouponRequest;
@@ -159,6 +160,9 @@ public class CouponServiceImpl implements CouponService {
   public void deleteCoupon(Long couponId) {
     Coupon coupon = couponRepository.findById(couponId)
         .orElseThrow(() -> new CustomException(CouponErrorCode.COUPON_NOT_FOUND));
+    if (campaignRepository.existsByCoupon_IdAndStatusIn(couponId, List.of(Status.IN_PROGRESS, Status.PENDING))) {
+      throw new CustomException(CouponErrorCode.COUPON_IN_USE_BY_CAMPAIGN);
+    }
     couponRepository.delete(coupon);
   }
 
