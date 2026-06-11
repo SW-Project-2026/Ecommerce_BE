@@ -6,6 +6,7 @@ import com.web.ecommerce.domain.product.dto.request.ProductUpdateRequest;
 import com.web.ecommerce.domain.product.dto.request.SetScheduleRequest;
 import com.web.ecommerce.domain.product.dto.ProductSearchResult;
 import com.web.ecommerce.domain.product.dto.response.ProductDetailResponse;
+import com.web.ecommerce.domain.product.dto.response.ProductSelectResponse;
 import com.web.ecommerce.domain.product.dto.response.SyncResultResponse;
 import com.web.ecommerce.domain.product.dto.response.SyncScheduleResponse;
 import com.web.ecommerce.domain.product.service.ProductService;
@@ -36,6 +37,14 @@ public class ProductController {
     private final ProductService productService;
     private final ProductSyncService productSyncService;
     private final ProductSyncScheduleService productSyncScheduleService;
+
+    @Operation(summary = "광고 등록용 상품 검색", description = "상품명으로 검색하여 선택 목록 반환 (광고 등록 시 사용)")
+    @GetMapping("/select")
+    public ResponseEntity<BaseResponse<List<ProductSelectResponse>>> getProductSelectList(
+            @RequestParam(defaultValue = "") String keyword,
+            @RequestParam(defaultValue = "10") int size) {
+        return ResponseEntity.ok(BaseResponse.success(productService.getProductSelectList(keyword, size)));
+    }
 
     @Operation(summary = "상품 검색", description = "DB에 저장된 상품을 키워드로 검색하는 API")
     @GetMapping("/search")

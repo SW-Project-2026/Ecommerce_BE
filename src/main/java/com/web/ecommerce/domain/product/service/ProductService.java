@@ -6,6 +6,7 @@ import com.web.ecommerce.domain.product.dto.request.ProductSearchRequest;
 import com.web.ecommerce.domain.product.dto.request.ProductUpdateRequest;
 import com.web.ecommerce.domain.product.dto.ProductSearchResult;
 import com.web.ecommerce.domain.product.dto.response.ProductDetailResponse;
+import com.web.ecommerce.domain.product.dto.response.ProductSelectResponse;
 import com.web.ecommerce.domain.product.entity.Product;
 import com.web.ecommerce.domain.product.exception.ProductErrorCode;
 import com.web.ecommerce.domain.product.repository.ProductRepository;
@@ -143,6 +144,16 @@ public class ProductService {
     @Transactional(readOnly = true)
     public LocalDateTime getLastSyncedAt() {
         return productRepository.findLastSyncedAt().orElse(null);
+    }
+
+    @Transactional(readOnly = true)
+    public List<ProductSelectResponse> getProductSelectList(String keyword, int size) {
+        Pageable pageable = PageRequest.of(0, size, Sort.by(Sort.Order.asc("name")));
+        return productRepository.findByIsActiveAndNameContainingIgnoreCase(1, keyword, pageable)
+                .getContent()
+                .stream()
+                .map(ProductSelectResponse::from)
+                .toList();
     }
 
     @Transactional
