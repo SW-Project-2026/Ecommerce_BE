@@ -45,6 +45,14 @@ public interface CampaignTargetRepository extends JpaRepository<CampaignTarget, 
 
   void deleteByCampaignId(Long campaignId);
 
+  @Query("SELECT ct.campaign.ad FROM CampaignTarget ct " +
+      "WHERE ct.user.id = :userId " +
+      "AND ct.campaign.status = 'IN_PROGRESS' " +
+      "AND ct.campaign.ad IS NOT NULL " +
+      "ORDER BY ct.campaign.startedAt DESC")
+  List<com.web.ecommerce.domain.ad.entity.AD> findTargetedAdsByUserId(
+      @Param("userId") Long userId, Pageable pageable);
+
   @Query("SELECT ct FROM CampaignTarget ct JOIN FETCH ct.user WHERE ct.campaign.id = :campaignId AND ct.user.id IN :userIds")
   List<CampaignTarget> findByCampaignIdAndUserIdInWithUser(@Param("campaignId") Long campaignId, @Param("userIds") List<Long> userIds);
 }

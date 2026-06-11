@@ -8,7 +8,8 @@ public record HomeResponse(
         List<ProductItem> recentViewedProducts,
         List<ProductItem> purchasedProducts,
         List<BestProductItem> bestProducts,
-        List<CouponItem> promotions
+        List<CouponItem> promotions,
+        AdItem adBanner
 ) {
     public record ProductItem(
             Long productId,
@@ -36,5 +37,16 @@ public record HomeResponse(
             String discountType,
             String expiredAt,
             boolean hasReceived
+    ) {}
+
+    public record AdItem(
+            Long adId,
+            String adName,
+            String targetType,
+            Long productId,
+            String productName,
+            String productImageUrl,
+            String category,
+            String keyword
     ) {}
 }

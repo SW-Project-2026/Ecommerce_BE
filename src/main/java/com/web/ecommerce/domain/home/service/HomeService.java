@@ -1,9 +1,13 @@
 package com.web.ecommerce.domain.home.service;
 
+import com.web.ecommerce.domain.ad.entity.AD;
+import com.web.ecommerce.domain.ad.repository.AdRepository;
+import com.web.ecommerce.domain.campaign.repository.CampaignTargetRepository;
 import com.web.ecommerce.domain.coupon.entity.Coupon;
 import com.web.ecommerce.domain.coupon.repository.CouponRepository;
 import com.web.ecommerce.domain.coupon.repository.UserCouponRepository;
 import com.web.ecommerce.domain.home.dto.HomeResponse;
+import com.web.ecommerce.domain.home.dto.HomeResponse.AdItem;
 import com.web.ecommerce.domain.home.dto.HomeResponse.BestProductItem;
 import com.web.ecommerce.domain.home.dto.HomeResponse.CouponItem;
 import com.web.ecommerce.domain.home.dto.HomeResponse.ProductItem;
@@ -41,12 +45,15 @@ public class HomeService {
     private final WishlistRepository wishlistRepository;
     private final UserRepository userRepository;
     private final HomeEventLogRepository homeEventLogRepository;
+    private final AdRepository adRepository;
+    private final CampaignTargetRepository campaignTargetRepository;
 
     public HomeResponse getHomeForGuest() {
         List<BestProductItem> best = getBestProducts(BEST_LIMIT_LOGGED_IN, Collections.emptySet());
         List<ProductItem> recommended = getFallbackProducts(Collections.emptySet());
         List<CouponItem> promotions = getPromotions(null);
-        return new HomeResponse(null, recommended, null, null, best, promotions);
+        AdItem adBanner = getAdBanner(null);
+        return new HomeResponse(null, recommended, null, null, best, promotions, adBanner);
     }
 
     public HomeResponse getHomeForUser(Long userId) {
@@ -60,8 +67,9 @@ public class HomeService {
         List<ProductItem> purchased = getPurchasedProducts(userId, wishedProductIds);
         List<BestProductItem> best = getBestProducts(BEST_LIMIT_LOGGED_IN, wishedProductIds);
         List<CouponItem> promotions = getPromotions(userId);
+        AdItem adBanner = getAdBanner(userId);
 
-        return new HomeResponse(userName, recommended, recentViewed, purchased, best, promotions);
+        return new HomeResponse(userName, recommended, recentViewed, purchased, best, promotions, adBanner);
     }
 
     private List<ProductItem> getRecommendedProducts(Long userId, Set<Long> wishedProductIds) {
@@ -134,6 +142,32 @@ public class HomeService {
                     return new CouponItem(c.getId(), c.getName(), c.getDiscountAmount() != null ? c.getDiscountAmount() : 0, c.getDiscountType() != null ? c.getDiscountType().name() : null, expiredAt, hasReceived);
                 })
                 .toList();
+    }
+
+    private AdItem getAdBanner(Long userId) {
+        AD ad = null;
+        if (userId != null) {
+            List<AD> targeted = campaignTargetRepository.findTargetedAdsByUserId(
+                    userId, PageRequest.of(0, 1));
+            if (!targeted.isEmpty()) {
+                ad = targeted.get(0);
+            }
+        }
+        if (ad == null) {
+            ad = adRepository.findRandomAd().orElse(null);
+        }
+        if (ad == null) return null;
+
+        return new AdItem(
+                ad.getAdId(),
+                ad.getAdName(),
+                ad.getTargetType().name(),
+                ad.getProduct() != null ? ad.getProduct().getProductId() : null,
+                ad.getProduct() != null ? ad.getProduct().getName() : null,
+                ad.getProduct() != null ? ad.getProduct().getImageUrl() : null,
+                ad.getCategory() != null ? ad.getCategory().name() : null,
+                ad.getKeyword()
+        );
     }
 
     private List<ProductItem> toProductItems(List<Product> products, Set<Long> wishedProductIds) {
