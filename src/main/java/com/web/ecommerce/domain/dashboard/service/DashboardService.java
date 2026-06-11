@@ -1,6 +1,5 @@
 package com.web.ecommerce.domain.dashboard.service;
 
-import com.web.ecommerce.domain.ad.repository.AdExposureRepository;
 import com.web.ecommerce.domain.cart.repository.CartRepository;
 import com.web.ecommerce.domain.coupon.enums.CouponStatus;
 import com.web.ecommerce.domain.coupon.repository.UserCouponRepository;
@@ -66,16 +65,16 @@ public class DashboardService {
     private final OrderDetailRepository orderDetailRepository;
     private final CartRepository cartRepository;
     private final UserCouponRepository userCouponRepository;
-    private final AdExposureRepository adExposureRepository;
 
     /// ──────────────── Summary / Monthly / Customer List ────────────────
 
     public DashboardSummaryResponse getSummary() {
         long totalCustomers = userRepository.countByRoleAndIsActive(Role.USER, 1);
 
-        long impressions = adExposureRepository.count();
-        long clicks = adExposureRepository.countByClicked(true);
-        double ctrRate = impressions > 0 ? Math.round((double) clicks / impressions * 1000.0) / 10.0 : 0;
+        DashboardShared.AdStats adStats = eventLogRepository.findAdStatsAll();
+        long impressions = adStats.impressions();
+        long clicks = adStats.clicks();
+        double ctrRate = Math.round(adStats.ctr() * 10.0) / 10.0;
 
         long couponSent = userCouponRepository.countByIsDuplicateFalse();
         long couponUsed = userCouponRepository.countByStatusAndIsDuplicateFalse(CouponStatus.USED);
