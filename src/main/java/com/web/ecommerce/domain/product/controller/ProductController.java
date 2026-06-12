@@ -64,14 +64,14 @@ public class ProductController {
     }
 
     @Operation(summary = "상품 단건 조회", description = "상품 ID로 단건 조회하는 API")
-    @GetMapping("/{productId}")
+    @GetMapping("/{productId:\\d+}")
     public ResponseEntity<BaseResponse<ProductDetailResponse>> getProduct(@PathVariable Long productId) {
         ProductDetailResponse result = productService.getProduct(productId);
         return ResponseEntity.ok(BaseResponse.success(result));
     }
 
     @Operation(summary = "연관 상품 조회", description = "같은 카테고리 상품 최신순 반환 (기본 8개)")
-    @GetMapping("/{productId}/related")
+    @GetMapping("/{productId:\\d+}/related")
     public ResponseEntity<BaseResponse<List<ProductDetailResponse>>> getRelatedProducts(
             @PathVariable Long productId,
             @RequestParam(defaultValue = "8") int limit) {
