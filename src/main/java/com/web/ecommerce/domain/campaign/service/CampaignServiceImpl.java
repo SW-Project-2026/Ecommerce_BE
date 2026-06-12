@@ -395,7 +395,8 @@ public class CampaignServiceImpl implements CampaignService {
         : null;
 
     for (CampaignTarget target : targets) {
-      if (cutoff != null && target.getSentAt() != null && target.getSentAt().isAfter(cutoff)) {
+      if (checkDuplicate && target.getStatus() == SendStatus.SENT
+          && (cutoff == null || (target.getSentAt() != null && target.getSentAt().isAfter(cutoff)))) {
         continue;
       }
       String content = campaign.getMessageContent();
@@ -442,14 +443,18 @@ public class CampaignServiceImpl implements CampaignService {
 
     boolean hasCoupon = campaign.getCoupon() != null;
     boolean checkDuplicate = campaign.getDuplicatePolicy() == DuplicatePolicy.CHECK;
+    boolean isSmsIssue = campaign.getIssueType() == IssuanceMethod.MESSAGE;
     Integer restrictionDays = campaign.getCouponRestrictionDays();
     LocalDateTime cutoff = (checkDuplicate && restrictionDays != null)
         ? LocalDateTime.now().minusDays(restrictionDays) : null;
 
     int success = 0, fail = 0, skipped = 0;
     for (CampaignTarget target : allTargets) {
-      if (checkDuplicate && target.getStatus() == SendStatus.SENT
-          && (cutoff == null || (target.getSentAt() != null && target.getSentAt().isAfter(cutoff)))) {
+      if (!isSmsIssue) {
+        // DOWNLOAD/AUTO 타입은 타겟 등록만 하고 SMS 발송하지 않음
+        continue;
+      }
+      if (target.getStatus() == SendStatus.SENT) {
         skipped++;
         continue;
       }
