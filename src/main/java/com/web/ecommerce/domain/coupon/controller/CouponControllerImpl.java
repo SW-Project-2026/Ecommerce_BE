@@ -50,20 +50,20 @@ public class CouponControllerImpl implements CouponController {
   }
 
   @Override
-  @GetMapping("/api/coupons/{couponId}")
+  @GetMapping("/api/coupons/{couponId:\\d+}")
   public ResponseEntity<BaseResponse<CouponResponse>> getCoupon(@PathVariable Long couponId) {
     return ResponseEntity.ok(BaseResponse.success(couponService.getCoupon(couponId)));
   }
 
   @Override
-  @PutMapping("/api/coupons/{couponId}")
+  @PutMapping("/api/coupons/{couponId:\\d+}")
   public ResponseEntity<BaseResponse<CouponResponse>> updateCoupon(@PathVariable Long couponId,
       @RequestBody UpdateCouponRequest request) {
     return ResponseEntity.ok(BaseResponse.success(couponService.updateCoupon(couponId, request)));
   }
 
   @Override
-  @DeleteMapping("/api/coupons/{couponId}")
+  @DeleteMapping("/api/coupons/{couponId:\\d+}")
   public ResponseEntity<Void> deleteCoupon(@PathVariable Long couponId) {
     couponService.deleteCoupon(couponId);
     return ResponseEntity.noContent().build();

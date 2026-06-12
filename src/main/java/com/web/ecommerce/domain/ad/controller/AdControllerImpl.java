@@ -47,20 +47,20 @@ public class AdControllerImpl implements AdController {
   }
 
   @Override
-  @GetMapping("/api/ads/{adId}")
+  @GetMapping("/api/ads/{adId:\\d+}")
   public ResponseEntity<BaseResponse<AdResponse>> getAd(@PathVariable Long adId) {
     return ResponseEntity.ok(BaseResponse.success(adService.getAd(adId)));
   }
 
   @Override
-  @PutMapping("/api/ads/{adId}")
+  @PutMapping("/api/ads/{adId:\\d+}")
   public ResponseEntity<BaseResponse<AdResponse>> updateAd(@PathVariable Long adId,
       @RequestBody UpdateAdRequest request) {
     return ResponseEntity.ok(BaseResponse.success(adService.updateAd(adId, request)));
   }
 
   @Override
-  @DeleteMapping("/api/ads/{adId}")
+  @DeleteMapping("/api/ads/{adId:\\d+}")
   public ResponseEntity<Void> deleteAd(@PathVariable Long adId) {
     adService.deleteAd(adId);
     return ResponseEntity.noContent().build();
