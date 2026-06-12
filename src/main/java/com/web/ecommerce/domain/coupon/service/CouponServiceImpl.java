@@ -158,7 +158,7 @@ public class CouponServiceImpl implements CouponService {
   public void deleteCoupon(Long couponId) {
     Coupon coupon = couponRepository.findById(couponId)
         .orElseThrow(() -> new CustomException(CouponErrorCode.COUPON_NOT_FOUND));
-    if (campaignRepository.existsByCoupon_IdAndStatusIn(couponId, List.of(Status.IN_PROGRESS, Status.PENDING))) {
+    if (campaignRepository.existsByCoupon_IdAndStatusIn(couponId, List.of(Status.IN_PROGRESS, Status.PAUSED))) {
       throw new CustomException(CouponErrorCode.COUPON_IN_USE_BY_CAMPAIGN);
     }
     couponRepository.delete(coupon);
