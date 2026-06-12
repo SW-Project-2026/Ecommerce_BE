@@ -1,8 +1,6 @@
 package com.web.ecommerce.domain.dashboard.service;
 
 import com.web.ecommerce.domain.cart.repository.CartRepository;
-import com.web.ecommerce.domain.coupon.enums.CouponStatus;
-import com.web.ecommerce.domain.coupon.repository.UserCouponRepository;
 import com.web.ecommerce.domain.dashboard.dto.CustomerListResponse;
 import com.web.ecommerce.domain.dashboard.dto.CustomerListResponse.CustomerItem;
 import com.web.ecommerce.domain.dashboard.dto.DashboardSummaryResponse;
@@ -64,7 +62,6 @@ public class DashboardService {
     private final OrderRepository orderRepository;
     private final OrderDetailRepository orderDetailRepository;
     private final CartRepository cartRepository;
-    private final UserCouponRepository userCouponRepository;
 
     /// ──────────────── Summary / Monthly / Customer List ────────────────
 
@@ -76,8 +73,9 @@ public class DashboardService {
         long clicks = adStats.clicks();
         double ctrRate = Math.round(adStats.ctr() * 10.0) / 10.0;
 
-        long couponSent = userCouponRepository.countByIsDuplicateFalse();
-        long couponUsed = userCouponRepository.countByStatusAndIsDuplicateFalse(CouponStatus.USED);
+        EventLogRepository.CouponStats couponStats = eventLogRepository.findCouponStatsAll();
+        long couponSent = couponStats.received();
+        long couponUsed = couponStats.used();
         double couponRate = couponSent > 0 ? Math.round((double) couponUsed / couponSent * 1000.0) / 10.0 : 0;
 
         return new DashboardSummaryResponse(
@@ -161,11 +159,7 @@ public class DashboardService {
 
         Map<Long, EventLogRepository.AdStatRow> adStats = eventLogRepository.findAdStatsByUserIds(userIds);
 
-        Map<Long, long[]> couponStats = userCouponRepository.findCouponStatsByUserIds(userIds)
-                .stream().collect(Collectors.toMap(
-                        row -> ((Number) row[0]).longValue(),
-                        row -> new long[]{((Number) row[1]).longValue(), ((Number) row[2]).longValue()}
-                ));
+        Map<Long, EventLogRepository.CouponStats> couponStats = eventLogRepository.findCouponStatsByUserIds(userIds);
 
         Set<Long> withdrawalVisitors = eventLogRepository.findUsersWithWithdrawalPageVisit(userIds);
         Map<Long, LocalDateTime> lastLoginMap = eventLogRepository.findLastLoginByUserIds(userIds);
@@ -174,10 +168,10 @@ public class DashboardService {
             Long userId = user.getId();
             long purchaseCount = purchaseCounts.getOrDefault(userId, 0L);
             EventLogRepository.AdStatRow ad = adStats.getOrDefault(userId, new EventLogRepository.AdStatRow(0, 0));
-            long[] coupon = couponStats.getOrDefault(userId, new long[]{0, 0});
+            EventLogRepository.CouponStats coupon = couponStats.getOrDefault(userId, new EventLogRepository.CouponStats(0, 0));
 
             double ctr = ad.impressions() > 0 ? Math.round((double) ad.clicks() / ad.impressions() * 10000.0) / 100.0 : 0;
-            double couponRate = coupon[0] > 0 ? Math.round((double) coupon[1] / coupon[0] * 1000.0) / 10.0 : 0;
+            double couponRate = coupon.received() > 0 ? Math.round((double) coupon.used() / coupon.received() * 1000.0) / 10.0 : 0;
 
             LocalDateTime lastLoginAt = lastLoginMap.get(userId);
 
@@ -246,9 +240,10 @@ public class DashboardService {
         long clicks = adEventStats.clicks();
         double ctrRate = impressions > 0 ? Math.round((double) clicks / impressions * 10000.0) / 100.0 : 0;
 
-        // 쿠폰 (Server A - user_coupon)
-        long couponReceived = userCouponRepository.countByUserIdAndIsDuplicateFalse(userId);
-        long couponUsed = userCouponRepository.countUsedByUserId(userId, CouponStatus.USED);
+        // 쿠폰 (event_log)
+        EventLogRepository.CouponStats couponEventStats = eventLogRepository.findCouponStatsByUserId(userId);
+        long couponReceived = couponEventStats.received();
+        long couponUsed = couponEventStats.used();
         long couponUnused = couponReceived - couponUsed;
         double couponRate = couponReceived > 0
                 ? Math.round((double) couponUsed / couponReceived * 1000.0) / 10.0 : 0;

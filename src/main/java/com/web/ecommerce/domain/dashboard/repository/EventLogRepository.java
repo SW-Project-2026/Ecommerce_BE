@@ -321,6 +321,46 @@ public class EventLogRepository {
         ));
     }
 
+    // ──────────────── Coupon ────────────────
+
+    public record CouponStats(long received, long used) {}
+
+    public CouponStats findCouponStatsAll() {
+        String sql = """
+                SELECT COUNT(CASE WHEN event_name = 'coupon_received' THEN 1 END) AS received,
+                       COUNT(CASE WHEN event_name = 'coupon_used'     THEN 1 END) AS used
+                FROM event_log
+                """;
+        return jdbc.queryForObject(sql, (rs, i) ->
+                new CouponStats(rs.getLong("received"), rs.getLong("used")));
+    }
+
+    public CouponStats findCouponStatsByUserId(Long userId) {
+        String sql = """
+                SELECT COUNT(CASE WHEN event_name = 'coupon_received' THEN 1 END) AS received,
+                       COUNT(CASE WHEN event_name = 'coupon_used'     THEN 1 END) AS used
+                FROM event_log
+                WHERE user_id = ?
+                """;
+        return jdbc.queryForObject(sql, (rs, i) ->
+                new CouponStats(rs.getLong("received"), rs.getLong("used")), userId);
+    }
+
+    public Map<Long, CouponStats> findCouponStatsByUserIds(List<Long> userIds) {
+        if (userIds.isEmpty()) return Map.of();
+        String sql = """
+                SELECT user_id,
+                       COUNT(CASE WHEN event_name = 'coupon_received' THEN 1 END) AS received,
+                       COUNT(CASE WHEN event_name = 'coupon_used'     THEN 1 END) AS used
+                FROM event_log
+                WHERE user_id IN (:userIds)
+                GROUP BY user_id
+                """;
+        return namedJdbc.query(sql, Map.of("userIds", userIds), (rs, i) ->
+                Map.entry(rs.getLong("user_id"), new CouponStats(rs.getLong("received"), rs.getLong("used")))
+        ).stream().collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+    }
+
     // ──────────────── Admin User List (batch) ────────────────
 
     public record AdStatRow(long impressions, long clicks) {}
