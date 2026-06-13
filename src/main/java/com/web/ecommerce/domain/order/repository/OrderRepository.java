@@ -39,6 +39,7 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
               AND ae.clicked = true
               AND od.product_id = a.product_id
               AND o.status != :status
+              AND o.order_date BETWEEN ae.clicked_at AND ae.clicked_at + INTERVAL '3 days'
             """, nativeQuery = true)
     long countPurchasesAfterAdClick(@Param("userId") Long userId, @Param("status") String status);
 
