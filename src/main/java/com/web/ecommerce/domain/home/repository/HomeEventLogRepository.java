@@ -55,4 +55,12 @@ public class HomeEventLogRepository {
                 """;
         return jdbc.query(sql, (rs, i) -> rs.getLong("product_id"), userId, days, limit);
     }
+
+    public void insertAdImpression(Long userId, Long adId) {
+        String sql = """
+                INSERT INTO event_log (event_name, user_id, ad_id, event_timestamp)
+                VALUES ('ad_impression', ?, ?, NOW())
+                """;
+        jdbc.update(sql, userId, adId);
+    }
 }
