@@ -54,4 +54,5 @@ public class EventControllerImpl implements EventController {
     eventService.deleteEventField(eventId, fieldId);
     return ResponseEntity.noContent().build();
   }
+
 }

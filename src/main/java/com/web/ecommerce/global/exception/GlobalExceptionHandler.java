@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 /**
@@ -44,6 +45,13 @@ public class GlobalExceptionHandler {
     log.warn("Validation 오류 발생: {}", errorMessages);
     return ResponseEntity.status(HttpStatus.BAD_REQUEST)
         .body(BaseResponse.error(400, errorMessages));
+  }
+
+  @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+  public ResponseEntity<BaseResponse<Object>> handleMethodNotSupported(HttpRequestMethodNotSupportedException ex) {
+    log.warn("지원하지 않는 HTTP 메서드: {}", ex.getMessage());
+    return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED)
+            .body(BaseResponse.error(405, "지원하지 않는 요청 방식입니다: " + ex.getMethod()));
   }
 
   /**
