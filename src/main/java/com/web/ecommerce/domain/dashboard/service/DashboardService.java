@@ -14,7 +14,7 @@ import com.web.ecommerce.domain.dashboard.dto.CustomerDashboardResponse.CtrStats
 import com.web.ecommerce.domain.dashboard.dto.CustomerDashboardResponse.CouponUsageStats;
 import com.web.ecommerce.domain.dashboard.dto.CustomerDashboardResponse.CustomerInfo;
 import com.web.ecommerce.domain.dashboard.dto.CustomerDashboardResponse.Tags;
-import com.web.ecommerce.domain.ad.repository.AdExposureRepository;
+import com.web.ecommerce.domain.dashboard.dto.DashboardShared;
 import com.web.ecommerce.domain.dashboard.dto.UserDashboardResponse.TimeSlotCount;
 import com.web.ecommerce.domain.dashboard.repository.EventLogRepository;
 import com.web.ecommerce.domain.dashboard.repository.EventLogRepository.CategoryCount;
@@ -59,7 +59,6 @@ public class DashboardService {
             List.of("00-03", "03-06", "06-09", "09-12", "12-15", "15-18", "18-21", "21-24");
 
     private final EventLogRepository eventLogRepository;
-    private final AdExposureRepository adExposureRepository;
     private final UserRepository userRepository;
     private final OrderRepository orderRepository;
     private final OrderDetailRepository orderDetailRepository;
@@ -71,9 +70,10 @@ public class DashboardService {
     public DashboardSummaryResponse getSummary() {
         long totalCustomers = userRepository.countByRoleAndIsActive(Role.USER, 1);
 
-        long impressions = adExposureRepository.count();
-        long clicks = adExposureRepository.countByClicked(true);
-        double ctrRate = impressions > 0 ? Math.round((double) clicks / impressions * 1000.0) / 10.0 : 0;
+        DashboardShared.AdStats adStats = eventLogRepository.findAdStatsAll();
+        long impressions = adStats.impressions();
+        long clicks = adStats.clicks();
+        double ctrRate = Math.round(adStats.ctr() * 10.0) / 10.0;
 
         EventLogRepository.CouponStats couponStats = eventLogRepository.findCouponStatsAll();
         long couponSent = couponStats.received();
@@ -159,11 +159,7 @@ public class DashboardService {
                         row -> ((Number) row[1]).longValue()
                 ));
 
-        Map<Long, long[]> adStats = adExposureRepository.findAdStatsByUserIds(userIds)
-                .stream().collect(Collectors.toMap(
-                        row -> (Long) row[0],
-                        row -> new long[]{((Number) row[1]).longValue(), ((Number) row[2]).longValue()}
-                ));
+        Map<Long, EventLogRepository.AdStatRow> adStats = eventLogRepository.findAdStatsByUserIds(userIds);
 
         Map<Long, EventLogRepository.CouponStats> couponStats = eventLogRepository.findCouponStatsByUserIds(userIds);
 
@@ -173,10 +169,10 @@ public class DashboardService {
         List<CustomerItem> customers = userPage.getContent().stream().map(user -> {
             Long userId = user.getId();
             long purchaseCount = purchaseCounts.getOrDefault(userId, 0L);
-            long[] ad = adStats.getOrDefault(userId, new long[]{0L, 0L});
+            EventLogRepository.AdStatRow ad = adStats.getOrDefault(userId, new EventLogRepository.AdStatRow(0, 0));
             EventLogRepository.CouponStats coupon = couponStats.getOrDefault(userId, new EventLogRepository.CouponStats(0, 0));
 
-            double ctr = ad[0] > 0 ? Math.round((double) ad[1] / ad[0] * 10000.0) / 100.0 : 0;
+            double ctr = ad.impressions() > 0 ? Math.round((double) ad.clicks() / ad.impressions() * 10000.0) / 100.0 : 0;
             double couponRate = coupon.received() > 0 ? Math.round((double) coupon.used() / coupon.received() * 1000.0) / 10.0 : 0;
 
             LocalDateTime lastLoginAt = lastLoginMap.get(userId);
@@ -240,9 +236,10 @@ public class DashboardService {
         boolean loginOld = lastLoginAt != null && lastLoginAt.isBefore(thirtyDaysAgo);
         String churnRisk = (loginOld || churnPageVisited) ? "높음" : "낮음";
 
-        // CTR (ad_exposure)
-        long impressions = adExposureRepository.countByUser_Id(userId);
-        long clicks = adExposureRepository.countByUser_IdAndClicked(userId, true);
+        // CTR (event_log)
+        DashboardShared.AdStats adEventStats = eventLogRepository.findAdStats(userId);
+        long impressions = adEventStats.impressions();
+        long clicks = adEventStats.clicks();
         double ctrRate = impressions > 0 ? Math.round((double) clicks / impressions * 10000.0) / 100.0 : 0;
 
         // 쿠폰 (event_log)

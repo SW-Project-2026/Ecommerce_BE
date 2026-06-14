@@ -1,6 +1,7 @@
 package com.web.ecommerce.domain.dashboard.repository;
 
 import com.web.ecommerce.domain.dashboard.dto.AdminDashboardResponse.DailySales;
+import com.web.ecommerce.domain.dashboard.dto.DashboardShared.AdStats;
 import com.web.ecommerce.domain.dashboard.dto.AdminDashboardResponse.DailyUsers;
 import com.web.ecommerce.domain.dashboard.dto.AdminDashboardResponse.EventCount;
 import com.web.ecommerce.domain.dashboard.dto.AdminDashboardResponse.TopCategory;
@@ -116,6 +117,50 @@ public class EventLogRepository {
                 rs.getString("event_name"),
                 rs.getLong("count")
         ));
+    }
+
+    public AdStats findAdStatsAll() {
+        String sql = """
+                SELECT COUNT(CASE WHEN event_name = 'ad_exposure' THEN 1 END) AS impressions,
+                       COUNT(CASE WHEN event_name = 'ad_click'    THEN 1 END) AS clicks
+                FROM event_log
+                """;
+        return jdbc.queryForObject(sql, (rs, i) -> {
+            long impressions = rs.getLong("impressions");
+            long clicks = rs.getLong("clicks");
+            return new AdStats(impressions, clicks, impressions > 0 ? (double) clicks / impressions * 100 : 0);
+        });
+    }
+
+    public AdStats findAdStats(Long userId) {
+        String sql = """
+                SELECT COUNT(CASE WHEN event_name = 'ad_exposure' THEN 1 END) AS impressions,
+                       COUNT(CASE WHEN event_name = 'ad_click'    THEN 1 END) AS clicks
+                FROM event_log
+                WHERE user_id = ?
+                """;
+        return jdbc.queryForObject(sql, (rs, i) -> {
+            long impressions = rs.getLong("impressions");
+            long clicks = rs.getLong("clicks");
+            return new AdStats(impressions, clicks, impressions > 0 ? (double) clicks / impressions * 100 : 0);
+        }, userId);
+    }
+
+    public record AdStatRow(long impressions, long clicks) {}
+
+    public Map<Long, AdStatRow> findAdStatsByUserIds(List<Long> userIds) {
+        if (userIds.isEmpty()) return Map.of();
+        String sql = """
+                SELECT user_id,
+                       COUNT(CASE WHEN event_name = 'ad_exposure' THEN 1 END) AS impressions,
+                       COUNT(CASE WHEN event_name = 'ad_click'    THEN 1 END) AS clicks
+                FROM event_log
+                WHERE user_id IN (:userIds)
+                GROUP BY user_id
+                """;
+        return namedJdbc.query(sql, Map.of("userIds", userIds), (rs, i) ->
+                Map.entry(rs.getLong("user_id"), new AdStatRow(rs.getLong("impressions"), rs.getLong("clicks")))
+        ).stream().collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
     // ──────────────── User ────────────────
