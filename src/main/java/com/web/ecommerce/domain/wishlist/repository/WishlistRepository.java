@@ -21,6 +21,9 @@ public interface WishlistRepository extends JpaRepository<Wishlist, Long> {
 
     Page<Wishlist> findAllByUserId(Long userId, Pageable pageable);
 
+    @Query("SELECT w FROM Wishlist w JOIN FETCH w.product WHERE w.user.id = :userId AND (:cursor = 0 OR w.id < :cursor) ORDER BY w.id DESC")
+    List<Wishlist> findByUserIdWithCursorDesc(Long userId, Long cursor, Pageable pageable);
+
     @Query("SELECT w FROM Wishlist w WHERE w.user.id = :userId AND w.id > :cursor ORDER BY w.id ASC")
     List<Wishlist> findByUserIdWithCursor(Long userId, Long cursor, Pageable pageable);
 

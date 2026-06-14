@@ -33,4 +33,6 @@ public record CustomerDashboardResponse(
     public record CartItem(Long cartId, String productName, String category, int price) {}
 
     public record OrderItem(Long orderItemId, String productName, String category, int price) {}
+
+    public record WishlistItem(Long wishlistId, String productName, String category, int price) {}
 }

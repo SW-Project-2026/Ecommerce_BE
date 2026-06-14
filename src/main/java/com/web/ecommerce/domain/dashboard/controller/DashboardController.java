@@ -56,6 +56,16 @@ public class DashboardController {
         return ResponseEntity.ok(BaseResponse.success(dashboardService.getCustomerDashboard(userId)));
     }
 
+    @Operation(summary = "고객 찜 목록", description = "관리자 전용 - 무한스크롤")
+    @GetMapping("/customers/{userId}/wishlist")
+    public ResponseEntity<BaseResponse<CursorResponse<CustomerDashboardResponse.WishlistItem>>> getCustomerWishlist(
+            @PathVariable Long userId,
+            @RequestParam(required = false) Long cursor,
+            @RequestParam(defaultValue = "4") int size
+    ) {
+        return ResponseEntity.ok(BaseResponse.success(dashboardService.getCustomerWishlist(userId, cursor, size)));
+    }
+
     @Operation(summary = "고객 장바구니", description = "관리자 전용 - 무한스크롤")
     @GetMapping("/customers/{userId}/cart")
     public ResponseEntity<BaseResponse<CursorResponse<CustomerDashboardResponse.CartItem>>> getCustomerCart(

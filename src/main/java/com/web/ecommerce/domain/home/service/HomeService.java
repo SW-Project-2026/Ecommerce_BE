@@ -158,8 +158,6 @@ public class HomeService {
         }
         if (ad == null) return null;
 
-        homeEventLogRepository.insertAdImpression(userId, ad.getAdId());
-
         return new AdItem(
                 ad.getAdId(),
                 ad.getAdName(),

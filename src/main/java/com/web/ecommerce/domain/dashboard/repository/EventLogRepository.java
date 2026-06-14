@@ -5,7 +5,6 @@ import com.web.ecommerce.domain.dashboard.dto.AdminDashboardResponse.DailyUsers;
 import com.web.ecommerce.domain.dashboard.dto.AdminDashboardResponse.EventCount;
 import com.web.ecommerce.domain.dashboard.dto.AdminDashboardResponse.TopCategory;
 import com.web.ecommerce.domain.dashboard.dto.AdminDashboardResponse.TopProduct;
-import com.web.ecommerce.domain.dashboard.dto.DashboardShared.AdStats;
 import com.web.ecommerce.domain.dashboard.dto.UserDashboardResponse.TimeSlotCount;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -119,19 +118,6 @@ public class EventLogRepository {
         ));
     }
 
-    public AdStats findAdStatsAll() {
-        String sql = """
-                SELECT COUNT(CASE WHEN event_name = 'ad_impression' THEN 1 END) AS impressions,
-                       COUNT(CASE WHEN event_name = 'ad_click' THEN 1 END)      AS clicks
-                FROM event_log
-                """;
-        return jdbc.queryForObject(sql, (rs, i) -> {
-            long impressions = rs.getLong("impressions");
-            long clicks = rs.getLong("clicks");
-            return new AdStats(impressions, clicks, impressions > 0 ? (double) clicks / impressions * 100 : 0);
-        });
-    }
-
     // ──────────────── User ────────────────
 
     public boolean hasWithdrawalPageVisit(Long userId, int days) {
@@ -144,20 +130,6 @@ public class EventLogRepository {
                 """;
         Long count = jdbc.queryForObject(sql, Long.class, userId, days);
         return count != null && count > 0;
-    }
-
-    public AdStats findAdStats(Long userId) {
-        String sql = """
-                SELECT COUNT(CASE WHEN event_name = 'ad_impression' THEN 1 END) AS impressions,
-                       COUNT(CASE WHEN event_name = 'ad_click' THEN 1 END)      AS clicks
-                FROM event_log
-                WHERE user_id = ?
-                """;
-        return jdbc.queryForObject(sql, (rs, i) -> {
-            long impressions = rs.getLong("impressions");
-            long clicks = rs.getLong("clicks");
-            return new AdStats(impressions, clicks, impressions > 0 ? (double) clicks / impressions * 100 : 0);
-        }, userId);
     }
 
     public double findAdConversionRate(Long userId) {
@@ -361,22 +333,4 @@ public class EventLogRepository {
         ).stream().collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
-    // ──────────────── Admin User List (batch) ────────────────
-
-    public record AdStatRow(long impressions, long clicks) {}
-
-    public Map<Long, AdStatRow> findAdStatsByUserIds(List<Long> userIds) {
-        if (userIds.isEmpty()) return Map.of();
-        String sql = """
-                SELECT user_id,
-                       COUNT(CASE WHEN event_name = 'ad_impression' THEN 1 END) AS impressions,
-                       COUNT(CASE WHEN event_name = 'ad_click' THEN 1 END)      AS clicks
-                FROM event_log
-                WHERE user_id IN (:userIds)
-                GROUP BY user_id
-                """;
-        return namedJdbc.query(sql, Map.of("userIds", userIds), (rs, i) ->
-                Map.entry(rs.getLong("user_id"), new AdStatRow(rs.getLong("impressions"), rs.getLong("clicks")))
-        ).stream().collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-    }
 }
