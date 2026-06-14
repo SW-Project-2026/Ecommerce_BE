@@ -37,7 +37,7 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
             JOIN ad a ON a.ad_id = :adId
             WHERE o.user_id = :userId
               AND o.status != :status
-              AND o.order_date BETWEEN :clickedAt AND :clickedAt + INTERVAL '3 days'
+              AND o.order_date BETWEEN :clickedAt AND :clickedAtPlus3Days
               AND (
                 (a.target_type = 'PRODUCT'  AND od.product_id = a.product_id)
                 OR (a.target_type = 'CATEGORY' AND p.product_category = a.category)
@@ -45,7 +45,9 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
               )
             """, nativeQuery = true)
     long countPurchasesForAdClick(@Param("userId") Long userId, @Param("adId") Long adId,
-                                  @Param("clickedAt") LocalDateTime clickedAt, @Param("status") String status);
+                                  @Param("clickedAt") LocalDateTime clickedAt,
+                                  @Param("clickedAtPlus3Days") LocalDateTime clickedAtPlus3Days,
+                                  @Param("status") String status);
 
     @Query("SELECT COUNT(o) FROM Order o WHERE o.user.id = :userId AND o.orderDate BETWEEN :from AND :to AND o.status <> :status")
     long countByUserIdAndOrderDateBetweenAndStatusNot(@Param("userId") Long userId, @Param("from") LocalDateTime from, @Param("to") LocalDateTime to, @Param("status") OrderStatus status);

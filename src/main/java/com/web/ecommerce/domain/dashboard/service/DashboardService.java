@@ -258,7 +258,7 @@ public class DashboardService {
         List<EventLogRepository.AdClickRow> adClicks = eventLogRepository.findAdClicks(userId, range[0], range[1]);
         long adLinkedPurchases = adClicks.stream()
                 .mapToLong(c -> orderRepository.countPurchasesForAdClick(
-                        userId, c.adId(), c.clickedAt(), OrderStatus.CANCELLED.name()))
+                        userId, c.adId(), c.clickedAt(), c.clickedAt().plusDays(3), OrderStatus.CANCELLED.name()))
                 .sum();
         double conversionRate = clicks > 0
                 ? Math.round((double) adLinkedPurchases / clicks * 10000.0) / 100.0 : 0;
