@@ -260,8 +260,8 @@ public class DashboardService {
                 .mapToLong(c -> orderRepository.countPurchasesForAdClick(
                         userId, c.adId(), c.clickedAt(), c.clickedAt().plusDays(3), OrderStatus.CANCELLED.name()))
                 .sum();
-        double conversionRate = clicks > 0
-                ? Math.round((double) adLinkedPurchases / clicks * 10000.0) / 100.0 : 0;
+        double conversionRate = impressions > 0
+                ? Math.round((double) adLinkedPurchases / impressions * 10000.0) / 100.0 : 0;
 
         // 관심 카테고리 (event_log 유지)
         List<String> interestedCategories = eventLogRepository.findTopCategoriesByUser(userId, 5)
