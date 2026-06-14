@@ -119,36 +119,38 @@ public class EventLogRepository {
         ));
     }
 
-    public AdStats findAdStatsAll() {
+    public AdStats findAdStatsAll(LocalDateTime from, LocalDateTime to) {
         String sql = """
                 SELECT COUNT(CASE WHEN event_name = 'ad_exposure' THEN 1 END) AS impressions,
                        COUNT(CASE WHEN event_name = 'ad_click'    THEN 1 END) AS clicks
                 FROM event_log
+                WHERE event_timestamp BETWEEN ? AND ?
                 """;
         return jdbc.queryForObject(sql, (rs, i) -> {
             long impressions = rs.getLong("impressions");
             long clicks = rs.getLong("clicks");
             return new AdStats(impressions, clicks, impressions > 0 ? (double) clicks / impressions * 100 : 0);
-        });
+        }, from, to);
     }
 
-    public AdStats findAdStats(Long userId) {
+    public AdStats findAdStats(Long userId, LocalDateTime from, LocalDateTime to) {
         String sql = """
                 SELECT COUNT(CASE WHEN event_name = 'ad_exposure' THEN 1 END) AS impressions,
                        COUNT(CASE WHEN event_name = 'ad_click'    THEN 1 END) AS clicks
                 FROM event_log
                 WHERE user_id = ?
+                  AND event_timestamp BETWEEN ? AND ?
                 """;
         return jdbc.queryForObject(sql, (rs, i) -> {
             long impressions = rs.getLong("impressions");
             long clicks = rs.getLong("clicks");
             return new AdStats(impressions, clicks, impressions > 0 ? (double) clicks / impressions * 100 : 0);
-        }, userId);
+        }, userId, from, to);
     }
 
     public record AdStatRow(long impressions, long clicks) {}
 
-    public Map<Long, AdStatRow> findAdStatsByUserIds(List<Long> userIds) {
+    public Map<Long, AdStatRow> findAdStatsByUserIds(List<Long> userIds, LocalDateTime from, LocalDateTime to) {
         if (userIds.isEmpty()) return Map.of();
         String sql = """
                 SELECT user_id,
@@ -156,9 +158,10 @@ public class EventLogRepository {
                        COUNT(CASE WHEN event_name = 'ad_click'    THEN 1 END) AS clicks
                 FROM event_log
                 WHERE user_id IN (:userIds)
+                  AND event_timestamp BETWEEN :from AND :to
                 GROUP BY user_id
                 """;
-        return namedJdbc.query(sql, Map.of("userIds", userIds), (rs, i) ->
+        return namedJdbc.query(sql, Map.of("userIds", userIds, "from", from, "to", to), (rs, i) ->
                 Map.entry(rs.getLong("user_id"), new AdStatRow(rs.getLong("impressions"), rs.getLong("clicks")))
         ).stream().collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
@@ -342,28 +345,30 @@ public class EventLogRepository {
 
     public record CouponStats(long received, long used) {}
 
-    public CouponStats findCouponStatsAll() {
+    public CouponStats findCouponStatsAll(LocalDateTime from, LocalDateTime to) {
         String sql = """
                 SELECT COUNT(CASE WHEN event_name = 'coupon_received' THEN 1 END) AS received,
                        COUNT(CASE WHEN event_name = 'coupon_used'     THEN 1 END) AS used
                 FROM event_log
+                WHERE event_timestamp BETWEEN ? AND ?
                 """;
         return jdbc.queryForObject(sql, (rs, i) ->
-                new CouponStats(rs.getLong("received"), rs.getLong("used")));
+                new CouponStats(rs.getLong("received"), rs.getLong("used")), from, to);
     }
 
-    public CouponStats findCouponStatsByUserId(Long userId) {
+    public CouponStats findCouponStatsByUserId(Long userId, LocalDateTime from, LocalDateTime to) {
         String sql = """
                 SELECT COUNT(CASE WHEN event_name = 'coupon_received' THEN 1 END) AS received,
                        COUNT(CASE WHEN event_name = 'coupon_used'     THEN 1 END) AS used
                 FROM event_log
                 WHERE user_id = ?
+                  AND event_timestamp BETWEEN ? AND ?
                 """;
         return jdbc.queryForObject(sql, (rs, i) ->
-                new CouponStats(rs.getLong("received"), rs.getLong("used")), userId);
+                new CouponStats(rs.getLong("received"), rs.getLong("used")), userId, from, to);
     }
 
-    public Map<Long, CouponStats> findCouponStatsByUserIds(List<Long> userIds) {
+    public Map<Long, CouponStats> findCouponStatsByUserIds(List<Long> userIds, LocalDateTime from, LocalDateTime to) {
         if (userIds.isEmpty()) return Map.of();
         String sql = """
                 SELECT user_id,
@@ -371,9 +376,10 @@ public class EventLogRepository {
                        COUNT(CASE WHEN event_name = 'coupon_used'     THEN 1 END) AS used
                 FROM event_log
                 WHERE user_id IN (:userIds)
+                  AND event_timestamp BETWEEN :from AND :to
                 GROUP BY user_id
                 """;
-        return namedJdbc.query(sql, Map.of("userIds", userIds), (rs, i) ->
+        return namedJdbc.query(sql, Map.of("userIds", userIds, "from", from, "to", to), (rs, i) ->
                 Map.entry(rs.getLong("user_id"), new CouponStats(rs.getLong("received"), rs.getLong("used")))
         ).stream().collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }

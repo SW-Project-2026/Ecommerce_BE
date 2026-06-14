@@ -33,23 +33,29 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
             SELECT COUNT(DISTINCT od.order_item_id)
             FROM order_detail od
             JOIN orders o ON o.order_id = od.order_id
+            JOIN product p ON p.product_id = od.product_id
             JOIN ad_exposure ae ON ae.user_id = o.user_id
             JOIN ad a ON a.ad_id = ae.ad_id
             WHERE o.user_id = :userId
               AND ae.clicked = true
-              AND od.product_id = a.product_id
               AND o.status != :status
               AND o.order_date BETWEEN ae.clicked_at AND ae.clicked_at + INTERVAL '3 days'
+              AND (
+                (a.target_type = 'PRODUCT'  AND od.product_id = a.product_id)
+                OR (a.target_type = 'CATEGORY' AND p.product_category = a.category)
+                OR (a.target_type = 'KEYWORD'  AND p.product_category = a.keyword)
+              )
             """, nativeQuery = true)
     long countPurchasesAfterAdClick(@Param("userId") Long userId, @Param("status") String status);
 
-    long countByUserIdAndOrderDateAfterAndStatusNot(Long userId, LocalDateTime from, OrderStatus status);
+    @Query("SELECT COUNT(o) FROM Order o WHERE o.user.id = :userId AND o.orderDate BETWEEN :from AND :to AND o.status <> :status")
+    long countByUserIdAndOrderDateBetweenAndStatusNot(@Param("userId") Long userId, @Param("from") LocalDateTime from, @Param("to") LocalDateTime to, @Param("status") OrderStatus status);
 
     @Query("SELECT o FROM Order o JOIN FETCH o.orderDetails od JOIN FETCH od.product WHERE o.user.id = :userId AND (:cursor = 0 OR o.id < :cursor) ORDER BY o.id DESC")
     List<Order> findByUserIdWithCursorForDashboard(Long userId, Long cursor, Pageable pageable);
 
-    @Query(value = "SELECT o.user_id, COUNT(o.order_id) FROM orders o WHERE o.user_id IN :userIds AND o.order_date >= :from AND o.status != :status GROUP BY o.user_id", nativeQuery = true)
-    List<Object[]> countPurchasesByUserIds(@Param("userIds") List<Long> userIds, @Param("from") LocalDateTime from, @Param("status") String status);
+    @Query(value = "SELECT o.user_id, COUNT(o.order_id) FROM orders o WHERE o.user_id IN :userIds AND o.order_date BETWEEN :from AND :to AND o.status != :status GROUP BY o.user_id", nativeQuery = true)
+    List<Object[]> countPurchasesByUserIds(@Param("userIds") List<Long> userIds, @Param("from") LocalDateTime from, @Param("to") LocalDateTime to, @Param("status") String status);
 
     @Query("SELECT o FROM Order o WHERE o.status = :status AND o.updatedAt <= :before")
     List<Order> findByStatusAndUpdatedAtBefore(OrderStatus status, LocalDateTime before);

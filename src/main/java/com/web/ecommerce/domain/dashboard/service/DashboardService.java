@@ -31,6 +31,7 @@ import com.web.ecommerce.domain.user.entity.UserGrade;
 import com.web.ecommerce.global.response.CursorResponse;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
@@ -67,15 +68,16 @@ public class DashboardService {
 
     /// ──────────────── Summary / Monthly / Customer List ────────────────
 
-    public DashboardSummaryResponse getSummary() {
+    public DashboardSummaryResponse getSummary(LocalDate from, LocalDate to) {
+        LocalDateTime[] range = resolveRange(from, to);
         long totalCustomers = userRepository.countByRoleAndIsActive(Role.USER, 1);
 
-        DashboardShared.AdStats adStats = eventLogRepository.findAdStatsAll();
+        DashboardShared.AdStats adStats = eventLogRepository.findAdStatsAll(range[0], range[1]);
         long impressions = adStats.impressions();
         long clicks = adStats.clicks();
         double ctrRate = Math.round(adStats.ctr() * 10.0) / 10.0;
 
-        EventLogRepository.CouponStats couponStats = eventLogRepository.findCouponStatsAll();
+        EventLogRepository.CouponStats couponStats = eventLogRepository.findCouponStatsAll(range[0], range[1]);
         long couponSent = couponStats.received();
         long couponUsed = couponStats.used();
         double couponRate = couponSent > 0 ? Math.round((double) couponUsed / couponSent * 1000.0) / 10.0 : 0;
@@ -115,8 +117,9 @@ public class DashboardService {
         return new MonthlyStatsResponse(stats);
     }
 
-    public CustomerListResponse getCustomers(int page, int size, String search, String filter) {
-        LocalDateTime now = LocalDateTime.now();
+    public CustomerListResponse getCustomers(int page, int size, String search, String filter, LocalDate from, LocalDate to) {
+        LocalDateTime[] range = resolveRange(from, to);
+        LocalDateTime now = range[1];
         LocalDateTime thirtyDaysAgo = now.minusDays(30);
 
         String grade = null;
@@ -153,15 +156,15 @@ public class DashboardService {
         }
 
         Map<Long, Long> purchaseCounts = orderRepository
-                .countPurchasesByUserIds(userIds, thirtyDaysAgo, OrderStatus.CANCELLED.name())
+                .countPurchasesByUserIds(userIds, range[0], range[1], OrderStatus.CANCELLED.name())
                 .stream().collect(Collectors.toMap(
                         row -> ((Number) row[0]).longValue(),
                         row -> ((Number) row[1]).longValue()
                 ));
 
-        Map<Long, EventLogRepository.AdStatRow> adStats = eventLogRepository.findAdStatsByUserIds(userIds);
+        Map<Long, EventLogRepository.AdStatRow> adStats = eventLogRepository.findAdStatsByUserIds(userIds, range[0], range[1]);
 
-        Map<Long, EventLogRepository.CouponStats> couponStats = eventLogRepository.findCouponStatsByUserIds(userIds);
+        Map<Long, EventLogRepository.CouponStats> couponStats = eventLogRepository.findCouponStatsByUserIds(userIds, range[0], range[1]);
 
         Set<Long> withdrawalVisitors = eventLogRepository.findUsersWithWithdrawalPageVisit(userIds);
         Map<Long, LocalDateTime> lastLoginMap = eventLogRepository.findLastLoginByUserIds(userIds);
@@ -202,10 +205,11 @@ public class DashboardService {
 
     // ──────────────── Customer Dashboard (Admin → 특정 유저 조회) ────────────────
 
-    public CustomerDashboardResponse getCustomerDashboard(Long userId) {
+    public CustomerDashboardResponse getCustomerDashboard(Long userId, LocalDate from, LocalDate to) {
         User user = userRepository.findByIdAndIsActive(userId, 1)
                 .orElseThrow(() -> new CustomException(GlobalErrorCode.RESOURCE_NOT_FOUND));
 
+        LocalDateTime[] range = resolveRange(from, to);
         LocalDateTime thirtyDaysAgo = LocalDateTime.now().minusDays(30);
 
         // 최근 구매일 (Order 없으면 event_log fallback)
@@ -222,8 +226,8 @@ public class DashboardService {
         String lastPurchase = formatLastLogin(lastPurchaseAt);
 
         // 구매빈도
-        long recentPurchaseCount = orderRepository.countByUserIdAndOrderDateAfterAndStatusNot(
-                userId, thirtyDaysAgo, OrderStatus.CANCELLED);
+        long recentPurchaseCount = orderRepository.countByUserIdAndOrderDateBetweenAndStatusNot(
+                userId, range[0], range[1], OrderStatus.CANCELLED);
 
         // 탈퇴 페이지 방문
         boolean churnPageVisited = eventLogRepository.hasWithdrawalPageVisit(userId, 30);
@@ -237,13 +241,13 @@ public class DashboardService {
         String churnRisk = (loginOld || churnPageVisited) ? "높음" : "낮음";
 
         // CTR (event_log)
-        DashboardShared.AdStats adEventStats = eventLogRepository.findAdStats(userId);
+        DashboardShared.AdStats adEventStats = eventLogRepository.findAdStats(userId, range[0], range[1]);
         long impressions = adEventStats.impressions();
         long clicks = adEventStats.clicks();
         double ctrRate = impressions > 0 ? Math.round((double) clicks / impressions * 10000.0) / 100.0 : 0;
 
         // 쿠폰 (event_log)
-        EventLogRepository.CouponStats couponEventStats = eventLogRepository.findCouponStatsByUserId(userId);
+        EventLogRepository.CouponStats couponEventStats = eventLogRepository.findCouponStatsByUserId(userId, range[0], range[1]);
         long couponReceived = couponEventStats.received();
         long couponUsed = couponEventStats.used();
         long couponUnused = couponReceived - couponUsed;
@@ -336,6 +340,12 @@ public class DashboardService {
     }
 
     // ──────────────── helpers ────────────────
+
+    private LocalDateTime[] resolveRange(LocalDate from, LocalDate to) {
+        LocalDateTime end = to != null ? to.atTime(LocalTime.MAX) : LocalDateTime.now();
+        LocalDateTime start = from != null ? from.atStartOfDay() : end.minusDays(30);
+        return new LocalDateTime[]{start, end};
+    }
 
     private String toPurchaseFrequency(long count) {
         if (count >= 10) return "HIGH";
