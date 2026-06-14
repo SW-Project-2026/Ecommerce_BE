@@ -254,9 +254,12 @@ public class DashboardService {
         double couponRate = couponReceived > 0
                 ? Math.round((double) couponUsed / couponReceived * 1000.0) / 10.0 : 0;
 
-        // 광고→구매 전환율 - 광고 클릭 후 3일 내 구매한 건수
-        long adLinkedPurchases = clicks > 0
-                ? orderRepository.countPurchasesAfterAdClick(userId, OrderStatus.CANCELLED.name()) : 0;
+        // 광고→구매 전환율 - event_log ad_click 기준 3일 내 구매
+        List<EventLogRepository.AdClickRow> adClicks = eventLogRepository.findAdClicks(userId, range[0], range[1]);
+        long adLinkedPurchases = adClicks.stream()
+                .mapToLong(c -> orderRepository.countPurchasesForAdClick(
+                        userId, c.adId(), c.clickedAt(), OrderStatus.CANCELLED.name()))
+                .sum();
         double conversionRate = clicks > 0
                 ? Math.round((double) adLinkedPurchases / clicks * 10000.0) / 100.0 : 0;
 

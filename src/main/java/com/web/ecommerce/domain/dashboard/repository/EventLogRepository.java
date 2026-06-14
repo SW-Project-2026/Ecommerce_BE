@@ -180,18 +180,21 @@ public class EventLogRepository {
         return count != null && count > 0;
     }
 
-    public double findAdConversionRate(Long userId) {
+    public record AdClickRow(Long adId, LocalDateTime clickedAt) {}
+
+    public List<AdClickRow> findAdClicks(Long userId, LocalDateTime from, LocalDateTime to) {
         String sql = """
-                SELECT COUNT(CASE WHEN event_name = 'ad_click' THEN 1 END)             AS clicks,
-                       COUNT(CASE WHEN event_name = 'purchase_button_click' THEN 1 END) AS purchases
+                SELECT ad_id, event_timestamp
                 FROM event_log
                 WHERE user_id = ?
+                  AND event_name = 'ad_click'
+                  AND ad_id IS NOT NULL
+                  AND event_timestamp BETWEEN ? AND ?
                 """;
-        return jdbc.queryForObject(sql, (rs, i) -> {
-            long clicks = rs.getLong("clicks");
-            long purchases = rs.getLong("purchases");
-            return clicks > 0 ? (double) purchases / clicks * 100 : 0.0;
-        }, userId);
+        return jdbc.query(sql, (rs, i) -> new AdClickRow(
+                rs.getLong("ad_id"),
+                rs.getTimestamp("event_timestamp").toLocalDateTime()
+        ), userId, from, to);
     }
 
     public List<TimeSlotCount> findPeakHours(Long userId) {

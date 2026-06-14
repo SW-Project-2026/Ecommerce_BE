@@ -34,19 +34,18 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
             FROM order_detail od
             JOIN orders o ON o.order_id = od.order_id
             JOIN product p ON p.product_id = od.product_id
-            JOIN ad_exposure ae ON ae.user_id = o.user_id
-            JOIN ad a ON a.ad_id = ae.ad_id
+            JOIN ad a ON a.ad_id = :adId
             WHERE o.user_id = :userId
-              AND ae.clicked = true
               AND o.status != :status
-              AND o.order_date BETWEEN ae.clicked_at AND ae.clicked_at + INTERVAL '3 days'
+              AND o.order_date BETWEEN :clickedAt AND :clickedAt + INTERVAL '3 days'
               AND (
                 (a.target_type = 'PRODUCT'  AND od.product_id = a.product_id)
                 OR (a.target_type = 'CATEGORY' AND p.product_category = a.category)
                 OR (a.target_type = 'KEYWORD'  AND p.product_category = a.keyword)
               )
             """, nativeQuery = true)
-    long countPurchasesAfterAdClick(@Param("userId") Long userId, @Param("status") String status);
+    long countPurchasesForAdClick(@Param("userId") Long userId, @Param("adId") Long adId,
+                                  @Param("clickedAt") LocalDateTime clickedAt, @Param("status") String status);
 
     @Query("SELECT COUNT(o) FROM Order o WHERE o.user.id = :userId AND o.orderDate BETWEEN :from AND :to AND o.status <> :status")
     long countByUserIdAndOrderDateBetweenAndStatusNot(@Param("userId") Long userId, @Param("from") LocalDateTime from, @Param("to") LocalDateTime to, @Param("status") OrderStatus status);
