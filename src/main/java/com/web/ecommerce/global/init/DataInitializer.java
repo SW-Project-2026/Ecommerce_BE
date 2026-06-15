@@ -116,7 +116,7 @@ public class DataInitializer implements ApplicationRunner {
             field(logout, "eventTimestamp", FieldType.DATETIME, true, "로그아웃 완료 시간")
         ));
 
-        log.info("이벤트 데이터 초기 삽입 완료 (이벤트 14개)");
+        log.info("이벤트 데이터 초기 삽입 완료 (이벤트 12개)");
     }
 
     private Event save(String name, String description, boolean isActive) {
