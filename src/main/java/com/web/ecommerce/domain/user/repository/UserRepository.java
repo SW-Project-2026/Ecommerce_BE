@@ -89,6 +89,24 @@ public interface UserRepository extends JpaRepository<User, Long> {
           @Param("includeIds") List<Long> includeIds,
           Pageable pageable);
 
+  @Query(value = """
+          SELECT * FROM users
+          WHERE role = 'USER' AND is_active = 1
+          AND (:search = '' OR login_id LIKE CONCAT('%', :search, '%'))
+          AND id NOT IN :excludeIds
+          """,
+         countQuery = """
+          SELECT COUNT(*) FROM users
+          WHERE role = 'USER' AND is_active = 1
+          AND (:search = '' OR login_id LIKE CONCAT('%', :search, '%'))
+          AND id NOT IN :excludeIds
+          """,
+         nativeQuery = true)
+  Page<User> findCustomersExcludingIds(
+          @Param("search") String search,
+          @Param("excludeIds") List<Long> excludeIds,
+          Pageable pageable);
+
   @Query(value = "SELECT TO_CHAR(updated_at, 'YYYY-MM') AS month, COUNT(*) AS withdrawn FROM users WHERE role = 'USER' AND is_active = 0 AND updated_at >= :from GROUP BY TO_CHAR(updated_at, 'YYYY-MM') ORDER BY month", nativeQuery = true)
   List<Object[]> countMonthlyChurn(@Param("from") LocalDateTime from);
 }

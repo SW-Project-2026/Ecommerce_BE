@@ -123,29 +123,31 @@ public class DashboardService {
         LocalDateTime thirtyDaysAgo = now.minusDays(30);
 
         String grade = null;
-        LocalDateTime loginBefore = null;
         LocalDateTime createdAfter = null;
 
         if (filter != null) {
             switch (filter) {
-                case "VIP"      -> grade = UserGrade.VIP.name();
-                case "이탈위험높음" -> loginBefore = thirtyDaysAgo;
-                case "신규"     -> createdAfter = thirtyDaysAgo;
+                case "VIP"  -> grade = UserGrade.VIP.name();
+                case "신규"  -> createdAfter = thirtyDaysAgo;
             }
         }
 
         Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
         Page<User> userPage;
         if ("이탈위험낮음".equals(filter)) {
-            List<Long> recentLoginIds = eventLogRepository.findUserIdsWithRecentLogin(15);
-            if (recentLoginIds.isEmpty()) {
+            List<Long> recentIds = eventLogRepository.findUserIdsWithRecentLogin(15);
+            if (recentIds.isEmpty()) {
                 return new CustomerListResponse(List.of(),
                         new CustomerListResponse.Pagination(0, 0, 0, size));
             }
-            userPage = userRepository.findCustomersByIds(search != null ? search : "", recentLoginIds, pageable);
+            userPage = userRepository.findCustomersByIds(search != null ? search : "", recentIds, pageable);
+        } else if ("이탈위험높음".equals(filter)) {
+            List<Long> recentIds = eventLogRepository.findUserIdsWithRecentLogin(30);
+            List<Long> excludeIds = recentIds.isEmpty() ? List.of(-1L) : recentIds;
+            userPage = userRepository.findCustomersExcludingIds(search != null ? search : "", excludeIds, pageable);
         } else {
             userPage = userRepository.findCustomersWithFilter(
-                    search != null ? search : "", grade, loginBefore, null, createdAfter, pageable);
+                    search != null ? search : "", grade, null, null, createdAfter, pageable);
         }
 
         List<Long> userIds = userPage.getContent().stream().map(User::getId).toList();
