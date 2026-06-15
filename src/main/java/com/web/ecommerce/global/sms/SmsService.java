@@ -41,12 +41,16 @@ public class SmsService {
             return false;
         }
         try {
-            // SMS 초과 시 URL 단축 시도
             String text = content;
-            if (text.getBytes(StandardCharsets.UTF_8).length > 90) {
-                text = urlShortener.shortenUrlsInText(text);
+            String type;
+            if ("LMS".equals(messageType)) {
+                type = "LMS";
+            } else {
+                if (text.getBytes(StandardCharsets.UTF_8).length > 90) {
+                    text = urlShortener.shortenUrlsInText(text);
+                }
+                type = resolveType(text);
             }
-            String type = resolveType(text);
             send(to, text, type, subject);
             return true;
         } catch (Exception e) {
