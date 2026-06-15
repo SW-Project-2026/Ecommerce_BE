@@ -63,4 +63,12 @@ public interface CampaignTargetRepository extends JpaRepository<CampaignTarget, 
       "AND c.coupon IS NOT NULL " +
       "AND c.status = com.web.ecommerce.domain.campaign.enums.Status.IN_PROGRESS")
   List<CampaignTarget> findPendingAutoTargetsWithCouponByUserId(@Param("userId") Long userId);
+
+  @Query("SELECT ct.campaign.coupon FROM CampaignTarget ct " +
+      "WHERE ct.user.id = :userId " +
+      "AND ct.status = com.web.ecommerce.domain.campaign.enums.SendStatus.PENDING " +
+      "AND ct.campaign.issueType = com.web.ecommerce.domain.coupon.enums.IssuanceMethod.DOWNLOAD " +
+      "AND ct.campaign.coupon IS NOT NULL " +
+      "AND ct.campaign.status = com.web.ecommerce.domain.campaign.enums.Status.IN_PROGRESS")
+  List<com.web.ecommerce.domain.coupon.entity.Coupon> findDownloadableCouponsByUserId(@Param("userId") Long userId);
 }

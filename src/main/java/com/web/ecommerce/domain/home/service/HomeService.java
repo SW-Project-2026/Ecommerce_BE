@@ -127,22 +127,34 @@ public class HomeService {
     }
 
     private List<CouponItem> getPromotions(Long userId) {
-        List<Coupon> coupons = couponRepository.findRecent(PageRequest.of(0, PROMOTION_LIMIT));
+        if (userId == null) {
+            return couponRepository.findWelcomeCoupons().stream()
+                    .map(c -> toCouponItem(c, false))
+                    .toList();
+        }
+
+        List<Coupon> coupons = campaignTargetRepository.findDownloadableCouponsByUserId(userId);
         LocalDateTime now = LocalDateTime.now();
 
         return coupons.stream()
                 .filter(c -> c.getExpiredAt() == null
                         || (c.getCreatedAt() != null && c.getCreatedAt().plusDays(c.getExpiredAt()).isAfter(now)))
-                .map(c -> {
-                    boolean hasReceived = userId != null && userCouponRepository.existsByUserIdAndCouponId(userId, c.getId());
-                    String expiredAt = null;
-                    if (c.getExpiredAt() != null && c.getCreatedAt() != null) {
-                        LocalDate expiryDate = c.getCreatedAt().plusDays(c.getExpiredAt()).toLocalDate();
-                        expiredAt = expiryDate.toString();
-                    }
-                    return new CouponItem(c.getId(), c.getName(), c.getDiscountAmount() != null ? c.getDiscountAmount() : 0, c.getDiscountType() != null ? c.getDiscountType().name() : null, expiredAt, hasReceived);
-                })
+                .filter(c -> !userCouponRepository.existsByUserIdAndCouponId(userId, c.getId()))
+                .map(c -> toCouponItem(c, false))
+                .limit(PROMOTION_LIMIT)
                 .toList();
+    }
+
+    private CouponItem toCouponItem(Coupon c, boolean hasReceived) {
+        String expiredAt = null;
+        if (c.getExpiredAt() != null && c.getCreatedAt() != null) {
+            LocalDate expiryDate = c.getCreatedAt().plusDays(c.getExpiredAt()).toLocalDate();
+            expiredAt = expiryDate.toString();
+        }
+        return new CouponItem(c.getId(), c.getName(),
+                c.getDiscountAmount() != null ? c.getDiscountAmount() : 0,
+                c.getDiscountType() != null ? c.getDiscountType().name() : null,
+                expiredAt, hasReceived);
     }
 
     private List<AdItem> getAdBanners(Long userId) {

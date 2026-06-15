@@ -22,4 +22,11 @@ public interface CouponRepository extends JpaRepository<Coupon, Long> {
 
   @Query("SELECT c FROM Coupon c ORDER BY c.createdAt DESC")
   List<Coupon> findRecent(Pageable pageable);
+
+  @Query("SELECT ca.coupon FROM Campaign ca " +
+      "WHERE ca.customerSegment = com.web.ecommerce.domain.campaign.enums.CustomerSegment.NEW " +
+      "AND ca.issueType = com.web.ecommerce.domain.coupon.enums.IssuanceMethod.DOWNLOAD " +
+      "AND ca.coupon IS NOT NULL " +
+      "AND ca.status = com.web.ecommerce.domain.campaign.enums.Status.IN_PROGRESS")
+  List<Coupon> findWelcomeCoupons();
 }
