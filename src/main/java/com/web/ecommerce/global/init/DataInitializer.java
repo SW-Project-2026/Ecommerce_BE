@@ -47,8 +47,8 @@ public class DataInitializer implements ApplicationRunner {
         Event search        = save("search_button_click",   "사용자가 검색어를 입력하고 검색을 실행할 때 발생하는 이벤트",             true);
         Event pageView      = save("page_view",             "사용자가 특정 페이지에 진입할 때 발생하는 이벤트",                        true);
         Event productView   = save("product_detail_view",   "사용자가 특정 상품의 상세 페이지로 이동할 때 발생하는 이벤트",            true);
-        Event review        = save("review_submit_click",   "사용자가 리뷰 작성 후 등록 버튼을 클릭할 때 발생하는 이벤트",             true);
-        Event pointEarned   = save("point_earned",          "사용자에게 포인트가 적립될 때 발생하는 이벤트",                           true);
+        //Event review        = save("review_submit_click",   "사용자가 리뷰 작성 후 등록 버튼을 클릭할 때 발생하는 이벤트",             true);
+        //Event pointEarned   = save("point_earned",          "사용자에게 포인트가 적립될 때 발생하는 이벤트",                           true);
         Event login         = save("login",                 "사용자가 로그인할 때 발생하는 이벤트",                                     true);
         Event logout        = save("logout",                "사용자가 로그아웃할 때 발생하는 이벤트",                                    true);
 
@@ -101,13 +101,14 @@ public class DataInitializer implements ApplicationRunner {
             field(productView, "eventTimestamp",  FieldType.DATETIME, true, "해당 이벤트 발생 시간"),
             field(productView, "productCategory", FieldType.STRING,   true, "조회한 상품 카테고리"),
 
+            /***
             field(review, "reviewRating",   FieldType.NUMBER,   true, "사용자가 부여한 별점 (1~5 정수)"),
             field(review, "eventTimestamp", FieldType.DATETIME, true, "해당 이벤트 발생 시간"),
 
             field(pointEarned, "earnedPoints",   FieldType.NUMBER,   true, "이번에 적립된 포인트 수"),
             field(pointEarned, "earnReason",     FieldType.STRING,   true, "적립 원인 (구매완료 / 리뷰작성 / 출석 등)"),
             field(pointEarned, "eventTimestamp", FieldType.DATETIME, true, "해당 이벤트 발생 시간"),
-
+             ***/
             field(login,  "user_login_id",  FieldType.STRING,   true, "사용자 로그인 ID"),
             field(login,  "eventTimestamp", FieldType.DATETIME, true, "로그인 완료 시간"),
 
