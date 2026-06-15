@@ -9,7 +9,7 @@ public record HomeResponse(
         List<ProductItem> purchasedProducts,
         List<BestProductItem> bestProducts,
         List<CouponItem> promotions,
-        AdItem adBanner
+        List<AdItem> adBanners
 ) {
     public record ProductItem(
             Long productId,

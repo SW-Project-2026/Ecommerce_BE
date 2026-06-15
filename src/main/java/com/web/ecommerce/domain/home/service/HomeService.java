@@ -52,8 +52,8 @@ public class HomeService {
         List<BestProductItem> best = getBestProducts(BEST_LIMIT_LOGGED_IN, Collections.emptySet());
         List<ProductItem> recommended = getFallbackProducts(Collections.emptySet());
         List<CouponItem> promotions = getPromotions(null);
-        AdItem adBanner = getAdBanner(null);
-        return new HomeResponse(null, recommended, null, null, best, promotions, adBanner);
+        List<AdItem> adBanners = getAdBanners(null);
+        return new HomeResponse(null, recommended, null, null, best, promotions, adBanners);
     }
 
     public HomeResponse getHomeForUser(Long userId) {
@@ -67,9 +67,9 @@ public class HomeService {
         List<ProductItem> purchased = getPurchasedProducts(userId, wishedProductIds);
         List<BestProductItem> best = getBestProducts(BEST_LIMIT_LOGGED_IN, wishedProductIds);
         List<CouponItem> promotions = getPromotions(userId);
-        AdItem adBanner = getAdBanner(userId);
+        List<AdItem> adBanners = getAdBanners(userId);
 
-        return new HomeResponse(userName, recommended, recentViewed, purchased, best, promotions, adBanner);
+        return new HomeResponse(userName, recommended, recentViewed, purchased, best, promotions, adBanners);
     }
 
     private List<ProductItem> getRecommendedProducts(Long userId, Set<Long> wishedProductIds) {
@@ -144,20 +144,18 @@ public class HomeService {
                 .toList();
     }
 
-    private AdItem getAdBanner(Long userId) {
-        AD ad = null;
+    private List<AdItem> getAdBanners(Long userId) {
         if (userId != null) {
             List<AD> targeted = campaignTargetRepository.findTargetedAdsByUserId(
                     userId, PageRequest.of(0, 1));
             if (!targeted.isEmpty()) {
-                ad = targeted.get(0);
+                return List.of(toAdItem(targeted.get(0)));
             }
         }
-        if (ad == null) {
-            ad = adRepository.findRandomAd().orElse(null);
-        }
-        if (ad == null) return null;
+        return adRepository.findRandomAds(3).stream().map(this::toAdItem).toList();
+    }
 
+    private AdItem toAdItem(AD ad) {
         return new AdItem(
                 ad.getAdId(),
                 ad.getAdName(),

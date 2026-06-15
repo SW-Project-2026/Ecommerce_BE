@@ -14,4 +14,7 @@ public interface AdRepository extends JpaRepository<AD, Long> {
 
   @Query(value = "SELECT * FROM ad ORDER BY RANDOM() LIMIT 1", nativeQuery = true)
   Optional<AD> findRandomAd();
+
+  @Query(value = "SELECT * FROM ad ORDER BY RANDOM() LIMIT :limit", nativeQuery = true)
+  List<AD> findRandomAds(int limit);
 }
