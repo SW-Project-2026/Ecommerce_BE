@@ -19,6 +19,7 @@ import com.web.ecommerce.domain.coupon.exception.CouponErrorCode;
 import com.web.ecommerce.domain.coupon.mapper.CouponMapper;
 import com.web.ecommerce.domain.coupon.repository.CouponRepository;
 import com.web.ecommerce.domain.coupon.repository.UserCouponRepository;
+import com.web.ecommerce.domain.home.repository.HomeEventLogRepository;
 import com.web.ecommerce.domain.user.entity.User;
 import com.web.ecommerce.domain.user.exception.UserErrorCode;
 import com.web.ecommerce.domain.user.repository.UserRepository;
@@ -44,6 +45,7 @@ public class CouponServiceImpl implements CouponService {
   private final CampaignRepository campaignRepository;
   private final CouponMapper couponMapper;
   private final JwtProvider jwtProvider;
+  private final HomeEventLogRepository homeEventLogRepository;
 
   @Override
   @Transactional
@@ -188,6 +190,7 @@ public class CouponServiceImpl implements CouponService {
         .build();
 
     userCouponRepository.save(userCoupon);
+    homeEventLogRepository.insertCouponReceived(userId, coupon.getCode());
 
     return couponMapper.toUserCouponResponse(userCoupon);
   }
@@ -231,6 +234,7 @@ public class CouponServiceImpl implements CouponService {
     }
 
     userCoupon.use();
+    homeEventLogRepository.insertCouponUsed(userCoupon.getUser().getId(), userCoupon.getCoupon().getCode());
     return couponMapper.toUserCouponResponse(userCoupon);
   }
 }

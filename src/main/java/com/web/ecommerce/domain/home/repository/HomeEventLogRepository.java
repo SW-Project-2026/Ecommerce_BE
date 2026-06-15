@@ -38,6 +38,22 @@ public class HomeEventLogRepository {
         return jdbc.query(sql, (rs, i) -> rs.getString("category"), userId, days, userId, days, limit);
     }
 
+    public void insertCouponReceived(Long userId, String couponCode) {
+        String sql = """
+                INSERT INTO event_log (event_name, user_id, event_timestamp, coupon_code)
+                VALUES ('coupon_received', ?, NOW(), ?)
+                """;
+        jdbc.update(sql, userId, couponCode);
+    }
+
+    public void insertCouponUsed(Long userId, String couponCode) {
+        String sql = """
+                INSERT INTO event_log (event_name, user_id, event_timestamp, coupon_code)
+                VALUES ('coupon_used', ?, NOW(), ?)
+                """;
+        jdbc.update(sql, userId, couponCode);
+    }
+
     public List<Long> findRecentViewedProductIds(Long userId, int days, int limit) {
         String sql = """
                 SELECT product_id
