@@ -84,5 +84,7 @@ public class User  extends BaseTimeEntity {
 
   public void withdraw() {
     this.isActive = 0;
+    this.loginId = "withdrawn_" + this.id;
+    this.email = "withdrawn_" + this.id + "@deleted.com";
   }
 }
