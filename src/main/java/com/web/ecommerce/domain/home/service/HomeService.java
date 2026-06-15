@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -147,9 +148,9 @@ public class HomeService {
     private List<AdItem> getAdBanners(Long userId) {
         if (userId != null) {
             List<AD> targeted = campaignTargetRepository.findTargetedAdsByUserId(
-                    userId, PageRequest.of(0, 1));
+                    userId, Pageable.unpaged());
             if (!targeted.isEmpty()) {
-                return List.of(toAdItem(targeted.get(0)));
+                return targeted.stream().map(this::toAdItem).toList();
             }
         }
         return adRepository.findRandomAds(3).stream().map(this::toAdItem).toList();
