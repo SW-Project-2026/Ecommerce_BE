@@ -395,9 +395,10 @@ public class CampaignServiceImpl implements CampaignService {
         : null;
 
     for (CampaignTarget target : targets) {
-      if (checkDuplicate && target.getStatus() == SendStatus.SENT
-          && (cutoff == null || (target.getSentAt() != null && target.getSentAt().isAfter(cutoff)))) {
-        continue;
+      if (target.getStatus() == SendStatus.SENT) {
+        if (!checkDuplicate || cutoff == null || (target.getSentAt() != null && target.getSentAt().isAfter(cutoff))) {
+          continue;
+        }
       }
       String content = campaign.getMessageContent();
       if (hasCoupon) {
