@@ -33,18 +33,12 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
             SELECT COUNT(DISTINCT od.order_item_id)
             FROM order_detail od
             JOIN orders o ON o.order_id = od.order_id
-            JOIN product p ON p.product_id = od.product_id
-            JOIN ad a ON a.ad_id = :adId
             WHERE o.user_id = :userId
               AND o.status != :status
               AND o.order_date BETWEEN :clickedAt AND :clickedAtPlus3Days
-              AND (
-                (a.target_type = 'PRODUCT'  AND od.product_id = a.product_id)
-                OR (a.target_type = 'CATEGORY' AND p.product_category = a.category)
-                OR (a.target_type = 'KEYWORD'  AND p.product_category = a.keyword)
-              )
+              AND od.product_id = :productId
             """, nativeQuery = true)
-    long countPurchasesForAdClick(@Param("userId") Long userId, @Param("adId") Long adId,
+    long countPurchasesForAdClick(@Param("userId") Long userId, @Param("productId") Long productId,
                                   @Param("clickedAt") LocalDateTime clickedAt,
                                   @Param("clickedAtPlus3Days") LocalDateTime clickedAtPlus3Days,
                                   @Param("status") String status);

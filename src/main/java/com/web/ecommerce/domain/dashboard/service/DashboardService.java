@@ -259,8 +259,9 @@ public class DashboardService {
         // 광고→구매 전환율 - event_log ad_click 기준 3일 내 구매
         List<EventLogRepository.AdClickRow> adClicks = eventLogRepository.findAdClicks(userId, range[0], range[1]);
         long adLinkedPurchases = adClicks.stream()
+                .filter(c -> c.productId() != null && c.productId() != 0)
                 .mapToLong(c -> orderRepository.countPurchasesForAdClick(
-                        userId, c.adId(), c.clickedAt(), c.clickedAt().plusDays(3), OrderStatus.CANCELLED.name()))
+                        userId, c.productId(), c.clickedAt(), c.clickedAt().plusDays(3), OrderStatus.CANCELLED.name()))
                 .sum();
         double conversionRate = impressions > 0
                 ? Math.round((double) adLinkedPurchases / impressions * 10000.0) / 100.0 : 0;
@@ -372,7 +373,7 @@ public class DashboardService {
         LocalDate today = LocalDate.now();
         LocalDate loginDate = lastLoginAt.toLocalDate();
         String time = lastLoginAt.format(DateTimeFormatter.ofPattern("H:mm"));
-        if (loginDate.equals(today)) return "오늘 " + time;
+        if (!loginDate.isBefore(today)) return "오늘 " + time;
         if (loginDate.equals(today.minusDays(1))) return "어제 " + time;
         return ChronoUnit.DAYS.between(loginDate, today) + "일 전";
     }

@@ -180,19 +180,19 @@ public class EventLogRepository {
         return count != null && count > 0;
     }
 
-    public record AdClickRow(Long adId, LocalDateTime clickedAt) {}
+    public record AdClickRow(Long productId, LocalDateTime clickedAt) {}
 
     public List<AdClickRow> findAdClicks(Long userId, LocalDateTime from, LocalDateTime to) {
         String sql = """
-                SELECT ad_id, event_timestamp
+                SELECT product_id, event_timestamp
                 FROM event_log
                 WHERE user_id = ?
                   AND event_name = 'ad_click'
-                  AND ad_id IS NOT NULL
+                  AND product_id IS NOT NULL
                   AND event_timestamp BETWEEN ? AND ?
                 """;
         return jdbc.query(sql, (rs, i) -> new AdClickRow(
-                rs.getLong("ad_id"),
+                rs.getLong("product_id"),
                 rs.getTimestamp("event_timestamp").toLocalDateTime()
         ), userId, from, to);
     }
