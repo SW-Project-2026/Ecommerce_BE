@@ -55,4 +55,12 @@ public interface CampaignTargetRepository extends JpaRepository<CampaignTarget, 
 
   @Query("SELECT ct FROM CampaignTarget ct JOIN FETCH ct.user WHERE ct.campaign.id = :campaignId AND ct.user.id IN :userIds")
   List<CampaignTarget> findByCampaignIdAndUserIdInWithUser(@Param("campaignId") Long campaignId, @Param("userIds") List<Long> userIds);
+
+  @Query("SELECT ct FROM CampaignTarget ct JOIN FETCH ct.campaign c JOIN FETCH c.coupon " +
+      "WHERE ct.user.id = :userId " +
+      "AND ct.status = com.web.ecommerce.domain.campaign.enums.SendStatus.PENDING " +
+      "AND c.issueType = com.web.ecommerce.domain.coupon.enums.IssuanceMethod.AUTO " +
+      "AND c.coupon IS NOT NULL " +
+      "AND c.status = com.web.ecommerce.domain.campaign.enums.Status.IN_PROGRESS")
+  List<CampaignTarget> findPendingAutoTargetsWithCouponByUserId(@Param("userId") Long userId);
 }

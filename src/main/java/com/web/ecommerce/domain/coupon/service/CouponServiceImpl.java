@@ -15,6 +15,7 @@ import com.web.ecommerce.domain.coupon.enums.CouponStatus;
 import com.web.ecommerce.domain.coupon.enums.DiscountType;
 import com.web.ecommerce.domain.coupon.enums.IssuanceMethod;
 import java.util.ArrayList;
+import java.util.Optional;
 import com.web.ecommerce.domain.coupon.exception.CouponErrorCode;
 import com.web.ecommerce.domain.coupon.mapper.CouponMapper;
 import com.web.ecommerce.domain.coupon.repository.CouponRepository;
@@ -236,5 +237,26 @@ public class CouponServiceImpl implements CouponService {
     userCoupon.use();
     homeEventLogRepository.insertCouponUsed(userCoupon.getUser().getId(), userCoupon.getCoupon().getCode());
     return couponMapper.toUserCouponResponse(userCoupon);
+  }
+
+  @Override
+  @Transactional
+  public Optional<String> issueAutoCoupon(Long couponId, Long userId) {
+    if (userCouponRepository.existsByUserIdAndCouponId(userId, couponId)) {
+      return Optional.empty();
+    }
+    Coupon coupon = couponRepository.findByIdWithLock(couponId).orElse(null);
+    if (coupon == null) return Optional.empty();
+    if (coupon.getIssueLimit() != null) {
+      long issuedCount = userCouponRepository.countByCouponIdAndIsDuplicateFalse(couponId);
+      if (issuedCount >= coupon.getIssueLimit()) return Optional.empty();
+    }
+    User user = userRepository.findById(userId).orElse(null);
+    if (user == null) return Optional.empty();
+
+    UserCoupon userCoupon = UserCoupon.builder().user(user).coupon(coupon).build();
+    userCouponRepository.save(userCoupon);
+    homeEventLogRepository.insertCouponReceived(userId, coupon.getCode());
+    return Optional.of(coupon.getName());
   }
 }

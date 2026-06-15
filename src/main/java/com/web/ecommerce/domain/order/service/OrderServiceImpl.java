@@ -3,10 +3,13 @@ package com.web.ecommerce.domain.order.service;
 import com.web.ecommerce.domain.address.entity.Address;
 import com.web.ecommerce.domain.address.exception.AddressErrorCode;
 import com.web.ecommerce.domain.address.repository.AddressRepository;
+import com.web.ecommerce.domain.campaign.entity.CampaignTarget;
+import com.web.ecommerce.domain.campaign.repository.CampaignTargetRepository;
 import com.web.ecommerce.domain.coupon.entity.UserCoupon;
 import com.web.ecommerce.domain.coupon.enums.DiscountType;
 import com.web.ecommerce.domain.coupon.exception.CouponErrorCode;
 import com.web.ecommerce.domain.coupon.repository.UserCouponRepository;
+import com.web.ecommerce.domain.coupon.service.CouponService;
 import com.web.ecommerce.domain.order.dto.request.CreateOrderRequest;
 import com.web.ecommerce.domain.order.dto.response.OrderResponse;
 import com.web.ecommerce.domain.order.entity.Order;
@@ -44,6 +47,8 @@ public class OrderServiceImpl implements OrderService {
     private final ProductRepository productRepository;
     private final UserCouponRepository userCouponRepository;
     private final OrderMapper orderMapper;
+    private final CampaignTargetRepository campaignTargetRepository;
+    private final CouponService couponService;
 
     @Override
     @Transactional(readOnly = true)
@@ -144,7 +149,22 @@ public class OrderServiceImpl implements OrderService {
             order.getOrderDetails().add(savedDetail);
         }
 
-        return orderMapper.toResponse(order);
+        OrderResponse response = orderMapper.toResponse(order);
+
+        List<CampaignTarget> autoTargets = campaignTargetRepository.findPendingAutoTargetsWithCouponByUserId(userId);
+        List<String> issuedCouponNames = new ArrayList<>();
+        for (CampaignTarget target : autoTargets) {
+            couponService.issueAutoCoupon(target.getCampaign().getCoupon().getId(), userId)
+                    .ifPresent(couponName -> {
+                        issuedCouponNames.add(couponName);
+                        target.markSent();
+                    });
+        }
+        if (!issuedCouponNames.isEmpty()) {
+            response.setIssuedCouponNames(issuedCouponNames);
+        }
+
+        return response;
     }
 
     @Override

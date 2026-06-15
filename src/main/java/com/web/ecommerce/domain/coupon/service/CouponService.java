@@ -8,6 +8,7 @@ import com.web.ecommerce.domain.coupon.dto.response.DownloadableCouponResponse;
 import com.web.ecommerce.domain.coupon.dto.response.UserCouponResponse;
 import com.web.ecommerce.global.response.CursorResponse;
 import java.util.List;
+import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -32,4 +33,6 @@ Page<UserCouponResponse> getUserCoupons(Long userId, String status, Pageable pag
 UserCouponResponse downloadCoupon(Long couponId, Long userId);
 
   UserCouponResponse claimCouponByToken(String token);
+
+  Optional<String> issueAutoCoupon(Long couponId, Long userId);
 }

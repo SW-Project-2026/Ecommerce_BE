@@ -31,6 +31,7 @@ import com.web.ecommerce.domain.campaign.repository.CampaignTargetRepository;
 import com.web.ecommerce.domain.coupon.entity.Coupon;
 import com.web.ecommerce.domain.coupon.entity.UserCoupon;
 import com.web.ecommerce.domain.coupon.enums.IssuanceMethod;
+import com.web.ecommerce.domain.coupon.service.CouponService;
 import com.web.ecommerce.domain.coupon.exception.CouponErrorCode;
 import com.web.ecommerce.domain.coupon.repository.CouponRepository;
 import com.web.ecommerce.domain.coupon.repository.UserCouponRepository;
@@ -77,6 +78,7 @@ public class CampaignServiceImpl implements CampaignService {
   private final AdRepository adRepository;
   private final CampaignMapper campaignMapper;
   private final SmsService smsService;
+  private final CouponService couponService;
   private final JwtProvider jwtProvider;
 
   @Value("${app.base-url}")
@@ -445,18 +447,25 @@ public class CampaignServiceImpl implements CampaignService {
     boolean hasCoupon = campaign.getCoupon() != null;
     boolean checkDuplicate = campaign.getDuplicatePolicy() == DuplicatePolicy.CHECK;
     boolean isSmsIssue = campaign.getIssueType() == IssuanceMethod.MESSAGE;
+    boolean isAutoIssue = campaign.getIssueType() == IssuanceMethod.AUTO;
     Integer restrictionDays = campaign.getCouponRestrictionDays();
     LocalDateTime cutoff = (checkDuplicate && restrictionDays != null)
         ? LocalDateTime.now().minusDays(restrictionDays) : null;
 
     int success = 0, fail = 0, skipped = 0;
     for (CampaignTarget target : allTargets) {
-      if (!isSmsIssue) {
-        // DOWNLOAD/AUTO 타입은 타겟 등록만 하고 SMS 발송하지 않음
-        continue;
-      }
       if (target.getStatus() == SendStatus.SENT) {
         skipped++;
+        continue;
+      }
+      if (isAutoIssue && hasCoupon) {
+        couponService.issueAutoCoupon(campaign.getCoupon().getId(), target.getUser().getId())
+            .ifPresent(name -> target.markSent());
+        success++;
+        continue;
+      }
+      if (!isSmsIssue) {
+        // DOWNLOAD 타입은 타겟 등록만 하고 발송하지 않음
         continue;
       }
       String content = campaign.getMessageContent();

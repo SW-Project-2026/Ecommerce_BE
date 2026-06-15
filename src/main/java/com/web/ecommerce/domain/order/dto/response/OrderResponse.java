@@ -3,6 +3,7 @@ package com.web.ecommerce.domain.order.dto.response;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.Setter;
 
 import java.util.List;
 
@@ -40,4 +41,8 @@ public class OrderResponse {
 
     @Schema(description = "주문 상품 목록")
     private List<OrderDetailResponse> items;
+
+    @Setter
+    @Schema(description = "주문 완료 시 자동 발급된 쿠폰명 목록 (없으면 null)", example = "[\"신규 주문 감사 쿠폰\"]")
+    private List<String> issuedCouponNames;
 }
