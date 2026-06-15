@@ -38,10 +38,12 @@ public class DataInitializer implements ApplicationRunner {
         log.info("이벤트 데이터 초기 삽입 시작");
 
         Event purchase      = save("purchase_button_click", "사용자가 상품 구매 버튼을 클릭했을 때 발생하는 이벤트",                   true);
-        Event wishlist      = save("wishlist_cart_action",  "사용자가 상품을 찜하거나 장바구니에 추가 또는 삭제할 때 발생하는 이벤트", true);
+        Event wishlist      = save("wishlist_click",         "사용자가 상품을 찜 목록에 추가 또는 삭제할 때 발생하는 이벤트",          true);
+        Event cart          = save("cart_click",             "사용자가 상품을 장바구니에 추가 또는 삭제할 때 발생하는 이벤트",          true);
         Event couponReceive = save("coupon_received",       "사용자가 쿠폰을 발급받을 때 발생하는 이벤트",                             true);
         Event couponUsed    = save("coupon_used",           "사용자가 결제 시 쿠폰을 적용할 때 발생하는 이벤트",                       true);
-        Event adClick       = save("ad_click",              "사용자가 광고 배너 또는 광고 상품을 클릭할 때 발생하는 이벤트",           true);
+        Event adClick       = save("ad_click",               "사용자가 광고 배너 또는 광고 상품을 클릭할 때 발생하는 이벤트",          true);
+        Event adExposure    = save("ad_exposure",            "사용자에게 광고가 노출될 때 발생하는 이벤트",                              true);
         Event search        = save("search_button_click",   "사용자가 검색어를 입력하고 검색을 실행할 때 발생하는 이벤트",             true);
         Event pageView      = save("page_view",             "사용자가 특정 페이지에 진입할 때 발생하는 이벤트",                        true);
         Event productView   = save("product_detail_view",   "사용자가 특정 상품의 상세 페이지로 이동할 때 발생하는 이벤트",            true);
@@ -57,11 +59,17 @@ public class DataInitializer implements ApplicationRunner {
             field(purchase, "eventTimestamp", FieldType.DATETIME, true,  "해당 이벤트 발생 시간"),
             field(purchase, "productCategory",FieldType.STRING,   true,  "구매한 상품의 카테고리"),
 
-            field(wishlist, "productName",    FieldType.STRING,   true,  "찜/장바구니 대상 상품명"),
-            field(wishlist, "productId",      FieldType.STRING,   true,  "상품 고유 식별자"),
-            field(wishlist, "actionType",     FieldType.STRING,   true,  "add / remove 구분값"),
-            field(wishlist, "eventTimestamp", FieldType.DATETIME, true,  "해당 이벤트 발생 시간"),
-            field(wishlist, "productCategory",FieldType.STRING,   true,  "찜/장바구니 대상 상품 카테고리"),
+            field(wishlist, "productName",     FieldType.STRING,   true,  "찜 대상 상품명"),
+            field(wishlist, "productId",       FieldType.STRING,   true,  "상품 고유 식별자"),
+            field(wishlist, "actionType",      FieldType.STRING,   true,  "add / remove 구분값"),
+            field(wishlist, "eventTimestamp",  FieldType.DATETIME, true,  "해당 이벤트 발생 시간"),
+            field(wishlist, "productCategory", FieldType.STRING,   true,  "찜 대상 상품 카테고리"),
+
+            field(cart, "productName",     FieldType.STRING,   true,  "장바구니 대상 상품명"),
+            field(cart, "productId",       FieldType.STRING,   true,  "상품 고유 식별자"),
+            field(cart, "actionType",      FieldType.STRING,   true,  "add / remove 구분값"),
+            field(cart, "eventTimestamp",  FieldType.DATETIME, true,  "해당 이벤트 발생 시간"),
+            field(cart, "productCategory", FieldType.STRING,   true,  "장바구니 대상 상품 카테고리"),
 
             field(couponReceive, "couponCode",     FieldType.STRING,   true,  "발급된 쿠폰의 고유 코드"),
             field(couponReceive, "discountAmount", FieldType.NUMBER,   true,  "쿠폰 적용 시 할인되는 금액 (원 단위)"),
@@ -76,6 +84,9 @@ public class DataInitializer implements ApplicationRunner {
             field(adClick, "productId",       FieldType.STRING,   true, "광고 상품 고유 식별자"),
             field(adClick, "eventTimestamp",  FieldType.DATETIME, true, "해당 이벤트 발생 시간"),
             field(adClick, "productCategory", FieldType.STRING,   true, "광고된 상품 카테고리"),
+
+            field(adExposure, "adId",          FieldType.STRING,   true, "노출된 광고 고유 식별자"),
+            field(adExposure, "eventTimestamp", FieldType.DATETIME, true, "광고 노출 시간"),
 
             field(search, "searchKeyword",  FieldType.STRING,   true, "사용자가 입력한 검색어"),
             field(search, "eventTimestamp", FieldType.DATETIME, true, "해당 이벤트 발생 시간"),
@@ -104,7 +115,7 @@ public class DataInitializer implements ApplicationRunner {
             field(logout, "eventTimestamp", FieldType.DATETIME, true, "로그아웃 완료 시간")
         ));
 
-        log.info("이벤트 데이터 초기 삽입 완료 (이벤트 12개, 필드 40개)");
+        log.info("이벤트 데이터 초기 삽입 완료 (이벤트 14개)");
     }
 
     private Event save(String name, String description, boolean isActive) {
