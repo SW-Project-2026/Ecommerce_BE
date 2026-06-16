@@ -34,6 +34,15 @@ public interface UserRepository extends JpaRepository<User, Long> {
   @Query("SELECT u FROM User u WHERE u.isActive = 1 AND u.role = 'USER' AND u.phone IS NOT NULL AND u.phone <> '' AND u.marketingAgreed = true AND u.createdAt >= :since")
   List<User> findNewSmsTargetUsers(@Param("since") LocalDateTime since);
 
+  @Query("SELECT u FROM User u WHERE u.isActive = 1 AND u.role = 'USER' AND u.phone IS NOT NULL AND u.phone <> '' AND u.marketingAgreed = true AND u.grade = com.web.ecommerce.domain.user.entity.UserGrade.VIP")
+  List<User> findVipSmsTargetUsers();
+
+  @Query("SELECT u FROM User u WHERE u.isActive = 1 AND u.role = 'USER' AND u.phone IS NOT NULL AND u.phone <> '' AND u.marketingAgreed = true AND u.grade = com.web.ecommerce.domain.user.entity.UserGrade.GENERAL")
+  List<User> findGeneralSmsTargetUsers();
+
+  @Query("SELECT u FROM User u WHERE u.isActive = 1 AND u.role = 'USER' AND u.phone IS NOT NULL AND u.phone <> '' AND u.marketingAgreed = true AND u.grade = com.web.ecommerce.domain.user.entity.UserGrade.DORMANT")
+  List<User> findDormantSmsTargetUsers();
+
   long countByRoleAndIsActive(Role role, int isActive);
 
   long countByRoleAndIsActiveAndCreatedAtAfter(Role role, int isActive, LocalDateTime after);

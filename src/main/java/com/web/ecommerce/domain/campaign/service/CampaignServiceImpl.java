@@ -494,7 +494,10 @@ public class CampaignServiceImpl implements CampaignService {
   private List<User> resolveTargetUsers(CustomerSegment segment) {
     return switch (segment) {
       case NEW -> userRepository.findNewSmsTargetUsers(LocalDateTime.now().minusDays(30));
-      default -> userRepository.findSmsTargetUsers();
+      case VIP -> userRepository.findVipSmsTargetUsers();
+      case GENERAL -> userRepository.findGeneralSmsTargetUsers();
+      case DORMANT -> userRepository.findDormantSmsTargetUsers();
+      case ALL -> userRepository.findSmsTargetUsers();
     };
   }
 
