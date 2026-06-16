@@ -454,7 +454,8 @@ public class CampaignServiceImpl implements CampaignService {
 
     int success = 0, fail = 0, skipped = 0;
     for (CampaignTarget target : allTargets) {
-      if (target.getStatus() == SendStatus.SENT) {
+      if (checkDuplicate && target.getStatus() == SendStatus.SENT
+          && (cutoff == null || (target.getSentAt() != null && target.getSentAt().isAfter(cutoff)))) {
         skipped++;
         continue;
       }
