@@ -6,7 +6,9 @@ public record HomeResponse(
         String userName,
         List<ProductItem> recommendedProducts,
         List<ProductItem> recentViewedProducts,
+        boolean recentViewedFallback,
         List<ProductItem> purchasedProducts,
+        boolean purchasedFallback,
         List<BestProductItem> bestProducts,
         List<CouponItem> promotions,
         List<AdItem> adBanners

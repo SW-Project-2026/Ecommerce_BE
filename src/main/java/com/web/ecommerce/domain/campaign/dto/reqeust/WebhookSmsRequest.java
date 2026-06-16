@@ -1,5 +1,6 @@
 package com.web.ecommerce.domain.campaign.dto.reqeust;
 
+import com.web.ecommerce.domain.campaign.enums.CollectionType;
 import java.util.List;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -8,5 +9,5 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class WebhookSmsRequest {
     private List<Long> userIds;
-    private String source; // REALTIME | BATCH
+    private CollectionType source;
 }

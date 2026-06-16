@@ -16,11 +16,13 @@ import com.web.ecommerce.domain.product.entity.Product;
 import com.web.ecommerce.domain.product.repository.ProductRepository;
 import com.web.ecommerce.domain.user.entity.User;
 import com.web.ecommerce.domain.user.repository.UserRepository;
+import com.web.ecommerce.domain.cart.repository.CartRepository;
 import com.web.ecommerce.domain.wishlist.repository.WishlistRepository;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
@@ -39,11 +41,15 @@ public class HomeService {
     private static final int BEST_LIMIT_LOGGED_IN = 3;
     private static final int PROMOTION_LIMIT = 4;
     private static final int RECENT_DAYS = 30;
+    private static final int SECTION_MIN_THRESHOLD = 4;
+
+    private record SectionResult(List<ProductItem> products, boolean isFallback) {}
 
     private final ProductRepository productRepository;
     private final CouponRepository couponRepository;
     private final UserCouponRepository userCouponRepository;
     private final WishlistRepository wishlistRepository;
+    private final CartRepository cartRepository;
     private final UserRepository userRepository;
     private final HomeEventLogRepository homeEventLogRepository;
     private final AdRepository adRepository;
@@ -54,7 +60,7 @@ public class HomeService {
         List<ProductItem> recommended = getFallbackProducts(Collections.emptySet());
         List<CouponItem> promotions = getPromotions(null);
         List<AdItem> adBanners = getAdBanners(null);
-        return new HomeResponse(null, recommended, null, null, best, promotions, adBanners);
+        return new HomeResponse(null, recommended, null, false, null, false, best, promotions, adBanners);
     }
 
     public HomeResponse getHomeForUser(Long userId) {
@@ -64,13 +70,16 @@ public class HomeService {
         Set<Long> wishedProductIds = wishlistRepository.findProductIdsByUserId(userId);
 
         List<ProductItem> recommended = getRecommendedProducts(userId, wishedProductIds);
-        List<ProductItem> recentViewed = getRecentViewedProducts(userId, wishedProductIds);
-        List<ProductItem> purchased = getPurchasedProducts(userId, wishedProductIds);
+        SectionResult recentViewed = getRecentViewedProducts(userId, wishedProductIds);
+        SectionResult purchased = getPurchasedProducts(userId, wishedProductIds);
         List<BestProductItem> best = getBestProducts(BEST_LIMIT_LOGGED_IN, wishedProductIds);
         List<CouponItem> promotions = getPromotions(userId);
         List<AdItem> adBanners = getAdBanners(userId);
 
-        return new HomeResponse(userName, recommended, recentViewed, purchased, best, promotions, adBanners);
+        return new HomeResponse(userName, recommended,
+                recentViewed.products(), recentViewed.isFallback(),
+                purchased.products(), purchased.isFallback(),
+                best, promotions, adBanners);
     }
 
     private List<ProductItem> getRecommendedProducts(Long userId, Set<Long> wishedProductIds) {
@@ -85,26 +94,41 @@ public class HomeService {
         return toProductItems(productRepository.findRandomActiveProducts(PRODUCT_LIMIT), wishedProductIds);
     }
 
-    private List<ProductItem> getRecentViewedProducts(Long userId, Set<Long> wishedProductIds) {
+    private SectionResult getRecentViewedProducts(Long userId, Set<Long> wishedProductIds) {
         List<Long> productIds = homeEventLogRepository.findRecentViewedProductIds(userId, RECENT_DAYS, PRODUCT_LIMIT);
-        if (productIds.isEmpty()) {
-            return toProductItems(productRepository.findRandomActiveProducts(PRODUCT_LIMIT), wishedProductIds);
+        if (productIds.size() < SECTION_MIN_THRESHOLD) {
+            return new SectionResult(getPersonalizedFallback(userId, wishedProductIds), true);
         }
         List<Product> products = productRepository.findByProductIdInAndIsActive(productIds);
-        // Preserve event_log order
         List<Product> ordered = new ArrayList<>(productIds.size());
         for (Long id : productIds) {
             products.stream().filter(p -> p.getProductId().equals(id)).findFirst().ifPresent(ordered::add);
         }
-        return toProductItems(ordered, wishedProductIds);
+        return new SectionResult(toProductItems(ordered, wishedProductIds), false);
     }
 
-    private List<ProductItem> getPurchasedProducts(Long userId, Set<Long> wishedProductIds) {
+    private SectionResult getPurchasedProducts(Long userId, Set<Long> wishedProductIds) {
         List<Product> products = productRepository.findPurchasedProductsByUserId(userId, PRODUCT_LIMIT);
-        if (products.isEmpty()) {
-            return toProductItems(productRepository.findRandomActiveProducts(PRODUCT_LIMIT), wishedProductIds);
+        if (products.size() < SECTION_MIN_THRESHOLD) {
+            return new SectionResult(getPersonalizedFallback(userId, wishedProductIds), true);
         }
-        return toProductItems(products, wishedProductIds);
+        return new SectionResult(toProductItems(products, wishedProductIds), false);
+    }
+
+    private List<ProductItem> getPersonalizedFallback(Long userId, Set<Long> wishedProductIds) {
+        Set<String> categories = new LinkedHashSet<>();
+        categories.addAll(homeEventLogRepository.findInterestCategories(userId, RECENT_DAYS, INTEREST_CATEGORY_LIMIT));
+        categories.addAll(wishlistRepository.findCategoriesByUserId(userId));
+        categories.addAll(cartRepository.findCategoriesByUserId(userId));
+
+        if (!categories.isEmpty()) {
+            List<Product> products = productRepository.findByInterestCategoriesAndIsActive(
+                    new ArrayList<>(categories), PageRequest.of(0, PRODUCT_LIMIT));
+            if (!products.isEmpty()) {
+                return toProductItems(products, wishedProductIds);
+            }
+        }
+        return toProductItems(productRepository.findRandomActiveProducts(PRODUCT_LIMIT), wishedProductIds);
     }
 
     private List<ProductItem> getFallbackProducts(Set<Long> wishedProductIds) {

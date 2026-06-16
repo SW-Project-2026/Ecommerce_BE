@@ -21,4 +21,7 @@ public interface CartRepository extends JpaRepository<Cart, Long> {
 
     @Query("SELECT c FROM Cart c JOIN FETCH c.product WHERE c.user.id = :userId AND (:cursor = 0 OR c.id < :cursor) ORDER BY c.id DESC")
     List<Cart> findByUserIdWithCursorDesc(Long userId, Long cursor, Pageable pageable);
+
+    @Query("SELECT DISTINCT c.product.productCategory FROM Cart c WHERE c.user.id = :userId AND c.product.productCategory IS NOT NULL")
+    List<String> findCategoriesByUserId(Long userId);
 }
