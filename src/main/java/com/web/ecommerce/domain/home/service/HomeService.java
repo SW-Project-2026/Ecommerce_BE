@@ -25,6 +25,7 @@ import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -159,10 +160,14 @@ public class HomeService {
                     .toList();
         }
 
-        List<Coupon> coupons = campaignTargetRepository.findDownloadableCouponsByUserId(userId);
         LocalDateTime now = LocalDateTime.now();
 
-        return coupons.stream()
+        List<Coupon> campaignCoupons = campaignTargetRepository.findDownloadableCouponsByUserId(userId);
+        List<Coupon> welcomeCoupons = couponRepository.findWelcomeCoupons();
+
+        Set<Long> seenIds = new LinkedHashSet<>();
+        return Stream.concat(campaignCoupons.stream(), welcomeCoupons.stream())
+                .filter(c -> seenIds.add(c.getId()))
                 .filter(c -> c.getExpiredAt() == null
                         || (c.getCreatedAt() != null && c.getCreatedAt().plusDays(c.getExpiredAt()).isAfter(now)))
                 .filter(c -> !userCouponRepository.existsByUserIdAndCouponId(userId, c.getId()))
