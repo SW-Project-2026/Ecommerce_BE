@@ -8,6 +8,7 @@ import com.web.ecommerce.domain.campaign.dto.response.CampaignResponse;
 import com.web.ecommerce.domain.campaign.dto.response.CampaignSummaryResponse;
 import com.web.ecommerce.domain.campaign.dto.response.SmsSendResponse;
 import com.web.ecommerce.domain.campaign.dto.response.SmsStatusResponse;
+import com.web.ecommerce.domain.campaign.enums.CollectionType;
 import com.web.ecommerce.domain.campaign.enums.Status;
 import java.util.List;
 import org.springframework.data.domain.Page;
@@ -34,5 +35,5 @@ public interface CampaignService {
 
   SmsStatusResponse getSmsStatus(Long campaignId, Long cursor, String date, String time);
 
-  SmsSendResponse handleEventWebhook(Long campaignId, List<Long> userIds, String source);
+  SmsSendResponse handleEventWebhook(Long campaignId, List<Long> userIds, CollectionType source);
 }

@@ -423,7 +423,7 @@ public class CampaignServiceImpl implements CampaignService {
 
   @Override
   @Transactional
-  public SmsSendResponse handleEventWebhook(Long campaignId, List<Long> userIds, String source) {
+  public SmsSendResponse handleEventWebhook(Long campaignId, List<Long> userIds, CollectionType source) {
     Campaign campaign = campaignRepository.findById(campaignId)
         .orElseThrow(() -> new CustomException(CampaignErrorCode.CAMPAIGN_NOT_FOUND));
 
