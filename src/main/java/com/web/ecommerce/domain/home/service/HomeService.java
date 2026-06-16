@@ -70,8 +70,9 @@ public class HomeService {
         Set<Long> wishedProductIds = wishlistRepository.findProductIdsByUserId(userId);
 
         List<ProductItem> recommended = getRecommendedProducts(userId, wishedProductIds);
-        SectionResult recentViewed = getRecentViewedProducts(userId, wishedProductIds);
-        SectionResult purchased = getPurchasedProducts(userId, wishedProductIds);
+        List<Long> recommendedIds = recommended.stream().map(ProductItem::productId).toList();
+        SectionResult recentViewed = getRecentViewedProducts(userId, wishedProductIds, recommendedIds);
+        SectionResult purchased = getPurchasedProducts(userId, wishedProductIds, recommendedIds);
         List<BestProductItem> best = getBestProducts(BEST_LIMIT_LOGGED_IN, wishedProductIds);
         List<CouponItem> promotions = getPromotions(userId);
         List<AdItem> adBanners = getAdBanners(userId);
@@ -94,10 +95,10 @@ public class HomeService {
         return toProductItems(productRepository.findRandomActiveProducts(PRODUCT_LIMIT), wishedProductIds);
     }
 
-    private SectionResult getRecentViewedProducts(Long userId, Set<Long> wishedProductIds) {
+    private SectionResult getRecentViewedProducts(Long userId, Set<Long> wishedProductIds, List<Long> excludeIds) {
         List<Long> productIds = homeEventLogRepository.findRecentViewedProductIds(userId, RECENT_DAYS, PRODUCT_LIMIT);
         if (productIds.size() < SECTION_MIN_THRESHOLD) {
-            return new SectionResult(getPersonalizedFallback(userId, wishedProductIds), true);
+            return new SectionResult(getPersonalizedFallback(userId, wishedProductIds, excludeIds), true);
         }
         List<Product> products = productRepository.findByProductIdInAndIsActive(productIds);
         List<Product> ordered = new ArrayList<>(productIds.size());
@@ -107,23 +108,24 @@ public class HomeService {
         return new SectionResult(toProductItems(ordered, wishedProductIds), false);
     }
 
-    private SectionResult getPurchasedProducts(Long userId, Set<Long> wishedProductIds) {
+    private SectionResult getPurchasedProducts(Long userId, Set<Long> wishedProductIds, List<Long> excludeIds) {
         List<Product> products = productRepository.findPurchasedProductsByUserId(userId, PRODUCT_LIMIT);
         if (products.size() < SECTION_MIN_THRESHOLD) {
-            return new SectionResult(getPersonalizedFallback(userId, wishedProductIds), true);
+            return new SectionResult(getPersonalizedFallback(userId, wishedProductIds, excludeIds), true);
         }
         return new SectionResult(toProductItems(products, wishedProductIds), false);
     }
 
-    private List<ProductItem> getPersonalizedFallback(Long userId, Set<Long> wishedProductIds) {
+    private List<ProductItem> getPersonalizedFallback(Long userId, Set<Long> wishedProductIds, List<Long> excludeIds) {
         Set<String> categories = new LinkedHashSet<>();
         categories.addAll(homeEventLogRepository.findInterestCategories(userId, RECENT_DAYS, INTEREST_CATEGORY_LIMIT));
         categories.addAll(wishlistRepository.findCategoriesByUserId(userId));
         categories.addAll(cartRepository.findCategoriesByUserId(userId));
 
         if (!categories.isEmpty()) {
-            List<Product> products = productRepository.findByInterestCategoriesAndIsActive(
-                    new ArrayList<>(categories), PageRequest.of(0, PRODUCT_LIMIT));
+            List<Product> products = excludeIds.isEmpty()
+                    ? productRepository.findByInterestCategoriesAndIsActive(new ArrayList<>(categories), PageRequest.of(0, PRODUCT_LIMIT))
+                    : productRepository.findByInterestCategoriesAndIsActiveExcluding(new ArrayList<>(categories), excludeIds, PageRequest.of(0, PRODUCT_LIMIT));
             if (!products.isEmpty()) {
                 return toProductItems(products, wishedProductIds);
             }

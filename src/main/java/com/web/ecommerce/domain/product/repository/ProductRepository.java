@@ -33,6 +33,9 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     @Query("SELECT p FROM Product p WHERE p.isActive = 1 AND (p.subCategory IN :categories OR p.productCategory IN :categories) ORDER BY p.createdAt DESC")
     List<Product> findByInterestCategoriesAndIsActive(@Param("categories") List<String> categories, Pageable pageable);
 
+    @Query("SELECT p FROM Product p WHERE p.isActive = 1 AND (p.subCategory IN :categories OR p.productCategory IN :categories) AND p.productId NOT IN :excludeIds ORDER BY p.createdAt DESC")
+    List<Product> findByInterestCategoriesAndIsActiveExcluding(@Param("categories") List<String> categories, @Param("excludeIds") List<Long> excludeIds, Pageable pageable);
+
     @Query("SELECT p FROM Product p WHERE p.productId IN :ids AND p.isActive = 1")
     List<Product> findByProductIdInAndIsActive(@Param("ids") List<Long> ids);
 
